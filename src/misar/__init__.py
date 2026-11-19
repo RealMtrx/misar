@@ -3,7 +3,7 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.3.0"
+__version__ = "2.4.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
 from .classifier import (
@@ -19,6 +19,17 @@ from .guard import (
     sanitize_prompt,
     validate_iban,
     validate_saudi_national_id,
+)
+from .lexicon import (
+    ArabicLexicon,
+    LexicalEntry,
+    TextExplanation,
+    TokenExplanation,
+    explain_text,
+    extract_root,
+    get_lexicon,
+    light_stem,
+    lookup_word,
 )
 from .parallel import (
     process_dataset_file,
@@ -89,4 +100,13 @@ __all__ = [
     "canonicalize",
     "route_parallel",
     "process_dataset_file",
+    "ArabicLexicon",
+    "LexicalEntry",
+    "TextExplanation",
+    "TokenExplanation",
+    "lookup_word",
+    "explain_text",
+    "extract_root",
+    "light_stem",
+    "get_lexicon",
 ]

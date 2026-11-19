@@ -2,7 +2,28 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
-## [2.3.0] — 2026-11-19
+## [2.4.0] — 2026-11-19
+
+### Added & Improved
+- **Arabic Semantic Lexicon & Multi-Dialect Dictionary (`misar.lexicon` & `ArabicLexicon`):**
+  - High-speed zero-dependency in-memory dictionary linking Arabic words directly to:
+    - Standard Modern Arabic lemmas (`lemma_msa`).
+    - Authentic trilateral/quadrilateral linguistic roots (`root`).
+    - Dialect and regional origin (`dialect`): Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni, and MSA.
+    - Part of Speech (`pos`): verb, noun, interrogative, negation, adverb, idiom.
+    - Deep semantic definitions (`definition`), synonyms, and contextual examples.
+- **Morphological Light Stemmer & Root Extractor (`extract_root` & `light_stem`):**
+  - Zero-dependency rule-based morphological decomposition stripping compound and single proclitics (`ال`, `وال`, `بال`, `لل`, `كال`) and inflectional enclitics (`ها`, `هم`, `كم`, `نا`, `ني`, `ات`, `ين`, `ون`).
+  - Matches trilateral and quadrilateral roots across major verbal and nominal patterns (`استفعال`, `تفعيل`, `مفعول`, `فاعل`, `افتعال`, `انفعال`, `مفاعيل`).
+- **Interactive Sentence Explainer (`explain_text` & `TextExplanation`):**
+  - Token-by-token contextual explanation deconstructing dialect expressions.
+  - Automatically produces normalized canonical MSA sentences and computes regional dialect density percentages.
+- **CLI & REST API Enhancements:**
+  - Added CLI commands: `misar dict <word> [--json]` and `misar explain "<text>" [--json]`.
+  - Added REST API endpoints: `POST /api/lexicon/lookup` and `POST /api/lexicon/explain`.
+  - Updated `GET /api/health` feature flags to include `arabic_lexicon`, `morphological_root_extractor`, and `sentence_explainer`.
+- **Automated Verification:**
+  - Expanded test suite from 60 to **65 comprehensive automated tests** with 100% pass rate.
 
 ### Added & Improved
 - **Microsecond Arabic Regional Dialect & Register Classifier (`misar.classifier` & `DialectClassifier`):**

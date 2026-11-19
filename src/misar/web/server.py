@@ -237,6 +237,9 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "dialect_classifier",
                             "prompt_cache_canonicalizer",
                             "parallel_engine",
+                            "arabic_lexicon",
+                            "morphological_root_extractor",
+                            "sentence_explainer",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -427,6 +430,46 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     self._send_json(200, {"original_text": text, "canonical_text": canonical})
                 except Exception as exc:
                     self._send_json(500, {"error": f"Canonicalize error: {str(exc)}"})
+                return
+
+            if route_path == "/api/lexicon/lookup":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                word = payload.get("word")
+                if not isinstance(word, str) or not word.strip():
+                    self._send_json(400, {"error": "'word' field must be a non-empty string"})
+                    return
+                try:
+                    from ..lexicon import lookup_word, extract_root
+                    entry = lookup_word(word)
+                    if entry:
+                        self._send_json(200, entry.to_dict())
+                    else:
+                        self._send_json(200, {
+                            "word": word,
+                            "found": False,
+                            "root": extract_root(word),
+                            "message": "Word not found in curated entries; extracted morphological root candidate.",
+                        })
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Lexicon lookup error: {str(exc)}"})
+                return
+
+            if route_path == "/api/lexicon/explain":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                try:
+                    from ..lexicon import explain_text
+                    explanation = explain_text(text)
+                    self._send_json(200, explanation.to_dict())
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Lexicon explain error: {str(exc)}"})
                 return
 
             self._send_json(404, {"error": "Not found"})

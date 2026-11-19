@@ -494,6 +494,16 @@ class MisarRouter:
         from .classifier import canonicalize
         return canonicalize(text)
 
+    def lookup(self, word: str) -> Any:
+        """Lookup an Arabic word in the multi-dialect semantic lexicon."""
+        from .lexicon import lookup_word
+        return lookup_word(word)
+
+    def explain_text(self, text: str) -> Any:
+        """Deconstruct an Arabic sentence, explain dialect tokens, extract roots, and produce canonical MSA."""
+        from .lexicon import explain_text
+        return explain_text(text)
+
 
 _DEFAULT_ROUTER: Optional[MisarRouter] = None
 
@@ -544,6 +554,14 @@ def classify(text: str) -> Any:
 
 def canonicalize(text: str) -> str:
     return _get_default_router().canonicalize(text)
+
+
+def lookup_word(word: str) -> Any:
+    return _get_default_router().lookup(word)
+
+
+def explain_text(text: str) -> Any:
+    return _get_default_router().explain_text(text)
 
 
 def route_parallel(

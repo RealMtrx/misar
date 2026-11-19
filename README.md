@@ -233,6 +233,31 @@ stats = process_dataset_file("train.jsonl", "train_clean.jsonl", num_workers=8)
 print(f"Cleaned {stats['total_records']} rows at {stats['throughput_per_sec']} texts/sec")
 ```
 
+### 8. Arabic Semantic Lexicon, Multi-Dialect Dictionary & Root Extractor
+
+High-speed zero-dependency in-memory dictionary linking regional colloquialisms to Standard Arabic lemmas, trilateral roots, and semantic definitions:
+
+```python
+from misar import lookup_word, explain_text, extract_root
+
+# 1. Lookup a dialect or classical word in the semantic dictionary
+entry = lookup_word("أبخص")
+print("Lemma:  ", entry.lemma_msa)       # أعلم وأدرى
+print("Root:   ", entry.root)            # ب-خ-ص
+print("Dialect:", entry.dialect)         # saudi_gulf
+print("Meaning:", entry.definition)
+
+# 2. Extract authentic trilateral / quadrilateral morphological roots
+print(extract_root("استكشاف"))           # ك-ش-ف
+print(extract_root("تطبيق"))             # ط-ب-ق
+print(extract_root("مشاريع"))            # ش-ر-ع
+
+# 3. Deconstruct and explain full dialect sentences with canonical MSA translation
+res = explain_text("وش تبغى تسوي الحين يا يمعود؟")
+print("Canonical MSA:", res.canonical_msa_text)
+print(f"Dialect Density: {res.dialect_density_pct:.1f}% ({res.dominant_dialect})")
+```
+
 ---
 
 ## CLI & Web Workbench
@@ -251,6 +276,12 @@ misar classify "وش تبغى تسوي الحين يا خوي؟" --json
 
 # Canonicalize dialectal queries for LLM prompt cache optimization
 misar canonicalize "عايز ايه دلوقتي يا باشا؟"
+
+# Lookup a word in the multi-dialect semantic lexicon & dictionary
+misar dict "أبخص" --json
+
+# Deconstruct and explain a dialect sentence with full MSA reconstruction
+misar explain "وش تبغى تسوي الحين يا يمعود؟"
 
 # Multi-core parallel dataset processing (JSONL, CSV, TSV, TXT)
 misar process train.jsonl --output cleaned.jsonl --workers 8
@@ -282,6 +313,8 @@ misar serve
 | `POST` | `/api/document` | Body `{"text": "..."}` → Clause-aware `DocumentRoutingResult` + $O(L^2)$ metrics |
 | `POST` | `/api/classify` | Body `{"text": "..."}` → Sub-dialect and register classification telemetry |
 | `POST` | `/api/canonicalize` | Body `{"text": "..."}` → Normalized canonical query for LLM prompt cache hit |
+| `POST` | `/api/lexicon/lookup` | Body `{"word": "..."}` → Full lexical entry (lemma, root, dialect, POS, definition) |
+| `POST` | `/api/lexicon/explain` | Body `{"text": "..."}` → Sentence deconstruction, dialect tokens & canonical MSA |
 | `POST` | `/api/chunk` | Body `{"text": "...", "max_tokens": 256}` → Discourse RAG chunks with negation binding |
 | `POST` | `/api/guard` | Body `{"text": "...", "mask_pii": true}` → Prompt sanitizer, PII redaction & risk score |
 | `POST` | `/api/batch` | Body `{"texts": ["...", "..."]}` → Batch routes up to 500 strings (`1 MiB` payload limit) |
@@ -303,6 +336,7 @@ misar/
 │   ├── __init__.py                    # Public API exports
 │   ├── profiler.py                    # O(n) 5-signal LinguisticProfiler & Shannon entropy
 │   ├── classifier.py                  # Microsecond sub-dialect & register classifier + prompt cache
+│   ├── lexicon.py                     # Multi-dialect semantic lexicon, morphology & root extractor
 │   ├── parallel.py                    # High-throughput multi-core batch processing engine
 │   ├── lexicons.py                    # MSA-safe multi-region dialect & negation lexicons
 │   ├── pipelines.py                   # FAST_MSA, DIALECT_PRESERVE & NOISY_SOCIAL passes
@@ -312,11 +346,11 @@ misar/
 │   ├── guard.py                       # LLM Prompt Guard, BiDi defense & Saudi ID/IBAN PII redaction
 │   ├── evaluation.py                  # Multi-model scientific evaluation suite (disambig/polarity/O(L^2))
 │   ├── benchmark.py                   # Shared benchmark suite module
-│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `classify`, `canonicalize`, `process`, etc.)
+│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `dict`, `explain`, `process`, etc.)
 │   └── web/
 │       ├── server.py                  # Hardened zero-dependency ThreadingHTTPServer REST API
 │       └── index.html                 # Interactive Arabic RTL Workbench & token visualizer
-├── tests/test_misar.py                # 60 unit, API, RAG, security, dialect & parallel tests
+├── tests/test_misar.py                # 65 unit, API, RAG, security, dialect & lexicon tests
 ├── CITATION.cff                       # Native GitHub repository citation metadata
 ├── CONTRIBUTING.md                    # Developer setup & contribution standards
 ├── SECURITY.md                        # Built-in API & frontend hardening controls
@@ -333,7 +367,7 @@ misar/
 python -m unittest discover -s tests -v
 ```
 
-All **60 automated tests** verify profiler mathematics, regional dialect classification (Saudi/Gulf, Levantine, Egyptian, Maghrebi, MSA), discourse registers, prompt cache canonicalization, multi-core dataset ETL, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
+All **65 automated tests** verify profiler mathematics, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
 
 ---
 

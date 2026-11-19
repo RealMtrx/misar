@@ -206,6 +206,59 @@ def cmd_process(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_dict(args: argparse.Namespace) -> int:
+    from .lexicon import lookup_word, extract_root
+    entry = lookup_word(args.word)
+    if args.json:
+        payload = entry.to_dict() if entry else {"word": args.word, "found": False, "root": extract_root(args.word)}
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
+
+    if entry:
+        print(f"Misar Arabic Lexicon v{__version__} | Word: {entry.word}")
+        print("=" * 84)
+        print(f"Lemma (الفصيح) : {entry.lemma_msa}")
+        print(f"Root (الجذر)   : {entry.root}")
+        print(f"Dialect (اللهجة): {entry.dialect}")
+        print(f"POS (النوع)    : {entry.pos}")
+        print(f"Meaning (المعنى): {entry.definition}")
+        if entry.synonyms:
+            print(f"Synonyms       : {', '.join(entry.synonyms)}")
+        if entry.example:
+            print(f"Example        : {entry.example}")
+        print("=" * 84)
+    else:
+        root = extract_root(args.word)
+        print(f"Misar Arabic Lexicon v{__version__}")
+        print("=" * 84)
+        print(f"Word '{args.word}' not in curated dialect entries.")
+        print(f"Extracted Morphological Root: {root}")
+        print("=" * 84)
+    return 0
+
+
+def cmd_explain(args: argparse.Namespace) -> int:
+    from .lexicon import explain_text
+    res = explain_text(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Misar Sentence Explainer v{__version__}")
+    print("=" * 84)
+    print(f"Original Text  : {res.original_text}")
+    print(f"Canonical MSA  : {res.canonical_msa_text}")
+    print(f"Dominant Reg   : {res.dominant_dialect} (Dialect Density: {res.dialect_density_pct:.1f}%)")
+    print("-" * 84)
+    for tok in res.tokens:
+        if tok.is_dialect and tok.entry:
+            print(f"• [{tok.token}] -> {tok.entry.lemma_msa} (Root: {tok.entry.root} | {tok.entry.dialect}): {tok.entry.definition}")
+        else:
+            print(f"• [{tok.token}] -> Root: {tok.detected_root}")
+    print("=" * 84)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -289,6 +342,16 @@ def build_parser() -> argparse.ArgumentParser:
     p_process.add_argument("--model", default="arabertv02", choices=model_choices)
     p_process.add_argument("--json", action="store_true", help="Output summary in JSON format")
     p_process.set_defaults(func=cmd_process)
+
+    p_dict = sub.add_parser("dict", help="Lookup an Arabic word in the multi-dialect semantic lexicon")
+    p_dict.add_argument("word", help="Arabic word to lookup")
+    p_dict.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_dict.set_defaults(func=cmd_dict)
+
+    p_explain = sub.add_parser("explain", help="Deconstruct a sentence, explain dialect words, and output MSA")
+    p_explain.add_argument("text", help="Arabic sentence to analyze and explain")
+    p_explain.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_explain.set_defaults(func=cmd_explain)
 
     return parser
 

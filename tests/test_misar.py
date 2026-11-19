@@ -586,6 +586,36 @@ class TestMisarHTTPServer(unittest.TestCase):
             data_can = json.loads(resp.read().decode("utf-8"))
             self.assertEqual(data_can["canonical_text"], "ما تبغى تسوي الآن؟")
 
+    def test_v24_api_lexicon_endpoints(self) -> None:
+        # 1. Test POST /api/lexicon/lookup
+        lookup_body = {"word": "أبخص"}
+        req_l = urllib.request.Request(
+            f"{self.base}/api/lexicon/lookup",
+            data=json.dumps(lookup_body, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req_l, timeout=5) as resp:
+            self.assertEqual(resp.status, 200)
+            data_l = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(data_l["word"], "أبخص")
+            self.assertEqual(data_l["root"], "ب-خ-ص")
+            self.assertEqual(data_l["dialect"], "saudi_gulf")
+
+        # 2. Test POST /api/lexicon/explain
+        explain_body = {"text": "وش تبغى تسوي الحين يا يمعود؟"}
+        req_e = urllib.request.Request(
+            f"{self.base}/api/lexicon/explain",
+            data=json.dumps(explain_body, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req_e, timeout=5) as resp:
+            self.assertEqual(resp.status, 200)
+            data_e = json.loads(resp.read().decode("utf-8"))
+            self.assertGreaterEqual(data_e["dialect_tokens_count"], 3)
+            self.assertIn("tokens", data_e)
+
 
 class TestArabicDiscourseRAGChunker(unittest.TestCase):
     """Exhaustive tests for Arabic RAG semantic chunking and negation binding."""
@@ -802,7 +832,7 @@ class TestArabicDialectAndRegisterClassifier(unittest.TestCase):
         canon = router.canonicalize("عايز ايه دلوقتي؟")
         self.assertEqual(canon, "أريد ما الآن؟")
 
-        self.assertEqual(misar.__version__, "2.3.0")
+        self.assertEqual(misar.__version__, "2.4.0")
         self.assertTrue(callable(misar.classify))
         self.assertTrue(callable(misar.canonicalize))
         self.assertTrue(callable(misar.route_parallel))
@@ -883,6 +913,85 @@ class TestParallelBatchEngine(unittest.TestCase):
             )
             self.assertEqual(summary_csv["total_records"], 3)
             self.assertTrue(out_csv.exists())
+
+
+class TestArabicLexiconAndMorphology(unittest.TestCase):
+    """Exhaustive tests for Misar Arabic Lexicon and Morphological Dictionary."""
+
+    def test_lexicon_lookup_multi_dialect(self) -> None:
+        from misar.lexicon import lookup_word
+
+        # Saudi / Gulf
+        entry_sa = lookup_word("أبخص")
+        self.assertIsNotNone(entry_sa)
+        self.assertEqual(entry_sa.dialect, "saudi_gulf")
+        self.assertEqual(entry_sa.root, "ب-خ-ص")
+        self.assertEqual(entry_sa.lemma_msa, "أعلم وأدرى")
+
+        # Egyptian
+        entry_eg = lookup_word("دلوقتي")
+        self.assertIsNotNone(entry_eg)
+        self.assertEqual(entry_eg.dialect, "egyptian")
+        self.assertEqual(entry_eg.lemma_msa, "الآن")
+
+        # Levantine
+        entry_lev = lookup_word("هيك")
+        self.assertIsNotNone(entry_lev)
+        self.assertEqual(entry_lev.dialect, "levantine")
+
+        # Maghrebi
+        entry_mag = lookup_word("بزاف")
+        self.assertIsNotNone(entry_mag)
+        self.assertEqual(entry_mag.dialect, "maghrebi")
+
+        # Iraqi
+        entry_irq = lookup_word("يمعود")
+        self.assertIsNotNone(entry_irq)
+        self.assertEqual(entry_irq.dialect, "iraqi")
+
+        # Yemeni
+        entry_yem = lookup_word("ناهي")
+        self.assertIsNotNone(entry_yem)
+        self.assertEqual(entry_yem.dialect, "yemeni")
+
+    def test_extract_root_morphological_patterns(self) -> None:
+        from misar.lexicon import extract_root
+
+        self.assertEqual(extract_root("استكشاف"), "ك-ش-ف")
+        self.assertEqual(extract_root("تطبيق"), "ط-ب-ق")
+        self.assertEqual(extract_root("مكتوب"), "ك-ت-ب")
+        self.assertEqual(extract_root("افتتاح"), "ف-ت-ح")
+        self.assertEqual(extract_root("كاتب"), "ك-ت-ب")
+        self.assertEqual(extract_root("عالم"), "ع-ل-م")
+        self.assertEqual(extract_root("مشاريع"), "ش-ر-ع")
+
+    def test_sentence_explanation_and_canonical_msa(self) -> None:
+        from misar.lexicon import explain_text
+
+        text = "وش تبغى تسوي الحين يا يمعود؟"
+        res = explain_text(text)
+        self.assertEqual(res.original_text, text)
+        self.assertGreaterEqual(res.dialect_tokens_count, 3)
+        self.assertGreater(res.dialect_density_pct, 40.0)
+        self.assertEqual(res.dominant_dialect, "saudi_gulf")
+        self.assertIn("الآن", res.canonical_msa_text)
+
+    def test_router_integration_with_lexicon(self) -> None:
+        import misar
+        from misar import MisarRouter
+
+        router = MisarRouter()
+        entry = router.lookup("أبخص")
+        self.assertIsNotNone(entry)
+        self.assertEqual(entry.root, "ب-خ-ص")
+
+        expl = router.explain_text("دلوقتي كل حاجة تمام")
+        self.assertGreaterEqual(expl.dialect_tokens_count, 1)
+
+        self.assertEqual(misar.__version__, "2.4.0")
+        self.assertTrue(callable(misar.lookup_word))
+        self.assertTrue(callable(misar.explain_text))
+        self.assertTrue(callable(misar.extract_root))
 
 
 if __name__ == "__main__":
