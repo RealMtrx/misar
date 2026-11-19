@@ -56,21 +56,6 @@ Every incoming text passes once through `LinguisticProfiler` (`< 0.25 ms` on CPU
   <img src="https://raw.githubusercontent.com/RealMtrx/misar/main/docs/misar-architecture-flow.png" alt="Misar Dynamic Architecture Flow" width="100%" />
 </div>
 
-<details>
-<summary><b>📐 View Interactive Diagram Source (Mermaid Flowchart)</b></summary>
-
-```mermaid
-flowchart TD
-    A["Raw Arabic Input<br/>(MSA / Diacritized / Dialect / Social)"] --> B["LinguisticProfiler O(n)<br/>P_dial · D_diac · E_noise · H_char · R_latin"]
-    B -->|"High Noise / Tatweel / Stretches ≥ 3"| C["NOISY_SOCIAL (+ Hybrid Dialect)<br/>Gemination-Safe Collapse + Emoji Polarity"]
-    B -->|"Dialect Markers / Protected Negations"| D["DIALECT_PRESERVE<br/>Negation Protection + Vocab Auto-Heal"]
-    B -->|"Clean MSA / Classical Diacritized"| E["FAST_MSA<br/>Strip Harakat · Preserve أ/إ/آ, ة, ى"]
-    C --> F["AraBERTv2 / MARBERTv2 / CAMeLBERT / LLMs<br/>(-45.88% Tokens · -70.7% O(L²) Attn · 3,778 texts/s)"]
-    D --> F
-    E --> F
-```
-</details>
-
 ---
 
 ## Empirical Benchmarks
