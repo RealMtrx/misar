@@ -16,7 +16,9 @@ from typing import List, Optional
 
 from . import __version__
 from .benchmark import run_benchmark
+from .pipelines import SUPPORTED_EMOJI_MODES
 from .router import MisarRouter
+from .tokenizer import PRETRAINED_MODEL_CONFIGS
 from .web.server import STANDARD_SAMPLES, run_server
 
 
@@ -43,7 +45,26 @@ def cmd_demo(args: argparse.Namespace) -> int:
 
 
 def cmd_route(args: argparse.Namespace) -> int:
-    router = MisarRouter(model_key=args.model, allow_vocab_download=not args.offline)
+    router = MisarRouter(
+        model_key=args.model,
+        allow_vocab_download=not args.offline,
+        auto_heal=not args.no_auto_heal,
+        emoji_mode=args.emoji_mode,
+        arabizi_mode=args.arabizi,
+    )
+    if args.compare:
+        comp = router.compare_baselines(args.text)
+        if args.json:
+            print(json.dumps(comp, ensure_ascii=False, indent=2))
+            return 0
+        res_m = comp["misar"]
+        print(f"Tokenizer : {res_m['tokenizer_backend']}")
+        print(f"Raw       : ({res_m['raw_token_count']} tokens, UNK={res_m['unk_count_raw']}) -> {res_m['original_text']}")
+        print(f"Legacy    : ({comp['legacy_token_count']} tokens, UNK={comp['legacy_unk_count']}) -> {comp['legacy_text']}")
+        print(f"Misar v2  : ({res_m['processed_token_count']} tokens, UNK={res_m['unk_count_processed']}) -> {res_m['processed_text']}")
+        print(f"Gain      : vs Raw {res_m['token_reduction_pct']:+.1f}% | vs Legacy {comp['vs_legacy_reduction_pct']:+.1f}% | AutoHeal={res_m['auto_healed_count']} | Clitics={res_m['clitic_fixed_count']}")
+        return 0
+
     res = router.route(args.text)
     if args.json:
         print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
@@ -53,7 +74,7 @@ def cmd_route(args: argparse.Namespace) -> int:
         print(f"Output   : {res.processed_text}")
         print(f"Tokenizer: {res.tokenizer_backend}")
         print(f"Tokens   : {res.raw_token_count} -> {res.processed_token_count} (TFR {res.tfr_raw:.2f} -> {res.tfr_processed:.2f}, {res.token_reduction_pct:+.1f}%)")
-        print(f"Latency  : {res.latency_ms:.3f} ms | Entropy: {res.profile.shannon_entropy:.2f} bits")
+        print(f"V2 Stats : AutoHeal={res.auto_healed_count} | Clitics={res.clitic_fixed_count} | Latency={res.latency_ms:.3f} ms | Entropy={res.profile.shannon_entropy:.2f} bits")
     return 0
 
 
@@ -82,31 +103,36 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--version", action="version", version=f"misar {__version__}")
 
+    model_choices = sorted(PRETRAINED_MODEL_CONFIGS.keys())
     sub = parser.add_subparsers(dest="command")
 
     p_demo = sub.add_parser("demo", help="Run standard evaluation samples")
-    p_demo.add_argument("--model", default="arabertv02", choices=["arabertv02", "camelbert-mix"])
+    p_demo.add_argument("--model", default="arabertv02", choices=model_choices)
     p_demo.add_argument("--offline", action="store_true", help="Disable vocab download")
     p_demo.set_defaults(func=cmd_demo)
 
     p_route = sub.add_parser("route", help="Route a single Arabic text")
     p_route.add_argument("text", help="Arabic text to analyze and preprocess")
     p_route.add_argument("--json", action="store_true", help="Output structured JSON")
-    p_route.add_argument("--model", default="arabertv02", choices=["arabertv02", "camelbert-mix"])
+    p_route.add_argument("--compare", action="store_true", help="Compare Raw vs Legacy Static vs Misar")
+    p_route.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_route.add_argument("--emoji-mode", default="strip", choices=list(SUPPORTED_EMOJI_MODES))
+    p_route.add_argument("--arabizi", action="store_true", help="Enable opt-in Arabizi transliteration")
+    p_route.add_argument("--no-auto-heal", action="store_true", help="Disable vocab-verified Auto-Heal")
     p_route.add_argument("--offline", action="store_true")
     p_route.set_defaults(func=cmd_route)
 
     p_serve = sub.add_parser("serve", help="Start local Misar Web Workbench & REST API")
     p_serve.add_argument("--host", default="127.0.0.1")
     p_serve.add_argument("--port", type=int, default=8050)
-    p_serve.add_argument("--model", default="arabertv02", choices=["arabertv02", "camelbert-mix"])
+    p_serve.add_argument("--model", default="arabertv02", choices=model_choices)
     p_serve.add_argument("--no-browser", action="store_true")
     p_serve.add_argument("--test-once", action="store_true")
     p_serve.add_argument("--offline", action="store_true")
     p_serve.set_defaults(func=cmd_serve)
 
     p_bench = sub.add_parser("bench", help="Run reproducible 15-sample benchmark")
-    p_bench.add_argument("--model", default="arabertv02", choices=["arabertv02", "camelbert-mix"])
+    p_bench.add_argument("--model", default="arabertv02", choices=model_choices)
     p_bench.add_argument("--offline", action="store_true")
     p_bench.add_argument("--save-report", default="", help="Optional JSON output path")
     p_bench.set_defaults(func=cmd_bench)

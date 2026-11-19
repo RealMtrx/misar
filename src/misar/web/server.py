@@ -10,10 +10,12 @@ import urllib.parse
 import urllib.request
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .. import __version__
+from ..pipelines import SUPPORTED_EMOJI_MODES
 from ..router import MisarRouter
+from ..tokenizer import PRETRAINED_MODEL_CONFIGS, TokenizerProtocol, load_default_tokenizer
 
 WEB_DIR = os.path.dirname(os.path.abspath(__file__))
 MAX_BODY_BYTES = 1_048_576  # 1 MiB payload cap to protect public server instances
@@ -26,9 +28,9 @@ STANDARD_SAMPLES: List[Dict[str, str]] = [
         "input": "والله السيرفر الحين صار يجنن واستجابته في API سريعة شويتين بس الكاش يبيله تضبيط",
     },
     {
-        "label": "لهجة مطورين (خليجية / شامية)",
-        "category": "لهجة خليجية وشامية تقنية (Gulf & Levantine Dev)",
-        "input": "ياخي المكتبة هاذي كتير مرتبة وماكو أي تعقيد في Backend وشغالة تمام مع Cache",
+        "label": "لهجة مطورين (ترميم إملائي + Clitics)",
+        "category": "لهجة خليجية وشامية تقنية (Auto-Heal + Clitics + Dialect)",
+        "input": "ياخي البرمجه في المنصه هاذي كتير مرتبة وماكو تعقيد في الـ Backend وCache",
     },
     {
         "label": "فصحى تقنية (حفظ الإملاء)",
@@ -53,7 +55,51 @@ STANDARD_SAMPLES: List[Dict[str, str]] = [
 ]
 
 
-def make_handler(router: MisarRouter):
+def _format_compare_payload(comp: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(comp["misar"])
+    for key in (
+        "legacy_text",
+        "legacy_tokens",
+        "legacy_token_count",
+        "legacy_unk_count",
+        "legacy_tfr",
+        "vs_legacy_reduction_pct",
+    ):
+        out[key] = comp[key]
+    return out
+
+
+def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
+    cache_lock = threading.Lock()
+    tok_cache: Dict[str, TokenizerProtocol] = {router.model_key: router.tokenizer}
+    router_cache: Dict[Tuple[str, bool, str, bool], MisarRouter] = {
+        (router.model_key, router.auto_heal, router.emoji_mode, router.arabizi_mode): router
+    }
+
+    def _resolve_router(
+        model_key: str,
+        auto_heal: bool,
+        emoji_mode: str,
+        arabizi_mode: bool,
+    ) -> MisarRouter:
+        key = (model_key, auto_heal, emoji_mode, arabizi_mode)
+        with cache_lock:
+            if key in router_cache:
+                return router_cache[key]
+            tok = tok_cache.get(model_key)
+            if tok is None:
+                tok = load_default_tokenizer(model_key=model_key, allow_download=allow_vocab_download)
+                tok_cache[model_key] = tok
+            inst = MisarRouter(
+                tokenizer=tok,
+                model_key=model_key,
+                auto_heal=auto_heal,
+                emoji_mode=emoji_mode,
+                arabizi_mode=arabizi_mode,
+            )
+            router_cache[key] = inst
+            return inst
+
     class MisarHTTPHandler(BaseHTTPRequestHandler):
         def log_message(self, format: str, *args: Any) -> None:
             return
@@ -127,8 +173,13 @@ def make_handler(router: MisarRouter):
                     {
                         "status": "ok",
                         "version": __version__,
+                        "model_key": router.model_key,
                         "tokenizer_backend": router.tokenizer.backend_name,
                         "is_real_tokenizer": router.tokenizer.is_real_vocab,
+                        "available_models": [
+                            {"key": k, "display_name": cfg["display_name"]}
+                            for k, cfg in PRETRAINED_MODEL_CONFIGS.items()
+                        ],
                     },
                 )
                 return
@@ -136,8 +187,7 @@ def make_handler(router: MisarRouter):
             if route_path == "/api/suite":
                 samples = []
                 for idx, item in enumerate(STANDARD_SAMPLES, 1):
-                    res = router.route(item["input"])
-                    row = res.to_dict()
+                    row = _format_compare_payload(router.compare_baselines(item["input"]))
                     row["idx"] = idx
                     row["category"] = item["category"]
                     row["label"] = item["label"]
@@ -147,6 +197,8 @@ def make_handler(router: MisarRouter):
                 avg_red = sum(r["token_reduction_pct"] for r in samples) / len(samples)
                 avg_tfr_raw = sum(r["tfr_raw"] for r in samples) / len(samples)
                 avg_tfr_proc = sum(r["tfr_processed"] for r in samples) / len(samples)
+                avg_tfr_leg = sum(r["legacy_tfr"] for r in samples) / len(samples)
+                avg_vs_leg = sum(r["vs_legacy_reduction_pct"] for r in samples) / len(samples)
 
                 self._send_json(
                     200,
@@ -155,7 +207,9 @@ def make_handler(router: MisarRouter):
                         "summary": {
                             "avg_latency_ms": round(avg_lat, 4),
                             "avg_reduction_pct": round(avg_red, 2),
+                            "avg_vs_legacy_reduction_pct": round(avg_vs_leg, 2),
                             "avg_tfr_raw": round(avg_tfr_raw, 3),
+                            "avg_tfr_legacy": round(avg_tfr_leg, 3),
                             "avg_tfr_processed": round(avg_tfr_proc, 3),
                             "tokenizer_backend": router.tokenizer.backend_name,
                             "is_real_tokenizer": router.tokenizer.is_real_vocab,
@@ -176,9 +230,25 @@ def make_handler(router: MisarRouter):
                 if not isinstance(text, str):
                     self._send_json(400, {"error": "'text' must be a string"})
                     return
+
+                model_key = payload.get("model_key", router.model_key)
+                emoji_mode = payload.get("emoji_mode", router.emoji_mode)
+                auto_heal = payload.get("auto_heal", router.auto_heal)
+                arabizi_mode = payload.get("arabizi_mode", router.arabizi_mode)
+
+                if model_key not in PRETRAINED_MODEL_CONFIGS:
+                    self._send_json(400, {"error": f"Unknown model_key '{model_key}'"})
+                    return
+                if emoji_mode not in SUPPORTED_EMOJI_MODES:
+                    self._send_json(400, {"error": f"Invalid emoji_mode '{emoji_mode}'"})
+                    return
+                if not isinstance(auto_heal, bool) or not isinstance(arabizi_mode, bool):
+                    self._send_json(400, {"error": "'auto_heal' and 'arabizi_mode' must be booleans"})
+                    return
+
                 try:
-                    res = router.route(text)
-                    self._send_json(200, res.to_dict())
+                    active_router = _resolve_router(model_key, auto_heal, emoji_mode, arabizi_mode)
+                    self._send_json(200, _format_compare_payload(active_router.compare_baselines(text)))
                 except Exception:
                     self._send_json(500, {"error": "Internal routing error"})
                 return
@@ -206,8 +276,13 @@ def make_handler(router: MisarRouter):
     return MisarHTTPHandler
 
 
-def bind_server(router: MisarRouter, host: str = "127.0.0.1", preferred_port: int = 8050) -> ThreadingHTTPServer:
-    handler = make_handler(router)
+def bind_server(
+    router: MisarRouter,
+    host: str = "127.0.0.1",
+    preferred_port: int = 8050,
+    allow_vocab_download: bool = True,
+) -> ThreadingHTTPServer:
+    handler = make_handler(router, allow_vocab_download=allow_vocab_download)
     for port in range(preferred_port, preferred_port + 11):
         try:
             return ThreadingHTTPServer((host, port), handler)
@@ -225,7 +300,7 @@ def run_server(
     offline: bool = False,
 ) -> None:
     router = MisarRouter(model_key=model_key, allow_vocab_download=not offline)
-    server = bind_server(router, host=host, preferred_port=port)
+    server = bind_server(router, host=host, preferred_port=port, allow_vocab_download=not offline)
     bound_port = server.server_address[1]
     url = f"http://{host}:{bound_port}"
 

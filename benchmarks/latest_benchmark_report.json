@@ -1,14 +1,18 @@
 {
+  "version": "2.0.0",
   "tokenizer": "aubmindlab/bert-base-arabertv02 (WordPiece)",
   "corpus_size": 15,
-  "total_raw_tokens": 466,
-  "total_legacy_tokens": 338,
+  "total_raw_tokens": 469,
+  "total_legacy_tokens": 298,
   "total_misar_tokens": 249,
-  "total_unk_raw": 156,
+  "total_auto_healed": 2,
+  "total_clitics_fixed": 1,
+  "total_unk_raw": 157,
   "total_unk_misar": 0,
-  "token_reduction_vs_raw_pct": 46.57,
-  "token_reduction_vs_legacy_pct": 26.33,
-  "avg_latency_ms": 0.2228,
+  "token_reduction_vs_raw_pct": 46.91,
+  "token_reduction_vs_legacy_pct": 16.44,
+  "avg_latency_ms": 0.2362,
+  "throughput_texts_per_sec": 4762.5,
   "rows": [
     {
       "idx": 1,
@@ -17,10 +21,13 @@
       "raw_tokens": 16,
       "legacy_tokens": 23,
       "misar_tokens": 16,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.3048
+      "reduction_vs_legacy_pct": 30.43,
+      "latency_ms": 0.3268
     },
     {
       "idx": 2,
@@ -29,10 +36,13 @@
       "raw_tokens": 23,
       "legacy_tokens": 30,
       "misar_tokens": 23,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1754
+      "reduction_vs_legacy_pct": 23.33,
+      "latency_ms": 0.1944
     },
     {
       "idx": 3,
@@ -41,10 +51,13 @@
       "raw_tokens": 18,
       "legacy_tokens": 26,
       "misar_tokens": 18,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1564
+      "reduction_vs_legacy_pct": 30.77,
+      "latency_ms": 0.1816
     },
     {
       "idx": 4,
@@ -53,10 +66,13 @@
       "raw_tokens": 65,
       "legacy_tokens": 16,
       "misar_tokens": 14,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 51,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.46,
-      "latency_ms": 0.2862
+      "reduction_vs_legacy_pct": 12.5,
+      "latency_ms": 0.2844
     },
     {
       "idx": 5,
@@ -65,10 +81,13 @@
       "raw_tokens": 61,
       "legacy_tokens": 15,
       "misar_tokens": 12,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 49,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 80.33,
-      "latency_ms": 0.2668
+      "reduction_vs_legacy_pct": 20.0,
+      "latency_ms": 0.268
     },
     {
       "idx": 6,
@@ -77,10 +96,13 @@
       "raw_tokens": 60,
       "legacy_tokens": 17,
       "misar_tokens": 13,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 47,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.33,
-      "latency_ms": 0.2419
+      "reduction_vs_legacy_pct": 23.53,
+      "latency_ms": 0.2512
     },
     {
       "idx": 7,
@@ -89,10 +111,13 @@
       "raw_tokens": 23,
       "legacy_tokens": 24,
       "misar_tokens": 22,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 4.35,
-      "latency_ms": 0.2952
+      "reduction_vs_legacy_pct": 8.33,
+      "latency_ms": 0.3124
     },
     {
       "idx": 8,
@@ -101,10 +126,13 @@
       "raw_tokens": 15,
       "legacy_tokens": 17,
       "misar_tokens": 14,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 1,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 6.67,
-      "latency_ms": 0.189
+      "reduction_vs_legacy_pct": 17.65,
+      "latency_ms": 0.2087
     },
     {
       "idx": 9,
@@ -113,22 +141,28 @@
       "raw_tokens": 17,
       "legacy_tokens": 19,
       "misar_tokens": 16,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 5.88,
-      "latency_ms": 0.1691
+      "reduction_vs_legacy_pct": 15.79,
+      "latency_ms": 0.1792
     },
     {
       "idx": 10,
       "domain": "Gulf Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 24,
+      "raw_tokens": 27,
       "legacy_tokens": 27,
       "misar_tokens": 23,
-      "unk_raw": 0,
+      "auto_healed": 2,
+      "clitic_fixed": 1,
+      "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 4.17,
-      "latency_ms": 0.1862
+      "reduction_vs_raw_pct": 14.81,
+      "reduction_vs_legacy_pct": 14.81,
+      "latency_ms": 0.2142
     },
     {
       "idx": 11,
@@ -137,10 +171,13 @@
       "raw_tokens": 23,
       "legacy_tokens": 25,
       "misar_tokens": 23,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1812
+      "reduction_vs_legacy_pct": 8.0,
+      "latency_ms": 0.1952
     },
     {
       "idx": 12,
@@ -149,46 +186,58 @@
       "raw_tokens": 19,
       "legacy_tokens": 19,
       "misar_tokens": 19,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1786
+      "reduction_vs_legacy_pct": 0.0,
+      "latency_ms": 0.1954
     },
     {
       "idx": 13,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
       "raw_tokens": 28,
-      "legacy_tokens": 18,
+      "legacy_tokens": 16,
       "misar_tokens": 14,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 2,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 50.0,
-      "latency_ms": 0.3052
+      "reduction_vs_legacy_pct": 12.5,
+      "latency_ms": 0.3167
     },
     {
       "idx": 14,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
       "raw_tokens": 48,
-      "legacy_tokens": 37,
+      "legacy_tokens": 10,
       "misar_tokens": 10,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 5,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 79.17,
-      "latency_ms": 0.1855
+      "reduction_vs_legacy_pct": 0.0,
+      "latency_ms": 0.1906
     },
     {
       "idx": 15,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
       "raw_tokens": 26,
-      "legacy_tokens": 25,
+      "legacy_tokens": 14,
       "misar_tokens": 12,
+      "auto_healed": 0,
+      "clitic_fixed": 0,
       "unk_raw": 1,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 53.85,
-      "latency_ms": 0.2198
+      "reduction_vs_legacy_pct": 14.29,
+      "latency_ms": 0.2247
     }
   ]
 }

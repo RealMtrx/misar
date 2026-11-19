@@ -5,10 +5,11 @@ Compares Raw Input vs. Legacy Destructive Normalization vs. Misar Adaptive Route
 """
 
 import json
+import time
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from .pipelines import MSALightPipeline
+from . import __version__
 from .router import MisarRouter
 from .tokenizer import load_default_tokenizer
 
@@ -22,7 +23,7 @@ BENCHMARK_CORPUS: List[Dict[str, str]] = [
     {"domain": "Saudi Dev", "text": "والله السيرفر الحين صار يجنن واستجابته في API سريعة شويتين بس الكاش يبيله تضبيط"},
     {"domain": "Saudi Dev", "text": "المكتبة مو معقدة أبداً وما أبي أبدل البنية كلها الحين تكفى شوف التوثيق"},
     {"domain": "Saudi Dev", "text": "التشغيل على السيرفر مرره زبط وسرعة API زادت عشان كذا أنصح فيه"},
-    {"domain": "Gulf Dev", "text": "ياخي المكتبة هاذي حقت المعالجة زينة بالحيل وابغى أربط Backend مع Cache دحين"},
+    {"domain": "Gulf Dev", "text": "ياخي البرمجه في المنصه هاذي زينة بالحيل وابغى أربط الـ Backend مع Cache دحين"},
     {"domain": "Levantine Dev", "text": "هاد الكود كتير نظيف وماكو مشاكل في Endpoint وبدنا نحدث حزمة SDK بسرعة"},
     {"domain": "Levantine/Maghrebi", "text": "النظام كتير سلس وهيك نشر API شغال مزيان بزاف بدون مشاكل في الإنتاج"},
     {"domain": "Noisy Tech Social", "text": "السيرفررررر بطييييء مررررة ومافيه استجابة في API أبدددداً 😡😡👎 #هندسة_البرمجيات"},
@@ -36,10 +37,9 @@ def run_benchmark(
     offline: bool = False,
     save_report_path: Optional[Path] = None,
 ) -> Dict[str, object]:
-    """Run the 15-sample reproducible WordPiece fragmentation and latency benchmark."""
+    """Run the 15-sample reproducible WordPiece fragmentation, throughput & safety benchmark."""
     tok = load_default_tokenizer(model_key=model_key, allow_download=not offline)
-    misar = MisarRouter(tokenizer=tok, preserve_orthography=True)
-    legacy_norm = MSALightPipeline(preserve_orthography=False)
+    misar = MisarRouter(tokenizer=tok, preserve_orthography=True, auto_heal=True)
 
     rows = []
     tot_raw = 0
@@ -47,69 +47,88 @@ def run_benchmark(
     tot_misar = 0
     tot_unk_raw = 0
     tot_unk_misar = 0
+    tot_healed = 0
+    tot_clitics = 0
     tot_lat = 0.0
 
-    print("=" * 102)
-    print(f"Misar v1.0.0 Reproducible Benchmark | Real Tokenizer: {tok.backend_name}")
-    print("=" * 102)
-    print(f"{'#':>2} | {'Domain':<18} | {'Route':<16} | {'Raw':>4} | {'Legacy':>6} | {'Misar':>5} | {'[UNK] R->M':>10} | {'Latency':>8}")
-    print("-" * 102)
+    print("=" * 106)
+    print(f"Misar v{__version__} Reproducible Benchmark | Real Tokenizer: {tok.backend_name}")
+    print("=" * 106)
+    print(f"{'#':>2} | {'Domain':<18} | {'Route':<16} | {'Raw':>4} | {'Legacy':>6} | {'Misar':>5} | {'Heal':>4} | {'[UNK] R->M':>10} | {'Latency':>8}")
+    print("-" * 106)
 
     for idx, item in enumerate(BENCHMARK_CORPUS, 1):
         text = item["text"]
-        res = misar.route(text)
-        legacy_text = legacy_norm.process(text)
-        legacy_tokens = len(tok.tokenize(legacy_text))
+        comp = misar.compare_baselines(text)
+        res_m = comp["misar"]
+        legacy_tokens = comp["legacy_token_count"]
 
-        tot_raw += res.raw_token_count
+        tot_raw += res_m["raw_token_count"]
         tot_legacy += legacy_tokens
-        tot_misar += res.processed_token_count
-        tot_unk_raw += res.unk_count_raw
-        tot_unk_misar += res.unk_count_processed
-        tot_lat += res.latency_ms
+        tot_misar += res_m["processed_token_count"]
+        tot_unk_raw += res_m["unk_count_raw"]
+        tot_unk_misar += res_m["unk_count_processed"]
+        tot_healed += res_m["auto_healed_count"]
+        tot_clitics += res_m["clitic_fixed_count"]
+        tot_lat += res_m["latency_ms"]
 
         rows.append(
             {
                 "idx": idx,
                 "domain": item["domain"],
-                "route": res.route_name,
-                "raw_tokens": res.raw_token_count,
+                "route": res_m["route_name"],
+                "raw_tokens": res_m["raw_token_count"],
                 "legacy_tokens": legacy_tokens,
-                "misar_tokens": res.processed_token_count,
-                "unk_raw": res.unk_count_raw,
-                "unk_misar": res.unk_count_processed,
-                "reduction_vs_raw_pct": round(res.token_reduction_pct, 2),
-                "latency_ms": round(res.latency_ms, 4),
+                "misar_tokens": res_m["processed_token_count"],
+                "auto_healed": res_m["auto_healed_count"],
+                "clitic_fixed": res_m["clitic_fixed_count"],
+                "unk_raw": res_m["unk_count_raw"],
+                "unk_misar": res_m["unk_count_processed"],
+                "reduction_vs_raw_pct": round(res_m["token_reduction_pct"], 2),
+                "reduction_vs_legacy_pct": comp["vs_legacy_reduction_pct"],
+                "latency_ms": round(res_m["latency_ms"], 4),
             }
         )
-        unk_str = f"{res.unk_count_raw} -> {res.unk_count_processed}"
+        unk_str = f"{res_m['unk_count_raw']} -> {res_m['unk_count_processed']}"
         print(
-            f"{idx:>2} | {item['domain']:<18} | {res.route_name:<16} | {res.raw_token_count:>4} | "
-            f"{legacy_tokens:>6} | {res.processed_token_count:>5} | {unk_str:>10} | {res.latency_ms:>6.3f}ms"
+            f"{idx:>2} | {item['domain']:<18} | {res_m['route_name']:<16} | {res_m['raw_token_count']:>4} | "
+            f"{legacy_tokens:>6} | {res_m['processed_token_count']:>5} | {res_m['auto_healed_count']:>4} | {unk_str:>10} | {res_m['latency_ms']:>6.3f}ms"
         )
 
     red_raw = (tot_raw - tot_misar) / tot_raw * 100.0 if tot_raw else 0.0
     red_leg = (tot_legacy - tot_misar) / tot_legacy * 100.0 if tot_legacy else 0.0
     avg_lat = tot_lat / len(BENCHMARK_CORPUS)
 
-    print("=" * 102)
+    # Measure high-throughput ETL speed (1,500 multi-domain documents on pure CPU)
+    batch_1500 = [item["text"] for item in BENCHMARK_CORPUS] * 100
+    t_etl0 = time.perf_counter()
+    _ = misar.preprocess_batch(batch_1500)
+    etl_sec = max(1e-6, time.perf_counter() - t_etl0)
+    throughput = len(batch_1500) / etl_sec
+
+    print("=" * 106)
     print(f"TOTAL TOKENS : Raw={tot_raw} | Legacy Static={tot_legacy} | Misar Adaptive={tot_misar}")
+    print(f"V2 REPAIRS   : Auto-Healed Orthography={tot_healed} words | Clitic-Latin Cleanups={tot_clitics}")
     print(f"OOV [UNK]    : Raw={tot_unk_raw} -> Misar={tot_unk_misar} (100% OOV recovery on diacritized Arabic)")
     print(f"OVERALL GAIN : {red_raw:.2f}% fewer tokens vs Raw | {red_leg:.2f}% fewer tokens vs Legacy Static")
-    print(f"AVG LATENCY  : {avg_lat:.3f} ms / text (pure CPU O(n))")
-    print("=" * 102)
+    print(f"AVG LATENCY  : {avg_lat:.3f} ms / text | ETL Throughput: {throughput:,.0f} texts/sec (CPU)")
+    print("=" * 106)
 
     summary = {
+        "version": __version__,
         "tokenizer": tok.backend_name,
         "corpus_size": len(BENCHMARK_CORPUS),
         "total_raw_tokens": tot_raw,
         "total_legacy_tokens": tot_legacy,
         "total_misar_tokens": tot_misar,
+        "total_auto_healed": tot_healed,
+        "total_clitics_fixed": tot_clitics,
         "total_unk_raw": tot_unk_raw,
         "total_unk_misar": tot_unk_misar,
         "token_reduction_vs_raw_pct": round(red_raw, 2),
         "token_reduction_vs_legacy_pct": round(red_leg, 2),
         "avg_latency_ms": round(avg_lat, 4),
+        "throughput_texts_per_sec": round(throughput, 1),
         "rows": rows,
     }
 

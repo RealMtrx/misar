@@ -18,6 +18,8 @@ from misar import (
     WordPieceTokenizer,
     compute_shannon_entropy,
 )
+from misar.cli import build_parser
+from misar.tokenizer import PRETRAINED_MODEL_CONFIGS, PRETRAINED_VOCAB_URLS, load_default_tokenizer
 from misar.web.server import bind_server
 
 
@@ -179,6 +181,69 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertEqual(res.route_name, "FAST_MSA")
         self.assertEqual(res.processed_text, "أهمية العلم المقدمة: إن العلم نور")
 
+    def test_clitic_latin_code_switching_cleanup(self):
+        text = "تطوير الـ Backend وربط بـ Docker عبر لـ API"
+        res = self.router_offline.route(text)
+        self.assertEqual(res.processed_text, "تطوير الBackend وربط بDocker عبر لAPI")
+        self.assertGreaterEqual(res.clitic_fixed_count, 3)
+
+    def test_emoji_polarity_modes(self):
+        neg = "السيرفررررر بطييييء 😡😡👎"
+        pos = "الاصدارررر سرييييع 😍🔥🚀"
+
+        r_strip = MisarRouter(tokenizer=HeuristicSubwordTokenizer(), emoji_mode="strip")
+        self.assertEqual(r_strip.route(neg).processed_text, "السيرفر بطيء")
+
+        r_keep = MisarRouter(tokenizer=HeuristicSubwordTokenizer(), emoji_mode="keep")
+        out_keep = r_keep.route(neg).processed_text
+        self.assertIn("😡", out_keep)
+        self.assertNotIn("😡😡", out_keep)
+
+        r_sent = MisarRouter(tokenizer=HeuristicSubwordTokenizer(), emoji_mode="sentiment")
+        self.assertEqual(r_sent.route(neg).processed_text, "السيرفر بطيء سلبي")
+        self.assertEqual(r_sent.route(pos).processed_text, "الاصدار سريع إيجابي")
+
+    def test_arabizi_transliteration_protects_tech_tokens(self):
+        router_az = MisarRouter(tokenizer=HeuristicSubwordTokenizer(), arabizi_mode=True)
+        out = router_az.preprocess("salam 3alekom al-nizam 7elw in base64 utf8 http2")
+        self.assertIn("سلام", out)
+        self.assertIn("عليكم", out)
+        self.assertIn("حلو", out)
+        self.assertIn("base64", out)
+        self.assertIn("utf8", out)
+        self.assertIn("http2", out)
+
+    def test_fast_batch_stream_and_hf_dataset_map(self):
+        texts = ["تعتمد الحوسبة السحابية", "السيرفررررر بطييييء 😡 #مشكلة"]
+        batch_out = self.router_offline.preprocess_batch(texts)
+        self.assertEqual(batch_out, ["تعتمد الحوسبة السحابية", "السيرفر بطيء مشكلة"])
+
+        stream_out = list(self.router_offline.preprocess_stream(texts))
+        self.assertEqual(stream_out, batch_out)
+
+        hf_batch = {"text": texts, "label": [1, 0]}
+        mapped = self.router_offline.hf_dataset_map(hf_batch, text_column="text", output_column="clean_text")
+        self.assertEqual(mapped["label"], [1, 0])
+        self.assertEqual(mapped["clean_text"], batch_out)
+
+    def test_compare_baselines_three_way_structure(self):
+        comp = self.router_offline.compare_baselines("تعتمد الحوسبة السحابية الحديثة")
+        self.assertIn("legacy_text", comp)
+        self.assertIn("legacy_tokens", comp)
+        self.assertIn("legacy_token_count", comp)
+        self.assertIn("vs_legacy_reduction_pct", comp)
+        self.assertIn("ة", comp["misar"]["processed_text"])
+        self.assertNotIn("ة", comp["legacy_text"])
+
+    def test_cli_parser_v2_options(self):
+        parser = build_parser()
+        args = parser.parse_args(["route", "نص", "--model", "marbertv2", "--emoji-mode", "sentiment", "--arabizi", "--compare", "--offline"])
+        self.assertEqual(args.model, "marbertv2")
+        self.assertEqual(args.emoji_mode, "sentiment")
+        self.assertTrue(args.arabizi)
+        self.assertTrue(args.compare)
+        self.assertTrue(args.offline)
+
 
 class TestRealAraBERTv2WordPiece(unittest.TestCase):
     """Empirical proof against the authentic 64,000-token AraBERTv2 vocabulary."""
@@ -232,6 +297,42 @@ class TestRealAraBERTv2WordPiece(unittest.TestCase):
         self.assertGreater(res.token_reduction_pct, 50.0)
         self.assertEqual(res.unk_count_processed, 0)
 
+    def test_multi_model_registry_and_do_lower_case_parity(self):
+        for key in ("arabertv02", "camelbert-mix", "marbertv2", "arbertv2", "qarib"):
+            self.assertIn(key, PRETRAINED_VOCAB_URLS)
+            self.assertIn(key, PRETRAINED_MODEL_CONFIGS)
+        self.assertTrue(PRETRAINED_MODEL_CONFIGS["marbertv2"]["do_lower_case"])
+        self.assertTrue(PRETRAINED_MODEL_CONFIGS["arbertv2"]["do_lower_case"])
+        self.assertFalse(PRETRAINED_MODEL_CONFIGS["arabertv02"]["do_lower_case"])
+
+        mini_vocab = {"[UNK]": 0, "ap": 1, "##i": 2, "البرمجة": 3}
+        tok_lower = WordPieceTokenizer(vocab=mini_vocab, do_lower_case=True)
+        self.assertEqual(tok_lower.tokenize("API البرمجة"), ["ap", "##i", "البرمجة"])
+
+        tok_cased = WordPieceTokenizer(vocab=mini_vocab, do_lower_case=False)
+        self.assertEqual(tok_cased.tokenize("API"), ["[UNK]"])
+
+        tok_marbert = load_default_tokenizer("marbertv2", allow_download=False)
+        if tok_marbert.is_real_vocab:
+            self.assertNotIn("[UNK]", tok_marbert.tokenize("API Backend"))
+
+    def test_real_vocab_auto_heal_repairs_broken_haa_without_corrupting_pronouns(self):
+        if not self.available:
+            self.skipTest("AraBERTv2 vocab unavailable offline")
+        text = "ياخي البرمجه في المنصه هاذي مهمه بس بيته وملفه ومديره تمام"
+        res = self.router.route(text)
+        self.assertEqual(res.route_name, "DIALECT_PRESERVE")
+        self.assertIn("البرمجة", res.processed_text)
+        self.assertIn("المنصة", res.processed_text)
+        self.assertIn("مهمة", res.processed_text)
+        self.assertIn("هذه", res.processed_text)
+        self.assertIn("بيته", res.processed_text)
+        self.assertIn("ملفه", res.processed_text)
+        self.assertIn("مديره", res.processed_text)
+        self.assertGreaterEqual(res.auto_healed_count, 3)
+        self.assertLess(res.processed_token_count, res.raw_token_count)
+        self.assertEqual(res.unk_count_processed, 0)
+
 
 class TestMisarHTTPServer(unittest.TestCase):
     @classmethod
@@ -283,6 +384,34 @@ class TestMisarHTTPServer(unittest.TestCase):
             self.assertEqual(resp.status, 200)
             payload = json.loads(resp.read().decode("utf-8"))
             self.assertEqual(len(payload["results"]), 2)
+
+    def test_v2_three_way_comparison_and_options(self):
+        with urllib.request.urlopen(f"{self.base}/api/health", timeout=5) as resp:
+            health = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("available_models", health)
+            self.assertGreaterEqual(len(health["available_models"]), 5)
+
+        req = urllib.request.Request(
+            f"{self.base}/api/route",
+            data=json.dumps(
+                {
+                    "text": "السيرفررررر بطييييء 😡👎 والـ API ممتاز 😍",
+                    "emoji_mode": "sentiment",
+                    "auto_heal": True,
+                },
+                ensure_ascii=False,
+            ).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("legacy_text", data)
+            self.assertIn("legacy_token_count", data)
+            self.assertIn("vs_legacy_reduction_pct", data)
+            self.assertIn("سلبي", data["processed_text"])
+            self.assertIn("إيجابي", data["processed_text"])
+            self.assertIn("الAPI", data["processed_text"])
 
 
 if __name__ == "__main__":

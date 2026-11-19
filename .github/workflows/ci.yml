@@ -36,5 +36,5 @@ jobs:
           python -m misar --version
           python -m misar demo --offline
           python -m misar bench --offline
-          python -m misar route "الســــلام علــــيكم ومافيه أي مشكلة في API #تطوير_البرمجيات" --offline
+          python -m misar route "الســــلام علــــيكم ومافيه أي مشكلة في الـ API #تطوير_البرمجيات" --compare --offline
           python -m misar serve --test-once --offline

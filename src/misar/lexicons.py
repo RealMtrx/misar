@@ -23,8 +23,65 @@ ARABIC_WORD_REGEX = re.compile(r"[\u0621-\u064A\u0671-\u06D3]+")
 ARABIC_CHAR_REGEX = re.compile(r"[\u0621-\u064A\u0671-\u06D3]")
 LATIN_CHAR_REGEX = re.compile(r"[A-Za-z]")
 ZERO_WIDTH_REGEX = re.compile(r"[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]")
+CLITIC_LATIN_REGEX = re.compile(
+    r"(^|[\s\"'(\[{])(ال|وال|بال|كال|فال|لل|[وبفلك])\u0640+\s*([A-Za-z][A-Za-z0-9_.-]*)"
+)
 
 ARABIC_INDIC_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
+
+# Nouns referring to male roles/kinship ending in possessive -ه where +ة is a valid feminine noun;
+# protected from Vocab Auto-Heal so "مديره" (his manager) is never turned into "مديرة" (female manager).
+POSSESSIVE_AMBIGUOUS_H_WORDS: Set[str] = {
+    "مديره", "وزيره", "سفيره", "رئيسه", "عميده", "زميله", "صديقه", "شقيقه",
+    "حبيبه", "رفيقه", "طبيبه", "عالمه", "معلمه", "طالبه", "كاتبه", "تاجره",
+    "شاعره", "والده", "جده", "خاله", "عمه", "أميره", "اميره",
+}
+
+POSITIVE_EMOJIS: Set[str] = {
+    "😍", "🥰", "😘", "😊", "😁", "😄", "😃", "🥳", "🤩", "🙌", "👏",
+    "👍", "👌", "🔥", "🚀", "✨", "🌟", "💯", "✅", "♥", "❤", "💖", "💙", "💚",
+}
+
+NEGATIVE_EMOJIS: Set[str] = {
+    "😡", "🤬", "😠", "👎", "💔", "😢", "😭", "😞", "😔", "😤", "🤮",
+    "🤢", "💩", "⚠", "❌", "😒", "🙁", "😣", "😫", "😩",
+}
+
+ARABIZI_TECH_PROTECT_REGEX = re.compile(
+    r"^(base64|utf8|utf16|utf32|http2|http3|sha256|sha512|md5|web3|p2p|b2b|b2c|mp3|mp4|h264|x86|arm64|v[0-9]+|gpt[0-9a-z]*|py3[0-9]*|llama[0-9]*|bert[a-z0-9-]*)$",
+    flags=re.IGNORECASE,
+)
+
+ARABIZI_LEXICON: Dict[str, str] = {
+    "salam": "سلام",
+    "3alekom": "عليكم",
+    "3alaykom": "عليكم",
+    "mar7aba": "مرحبا",
+    "ahlan": "أهلا",
+    "kefak": "كيفك",
+    "shlonak": "شلونك",
+    "7elw": "حلو",
+    "7elwa": "حلوة",
+    "3ajabni": "عجبني",
+    "masha2allah": "ماشاء الله",
+    "insha2allah": "ان شاء الله",
+    "5alas": "خلاص",
+    "3arab": "عرب",
+    "3arabi": "عربي",
+    "tamam": "تمام",
+    "akeed": "أكيد",
+    "shukran": "شكرا",
+    "mashakil": "مشاكل",
+    "habibi": "حبيبي",
+    "yalla": "يلا",
+}
+
+ARABIZI_CHAR_MAP: Dict[str, str] = {
+    "2": "أ", "3": "ع", "5": "خ", "6": "ط", "7": "ح", "8": "غ", "9": "ق",
+    "a": "ا", "b": "ب", "t": "ت", "j": "ج", "d": "د", "r": "ر", "z": "ز",
+    "s": "س", "f": "ف", "k": "ك", "l": "ل", "m": "م", "n": "ن", "h": "ه",
+    "w": "و", "o": "و", "u": "و", "y": "ي", "i": "ي", "e": "ي",
+}
 
 # High-precision dialect markers audited to eliminate false positives on Standard Arabic (MSA).
 EXPRESSIVE_MARRA_REGEX = re.compile(r"^[وفب]?مر{2,}[ةه]$")
