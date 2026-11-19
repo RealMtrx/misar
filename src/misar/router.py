@@ -484,6 +484,16 @@ class MisarRouter:
         guard = ArabicPromptGuard(mask_pii=mask_pii, detect_injection=detect_injection)
         return guard.sanitize(text)
 
+    def classify(self, text: str) -> Any:
+        """Classify Arabic dialect (Saudi/Gulf, Levantine, Egyptian, Maghrebi, MSA) and register."""
+        from .classifier import classify_dialect
+        return classify_dialect(text)
+
+    def canonicalize(self, text: str) -> str:
+        """Canonicalize dialectal queries for LLM prompt caching optimization."""
+        from .classifier import canonicalize
+        return canonicalize(text)
+
 
 _DEFAULT_ROUTER: Optional[MisarRouter] = None
 
@@ -525,4 +535,29 @@ def sanitize_prompt(
 ) -> Any:
     return _get_default_router().sanitize_prompt(
         text, mask_pii=mask_pii, detect_injection=detect_injection
+    )
+
+
+def classify(text: str) -> Any:
+    return _get_default_router().classify(text)
+
+
+def canonicalize(text: str) -> str:
+    return _get_default_router().canonicalize(text)
+
+
+def route_parallel(
+    texts: Any,
+    num_workers: Optional[int] = None,
+    chunk_size: int = 250,
+    model_key: str = "arabertv02",
+    allow_vocab_download: bool = True,
+) -> List[RoutingResult]:
+    from .parallel import route_parallel as _rp
+    return _rp(
+        texts=texts,
+        num_workers=num_workers,
+        chunk_size=chunk_size,
+        model_key=model_key,
+        allow_vocab_download=allow_vocab_download,
     )

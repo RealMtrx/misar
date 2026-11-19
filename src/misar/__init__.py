@@ -3,9 +3,15 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.2.0"
+__version__ = "2.3.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
+from .classifier import (
+    DialectClassification,
+    DialectClassifier,
+    canonicalize,
+    classify_dialect,
+)
 from .evaluation import evaluate_system, run_evaluation
 from .guard import (
     ArabicPromptGuard,
@@ -13,6 +19,10 @@ from .guard import (
     sanitize_prompt,
     validate_iban,
     validate_saudi_national_id,
+)
+from .parallel import (
+    process_dataset_file,
+    route_parallel,
 )
 from .pipelines import DialectPreservePipeline, MSALightPipeline, NoisySocialPipeline
 from .profiler import LinguisticProfile, LinguisticProfiler, compute_shannon_entropy
@@ -22,7 +32,15 @@ from .rag import (
     SemanticChunk,
     chunk_document,
 )
-from .router import DocumentRoutingResult, MisarRouter, RoutingResult, preprocess, preprocess_batch, route
+from .router import (
+    DocumentRoutingResult,
+    MisarRouter,
+    RoutingResult,
+    classify,
+    preprocess,
+    preprocess_batch,
+    route,
+)
 from .tokenizer import (
     PRETRAINED_MODEL_CONFIGS,
     PRETRAINED_VOCAB_URLS,
@@ -64,4 +82,11 @@ __all__ = [
     "sanitize_prompt",
     "validate_saudi_national_id",
     "validate_iban",
+    "DialectClassifier",
+    "DialectClassification",
+    "classify_dialect",
+    "classify",
+    "canonicalize",
+    "route_parallel",
+    "process_dataset_file",
 ]

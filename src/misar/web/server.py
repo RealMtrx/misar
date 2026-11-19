@@ -234,6 +234,9 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "semantic_rag_chunker",
                             "llm_prompt_guard",
                             "pii_redaction",
+                            "dialect_classifier",
+                            "prompt_cache_canonicalizer",
+                            "parallel_engine",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -392,6 +395,38 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     self._send_json(200, res.to_dict())
                 except Exception as exc:
                     self._send_json(500, {"error": f"Guard error: {str(exc)}"})
+                return
+
+            if route_path == "/api/classify":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                try:
+                    from ..classifier import classify_dialect
+                    res = classify_dialect(text)
+                    self._send_json(200, res.to_dict())
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Classify error: {str(exc)}"})
+                return
+
+            if route_path == "/api/canonicalize":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                try:
+                    from ..classifier import canonicalize
+                    canonical = canonicalize(text)
+                    self._send_json(200, {"original_text": text, "canonical_text": canonical})
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Canonicalize error: {str(exc)}"})
                 return
 
             self._send_json(404, {"error": "Not found"})

@@ -556,6 +556,36 @@ class TestMisarHTTPServer(unittest.TestCase):
             self.assertIn("[رقم_هوية_محجوب]", data_g["sanitized_text"])
             self.assertEqual(data_g["masked_pii_count"], 2)
 
+    def test_v23_api_classify_and_canonicalize_endpoints(self) -> None:
+        # 1. Test POST /api/classify
+        classify_body = {"text": "وش تبغى تسوي الحين يا خوي؟"}
+        req_c = urllib.request.Request(
+            f"{self.base}/api/classify",
+            data=json.dumps(classify_body, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req_c, timeout=5) as resp:
+            self.assertEqual(resp.status, 200)
+            data_c = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(data_c["primary_dialect"], "saudi_gulf")
+            self.assertGreater(data_c["confidence"], 0.7)
+            self.assertEqual(data_c["register"], "social_slang")
+            self.assertIn("saudi_gulf", data_c["dialect_scores"])
+
+        # 2. Test POST /api/canonicalize
+        canon_body = {"text": "وش تبغى تسوي دلوقتي؟"}
+        req_can = urllib.request.Request(
+            f"{self.base}/api/canonicalize",
+            data=json.dumps(canon_body, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req_can, timeout=5) as resp:
+            self.assertEqual(resp.status, 200)
+            data_can = json.loads(resp.read().decode("utf-8"))
+            self.assertEqual(data_can["canonical_text"], "ما تبغى تسوي الآن؟")
+
 
 class TestArabicDiscourseRAGChunker(unittest.TestCase):
     """Exhaustive tests for Arabic RAG semantic chunking and negation binding."""
@@ -682,6 +712,177 @@ class TestArabicPromptGuardAndPII(unittest.TestCase):
         self.assertIn("tatweel_evasion", res.detected_risks)
         self.assertIn("ignore_instructions_ar", res.detected_risks)
         self.assertGreaterEqual(res.risk_score, 0.7)
+
+
+class TestArabicDialectAndRegisterClassifier(unittest.TestCase):
+    """Exhaustive tests for Arabic regional sub-dialect and register classifier."""
+
+    def test_saudi_gulf_subdialect_detection(self) -> None:
+        from misar.classifier import classify_dialect
+
+        text = "وش تبغى تسوي الحين يا خوي؟ تبي نروح سوا؟"
+        res = classify_dialect(text)
+        self.assertEqual(res.primary_dialect, "saudi_gulf")
+        self.assertGreater(res.confidence, 0.8)
+        self.assertIn("saudi_gulf:وش", res.detected_markers)
+
+    def test_levantine_subdialect_detection(self) -> None:
+        from misar.classifier import classify_dialect
+
+        text = "شو بدك تعمل هلق يا زلمة؟ هيك كتير منيح!"
+        res = classify_dialect(text)
+        self.assertEqual(res.primary_dialect, "levantine")
+        self.assertGreater(res.confidence, 0.8)
+        self.assertIn("levantine:شو", res.detected_markers)
+
+    def test_egyptian_subdialect_detection(self) -> None:
+        from misar.classifier import classify_dialect
+
+        text = "عايز ايه دلوقتي يا باشا؟ كده كويس اوي والله"
+        res = classify_dialect(text)
+        self.assertEqual(res.primary_dialect, "egyptian")
+        self.assertGreater(res.confidence, 0.8)
+        self.assertIn("egyptian:دلوقتي", res.detected_markers)
+
+    def test_maghrebi_subdialect_detection(self) -> None:
+        from misar.classifier import classify_dialect
+
+        text = "هاد الدار ديالنا وزوينة بزاف دابا نمشيو"
+        res = classify_dialect(text)
+        self.assertEqual(res.primary_dialect, "maghrebi")
+        self.assertGreater(res.confidence, 0.7)
+        self.assertIn("maghrebi:بزاف", res.detected_markers)
+
+    def test_msa_formal_classification(self) -> None:
+        from misar.classifier import classify_dialect
+
+        text = "عقد مجلس الوزراء جلسته الأسبوعية برئاسة خادم الحرمين الشريفين لمناقشة الميزانية العامة."
+        res = classify_dialect(text)
+        self.assertEqual(res.primary_dialect, "msa")
+        self.assertEqual(res.register, "formal_official")
+
+    def test_register_discourse_categories(self) -> None:
+        from misar.classifier import classify_dialect
+
+        # 1. Classical Heritage
+        heritage = "رَوَى الإِمَامُ البُخَارِيُّ فِي صَحِيحِهِ عَنْ أَمِيرِ المُؤْمِنِينَ"
+        res_h = classify_dialect(heritage)
+        self.assertEqual(res_h.register, "classical_heritage")
+
+        # 2. Tech Dev
+        tech = "قمنا بإعداد خادم REST API وقواعد البيانات Docker Cloud لربط التطبيق"
+        res_t = classify_dialect(tech)
+        self.assertEqual(res_t.register, "tech_dev")
+
+        # 3. Social Slang
+        slang = "وش مسوي اليوم يا وحش 🔥😂 ارحب مليون"
+        res_s = classify_dialect(slang)
+        self.assertEqual(res_s.register, "social_slang")
+
+    def test_canonicalize_interrogatives_prompt_cache(self) -> None:
+        from misar.classifier import canonicalize
+
+        # Gulf
+        self.assertEqual(canonicalize("وش تبغى تسوي الحين؟"), "ما تبغى تسوي الآن؟")
+        # Egyptian
+        self.assertEqual(canonicalize("عايز ايه دلوقتي؟"), "أريد ما الآن؟")
+        # Levantine
+        self.assertEqual(canonicalize("شو بدك تسوي هلق؟"), "ما بدك تسوي الآن؟")
+        # Maghrebi
+        self.assertEqual(canonicalize("واش دابا نمشيو بزاف؟"), "ما الآن نمشيو جداً؟")
+
+    def test_top_level_package_and_router_integration(self) -> None:
+        import misar
+        from misar import MisarRouter
+
+        router = MisarRouter()
+        clf = router.classify("وش تبغى الحين؟")
+        self.assertEqual(clf.primary_dialect, "saudi_gulf")
+
+        canon = router.canonicalize("عايز ايه دلوقتي؟")
+        self.assertEqual(canon, "أريد ما الآن؟")
+
+        self.assertEqual(misar.__version__, "2.3.0")
+        self.assertTrue(callable(misar.classify))
+        self.assertTrue(callable(misar.canonicalize))
+        self.assertTrue(callable(misar.route_parallel))
+        self.assertTrue(callable(misar.process_dataset_file))
+
+
+class TestParallelBatchEngine(unittest.TestCase):
+    """Tests for multi-core parallel processing of large datasets."""
+
+    def test_route_parallel_small_and_large(self) -> None:
+        from misar.parallel import route_parallel
+
+        samples = [
+            "وش تبغى يا غالي الحين؟",
+            "السلام عليكم ورحمة الله وبركاته",
+            "عايز ايه دلوقتي يا باشا؟؟؟",
+            "نظام مِسار لمعالجة اللغة العربية الطبيعية الفائقة",
+        ] * 4  # 16 items
+
+        results = route_parallel(samples, num_workers=2, chunk_size=4)
+        self.assertEqual(len(results), 16)
+        for r in results:
+            self.assertTrue(len(r.processed_text) > 0)
+            self.assertIn(r.route_name, ("FAST_MSA", "DIALECT_PRESERVE", "NOISY_SOCIAL"))
+            self.assertIsNotNone(r.profile)
+
+    def test_process_dataset_file_jsonl_and_csv(self) -> None:
+        import csv
+        import json
+        import tempfile
+        from pathlib import Path
+        from misar.parallel import process_dataset_file
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp = Path(tmpdir)
+
+            # 1. JSONL Test
+            in_jsonl = tmp / "data.jsonl"
+            out_jsonl = tmp / "data_out.jsonl"
+            lines = [
+                {"id": 1, "text": "وششش تبغىىى يا خوووي؟؟؟"},
+                {"id": 2, "text": "بسم الله الرحمن الرحيم"},
+                {"id": 3, "text": "دلوقتي كل حااااجة تمامممم"},
+            ]
+            with open(in_jsonl, "w", encoding="utf-8") as f:
+                for item in lines:
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
+
+            summary = process_dataset_file(
+                input_file=in_jsonl,
+                output_file=out_jsonl,
+                text_key="text",
+                num_workers=2,
+            )
+            self.assertEqual(summary["total_records"], 3)
+            self.assertTrue(out_jsonl.exists())
+
+            # Verify contents
+            with open(out_jsonl, "r", encoding="utf-8") as f:
+                out_lines = [json.loads(line) for line in f if line.strip()]
+            self.assertEqual(len(out_lines), 3)
+            self.assertNotIn("وششش", out_lines[0]["text"])
+
+            # 2. CSV Test
+            in_csv = tmp / "data.csv"
+            out_csv = tmp / "data_out.csv"
+            with open(in_csv, "w", encoding="utf-8", newline="") as f:
+                writer = csv.DictWriter(f, fieldnames=["id", "text"])
+                writer.writeheader()
+                for item in lines:
+                    writer.writerow(item)
+
+            summary_csv = process_dataset_file(
+                input_file=in_csv,
+                output_file=out_csv,
+                text_key="text",
+                num_workers=2,
+            )
+            self.assertEqual(summary_csv["total_records"], 3)
+            self.assertTrue(out_csv.exists())
 
 
 if __name__ == "__main__":

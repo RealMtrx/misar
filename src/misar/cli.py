@@ -161,6 +161,51 @@ def cmd_guard(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_classify(args: argparse.Namespace) -> int:
+    from .classifier import classify_dialect
+    res = classify_dialect(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Dialect Classifier v{__version__}")
+    print("=" * 84)
+    print(f"Primary Dialect : {res.primary_dialect} (confidence {res.confidence:.1%})")
+    print(f"Register        : {res.register} (confidence {res.register_confidence:.1%})")
+    print(f"Dialect Scores  : {res.dialect_scores}")
+    print(f"Detected Markers: {', '.join(res.detected_markers) if res.detected_markers else 'None'}")
+    print("=" * 84)
+    return 0
+
+
+def cmd_canonicalize(args: argparse.Namespace) -> int:
+    from .classifier import canonicalize
+    res = canonicalize(args.text)
+    if args.json:
+        print(json.dumps({"original": args.text, "canonical": res}, ensure_ascii=False, indent=2))
+    else:
+        print(res)
+    return 0
+
+
+def cmd_process(args: argparse.Namespace) -> int:
+    from .parallel import process_dataset_file
+    print(f"Misar Multi-Core Engine v{__version__} | Input: {args.input} | Workers: {args.workers or 'auto'}")
+    summary = process_dataset_file(
+        input_file=args.input,
+        output_file=args.output,
+        text_key=args.text_key,
+        num_workers=args.workers,
+        chunk_size=args.chunk_size,
+        model_key=args.model,
+    )
+    if args.json:
+        print(json.dumps(summary, ensure_ascii=False, indent=2))
+    else:
+        print(f"Processed {summary['total_records']} records in {summary['elapsed_seconds']:.2f}s ({summary['throughput_per_sec']:.1f} texts/sec).")
+        print(f"Saved to: {summary['output_file']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -224,6 +269,26 @@ def build_parser() -> argparse.ArgumentParser:
     p_guard.add_argument("--no-detect-injection", action="store_true", help="Disable injection detection")
     p_guard.add_argument("--json", action="store_true", help="Output structured JSON")
     p_guard.set_defaults(func=cmd_guard)
+
+    p_classify = sub.add_parser("classify", help="Classify Arabic dialect and text register")
+    p_classify.add_argument("text", help="Arabic text to classify")
+    p_classify.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_classify.set_defaults(func=cmd_classify)
+
+    p_canonicalize = sub.add_parser("canonicalize", help="Canonicalize dialect queries for LLM prompt caching")
+    p_canonicalize.add_argument("text", help="Arabic text to canonicalize")
+    p_canonicalize.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_canonicalize.set_defaults(func=cmd_canonicalize)
+
+    p_process = sub.add_parser("process", help="Process large datasets in parallel across CPU cores")
+    p_process.add_argument("input", help="Path to input dataset file (.jsonl, .csv, .tsv, .txt)")
+    p_process.add_argument("--output", "-o", required=True, help="Path to save processed dataset")
+    p_process.add_argument("--text-key", default="text", help="Key or column name for text in JSONL/CSV")
+    p_process.add_argument("--workers", type=int, default=None, help="Number of worker processes")
+    p_process.add_argument("--chunk-size", type=int, default=500, help="Batch chunk size per worker")
+    p_process.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_process.add_argument("--json", action="store_true", help="Output summary in JSON format")
+    p_process.set_defaults(func=cmd_process)
 
     return parser
 
