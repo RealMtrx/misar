@@ -1117,6 +1117,14 @@ class ArabicLexicon:
         self._split_regex = re.compile(r"[\u0621-\u064A\u0671-\u06D3]+")
 
         # Populate internal indices
+        try:
+            from .lexicon_data import load_all_curated_entries
+            all_entries = load_all_curated_entries()
+        except Exception:
+            all_entries = []
+
+        for entry in all_entries:
+            self.register(entry)
         for entry in _CURATED_ENTRIES:
             self.register(entry)
 
@@ -1130,6 +1138,11 @@ class ArabicLexicon:
     @property
     def total_entries(self) -> int:
         return len(self._exact_dict)
+
+    @property
+    def entries(self) -> Dict[str, LexicalEntry]:
+        """Return a mapping of all registered lexical entries."""
+        return dict(self._exact_dict)
 
     def lookup(self, word: str) -> Optional[LexicalEntry]:
         """

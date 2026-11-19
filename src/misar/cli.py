@@ -259,6 +259,42 @@ def cmd_explain(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_audit(args: argparse.Namespace) -> int:
+    from .audit import audit_dataset_file, generate_html_report
+    res = audit_dataset_file(
+        input_file=args.input,
+        text_key=args.text_key,
+        cost_per_1k_tokens=args.cost_per_1k,
+        currency=args.currency,
+        model_key=args.model,
+        max_records=args.max_records,
+    )
+    if args.output:
+        report_html = generate_html_report(res)
+        with open(args.output, "w", encoding="utf-8") as f:
+            f.write(report_html)
+        print(f"Audit report saved to: {args.output}")
+
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Misar Executive Audit Report v{__version__}")
+    print("=" * 84)
+    print(f"Records Evaluated : {res.total_records:,} in {res.elapsed_seconds:.2f}s ({res.records_per_second:.1f} texts/sec)")
+    print(f"Raw Tokens        : {res.raw_token_count:,} -> Processed: {res.processed_token_count:,}")
+    print(f"Tokens Saved      : {res.tokens_saved:,} (-{res.token_reduction_pct:.1f}%)")
+    print(f"Attention O(L^2)  : -{res.attention_flops_savings_pct:.1f}% FLOPs reduction")
+    print(f"Financial Impact  : Raw {res.raw_cost:.4f} {res.currency} -> Proc {res.processed_cost:.4f} {res.currency} (Saved: {res.money_saved:.4f} {res.currency})")
+    print(f"Security & PII    : {res.masked_pii_count} PII masked, {res.adversarial_risks_count} threats neutralized")
+    if res.detected_risks:
+        print(f"Threats Breakdown : {', '.join(f'{k}:{v}' for k, v in res.detected_risks.items())}")
+    if res.dialect_distribution:
+        print(f"Dialect Breakdown : {', '.join(f'{k}:{v}' for k, v in res.dialect_distribution.items())}")
+    print("=" * 84)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -352,6 +388,17 @@ def build_parser() -> argparse.ArgumentParser:
     p_explain.add_argument("text", help="Arabic sentence to analyze and explain")
     p_explain.add_argument("--json", action="store_true", help="Output structured JSON")
     p_explain.set_defaults(func=cmd_explain)
+
+    p_audit = sub.add_parser("audit", help="Audit dataset financial ROI, token reduction, and security compliance")
+    p_audit.add_argument("input", help="Path to input dataset file (.jsonl, .csv, .tsv, .txt)")
+    p_audit.add_argument("--output", "-o", default="", help="Path to save executive HTML report")
+    p_audit.add_argument("--cost-per-1k", type=float, default=0.005, help="Estimated API cost per 1k tokens")
+    p_audit.add_argument("--currency", default="SAR", help="Currency symbol (default: SAR)")
+    p_audit.add_argument("--text-key", default="text", help="Field name for text in JSONL/CSV")
+    p_audit.add_argument("--max-records", type=int, default=None, help="Limit number of records evaluated")
+    p_audit.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_audit.add_argument("--json", action="store_true", help="Output summary in JSON format")
+    p_audit.set_defaults(func=cmd_audit)
 
     return parser
 

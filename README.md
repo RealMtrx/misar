@@ -337,13 +337,17 @@ misar/
 │   ├── 02_semantic_rag_chunking.py    # Discourse-aware RAG chunking & LangChain integration
 │   ├── 03_prompt_guard_and_pii.py     # Prompt guard, BiDi defense & Saudi ID/IBAN PII redaction
 │   ├── 04_dialect_and_morphology.py   # Multi-dialect lexicon, roots & sentence explanation
-│   └── 05_parallel_dataset_cleaning.py# Multi-core parallel batch ETL engine
+│   ├── 05_parallel_dataset_cleaning.py# Multi-core parallel batch ETL engine
+│   └── 06_enterprise_audit_and_middleware.py # Enterprise ROI audit, FastAPI middleware & LiteLLM hook
 ├── src/misar/
 │   ├── __init__.py                    # Public API exports
 │   ├── py.typed                       # PEP 561 inline type hints marker
 │   ├── profiler.py                    # O(n) 5-signal LinguisticProfiler & Shannon entropy
 │   ├── classifier.py                  # Microsecond sub-dialect & register classifier + prompt cache
 │   ├── lexicon.py                     # Multi-dialect semantic lexicon, morphology & root extractor
+│   ├── lexicon_data/                  # Modular dialect submodules (saudi_gulf, egyptian, levantine, etc.)
+│   ├── audit.py                       # Enterprise ROI & Security Audit Engine + HTML executive dashboard
+│   ├── integrations/                  # Framework connectors: FastAPI middleware, LlamaIndex, LiteLLM
 │   ├── parallel.py                    # High-throughput multi-core batch processing engine
 │   ├── lexicons.py                    # Fast regexes, token filters & orthographic mapping maps
 │   ├── pipelines.py                   # FAST_MSA, DIALECT_PRESERVE & NOISY_SOCIAL passes
@@ -353,7 +357,7 @@ misar/
 │   ├── guard.py                       # LLM Prompt Guard, BiDi defense & Saudi ID/IBAN PII redaction
 │   ├── evaluation.py                  # Multi-model scientific evaluation suite (disambig/polarity/O(L^2))
 │   ├── benchmark.py                   # Shared benchmark suite module
-│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `dict`, `explain`, `process`, etc.)
+│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `dict`, `explain`, `process`, `audit`, etc.)
 │   └── web/
 │       ├── server.py                  # Hardened zero-dependency ThreadingHTTPServer REST API
 │       └── index.html                 # Interactive Arabic RTL Workbench & token visualizer
@@ -365,7 +369,9 @@ misar/
 │   ├── test_guard.py                  # Prompt guard, BiDi & Saudi PII redaction tests
 │   ├── test_classifier.py             # Sub-dialect classification & prompt cache tests
 │   ├── test_parallel.py               # Multi-core dataset parallel processing tests
-│   └── test_lexicon.py                # Multi-dialect dictionary & morphological root tests
+│   ├── test_lexicon.py                # Multi-dialect dictionary & morphological root tests
+│   ├── test_audit.py                  # Enterprise ROI & security audit engine tests
+│   └── test_integrations.py           # FastAPI ASGI middleware, LlamaIndex & LiteLLM hook tests
 ├── CITATION.cff                       # Native GitHub repository citation metadata
 ├── CONTRIBUTING.md                    # Developer setup & contribution standards
 ├── SECURITY.md                        # Built-in API & frontend hardening controls
@@ -382,7 +388,7 @@ misar/
 python -m unittest discover -s tests -v
 ```
 
-All **65 automated tests** verify profiler mathematics, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
+All **75 automated tests** verify profiler mathematics, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Enterprise ROI & security audit, FastAPI ASGI middleware, LlamaIndex node parsing, LiteLLM pre-hooks, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
 
 ---
 
@@ -395,7 +401,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
   author       = {Muneer Jarab Matrak Al-Theeb},
   title        = {Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router for Transformer Language Models},
   year         = {2026},
-  version      = {2.1.0},
+  version      = {2.5.0},
   url          = {https://github.com/RealMtrx/misar},
   license      = {MIT}
 }
@@ -405,7 +411,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v2.1.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v2.5.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
 * **توجيه سياقي متعدد الجمل (`route_document`) + دفاع Unicode:** يختار ديناميكياً على مستوى المستند أو كل فقرة وجملة بين `FAST_MSA` و`DIALECT_PRESERVE` و`NOISY_SOCIAL`، يستعيد أشكال العرض المعزولة لملفات PDF (`NFKC`: `ﺍﻟﺒﺮﻣﺠﺔ ← البرمجة`) ومحارف لوحات المفاتيح الفارسية/الأردية (`ک/ی ← ك/ي`)، ويرمّم أخطاء التاء المربوطة (`البرمجه ← البرمجة`) دون المساس بالضمائر (`بيته، ملفه، مديره`).
 * **توفير التوكنات وتكاليف الانتباه التربيعي $O(L^2)$:** أظهرت التجارب الموثقة (`misar eval --all-models`) تفوق **100% مقابل 0%** في تمييز الثنائيات الصرفية (`عالمة/عالمه`)، وحفظ **100%** من النفي اللهجي وقطبية المشاعر، وخفض التوكنات بنسبة **45.88%** مقابل الخام و**17.68%** مقابل المناهج التقليدية (ما يوفّر **66.7%–71.9%** من عمليات الانتباه $O(L^2)$ واستعادة `159 → 0 [UNK]`).

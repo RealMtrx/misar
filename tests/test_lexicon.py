@@ -65,6 +65,28 @@ class TestArabicLexiconAndMorphology(unittest.TestCase):
         self.assertEqual(res.dominant_dialect, "saudi_gulf")
         self.assertIn("الآن", res.canonical_msa_text)
 
+    def test_expanded_dialect_vocabulary_v250(self) -> None:
+        lex = misar.get_lexicon()
+        self.assertGreaterEqual(len(lex.entries), 150)
+
+        # Saudi Najdi / Hijazi additions
+        e_azhaleh = lookup_word("أزهله")
+        self.assertIsNotNone(e_azhaleh)
+        self.assertEqual(e_azhaleh.dialect, "saudi_gulf")
+
+        e_dandoon = lookup_word("دندون")
+        self.assertIsNotNone(e_dandoon)
+        self.assertEqual(e_dandoon.dialect, "saudi_gulf")
+
+        e_dahein = lookup_word("دحين")
+        self.assertIsNotNone(e_dahein)
+        self.assertEqual(e_dahein.dialect, "saudi_gulf")
+
+        # Levantine addition
+        e_kteer = lookup_word("كتير")
+        self.assertIsNotNone(e_kteer)
+        self.assertEqual(e_kteer.dialect, "levantine")
+
     def test_router_integration_with_lexicon(self) -> None:
         router = MisarRouter()
         entry = router.lookup("أبخص")
@@ -74,7 +96,7 @@ class TestArabicLexiconAndMorphology(unittest.TestCase):
         expl = router.explain_text("دلوقتي كل حاجة تمام")
         self.assertGreaterEqual(expl.dialect_tokens_count, 1)
 
-        self.assertEqual(misar.__version__, "2.4.1")
+        self.assertEqual(misar.__version__, "2.5.0")
         self.assertTrue(callable(misar.lookup_word))
         self.assertTrue(callable(misar.explain_text))
         self.assertTrue(callable(misar.extract_root))

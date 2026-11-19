@@ -2,6 +2,32 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.5.0] — 2026-11-20
+
+### Added & Improved
+- **Deep Multi-Dialect Lexicon Expansion (`misar.lexicon_data`):**
+  - Modularized dialect vocabulary into dedicated geographic modules:
+    - `saudi_gulf.py`: 55+ curated entries across Najdi, Hijazi, Southern, and Eastern Gulf dialects (`أبخص`, `أزهله`, `دندون`, `دحين`, `تكفى`, `مروح`, `هروج`, etc.).
+    - `egyptian.py`: 15+ rich Egyptian colloquial terms (`دلوقتي`, `كده`, `أوي`, `عيش`, `جدع`, etc.).
+    - `levantine.py`: 10+ Levantine terms (`شو`, `هيك`, `هلق`, `كتير`, `زلمة`, etc.).
+    - `maghrebi.py`: 8+ Moroccan, Algerian, and Tunisian terms (`بزاف`, `دابا`, `ديال`, `زوين`, etc.).
+    - `iraqi_yemeni.py`: 9+ Iraqi and Yemeni regional markers (`يمعود`, `ماكو`, `ناهي`, `قاحي`, etc.).
+    - `msa_roots.py`: Standard Modern Arabic lexical anchors and roots.
+  - Scaled total curated vocabulary entries from 86 to **155+ entries**, dynamically indexed by `ArabicLexicon`.
+- **Enterprise ROI & Security Audit Engine (`misar.audit` & CLI `misar audit`):**
+  - Added `AuditResult`, `audit_texts()`, and `audit_dataset_file()` supporting JSONL, CSV, TSV, and plain TXT ingestion.
+  - Computes exact token count reduction, quadratic attention FLOPs savings ($O(L^2)$), and financial ROI in SAR or USD based on configurable pricing models.
+  - Comprehensive PII redaction and adversarial threat quantification.
+  - Added `generate_html_report()` creating standalone, responsive, executive HTML dashboard reports with KPI cards and breakdowns.
+  - Added CLI command: `misar audit <dataset_path> --out <report.html> --currency SAR --price 0.015`.
+- **Enterprise Framework Integrations (`misar.integrations`):**
+  - `MisarSecurityMiddleware`: Zero-dependency ASGI middleware for FastAPI / Starlette, blocking prompt injection attacks and redacting sensitive PII in real-time.
+  - `MisarNodeParser`: Drop-in LlamaIndex node parser integrating discourse-aware RAG chunking with metadata propagation.
+  - `misar_litellm_pre_hook`: Pre-call hook for LiteLLM proxies and gateways to canonicalize dialect queries, maximize prompt cache hit rates, and cut token costs.
+- **Reference Example & Test Coverage:**
+  - Added `examples/06_enterprise_audit_and_middleware.py` demonstrating enterprise audits and framework integrations.
+  - Added `tests/test_audit.py` and `tests/test_integrations.py`, scaling test coverage to **75 comprehensive unit tests** passing at 100%.
+
 ## [2.4.1] — 2026-11-20
 
 ### Added & Improved
