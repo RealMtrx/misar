@@ -2,6 +2,26 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.2.0] — 2026-11-19
+
+### Added & Improved
+- **Arabic Semantic & Discourse-Aware RAG Chunker (`misar.rag` & `ArabicDiscourseChunker`):**
+  - Segment documents along authentic Arabic discourse transition markers (`علاوة على ذلك`, `بناءً على ذلك`, `ومن الجدير بالذكر`, `في المقابل`, `حيث أن`) and sentence boundaries.
+  - Enforces strict Negation & Clitic Bonding invariant: negative particles (`لم`, `لن`, `لا`, `ما`, `ليس`, `مو`, `مش`, `ماكو`, `مب`) are never separated from their predicates across chunk boundaries.
+  - Generates token-accurate metadata with start/end character offsets, target WordPiece counts, and automatic Misar routing per chunk.
+  - Drop-in LangChain `MisarArabicSplitter` and LlamaIndex compatibility.
+- **Enterprise Arabic LLM Prompt Guard & PII Sanitizer (`misar.guard` & `ArabicPromptGuard`):**
+  - Neutralizes adversarial BiDi override characters (`\u202E`, `\u202D`) and invisible zero-width characters (`\u200B`, `\uFEFF`).
+  - Detects tatweel-obfuscated jailbreak attempts (`تــــجــــاهــــل الــــتــــعــــلــــيــــمــــات`) through dual-pass normalized analysis.
+  - Validates and redacts authentic Saudi National ID / Iqama numbers using official Luhn-variant checksum algorithm (`[رقم_هوية_محجوب]`).
+  - Validates and redacts Saudi IBAN numbers using ISO 7064 Mod 97-10 checksum (`[آيبان_محجوب]`).
+  - Redacts Arab mobile phone numbers and email addresses.
+- **REST API & CLI Enhancements:**
+  - Added `POST /api/chunk` and `POST /api/guard` endpoints with comprehensive payload validation.
+  - Added CLI commands: `misar chunk <source>` and `misar guard "<text>"`.
+- **Automated Verification:**
+  - Expanded test suite from 39 to **49 automated unit, API, and Transformer WordPiece vocab tests**, all passing with 100% success.
+
 ## [2.1.1] — 2026-11-19
 
 ### Changed

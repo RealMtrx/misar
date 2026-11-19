@@ -227,6 +227,14 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                         "model_key": router.model_key,
                         "tokenizer_backend": router.tokenizer.backend_name,
                         "is_real_tokenizer": router.tokenizer.is_real_vocab,
+                        "features": [
+                            "three_way_comparison",
+                            "clause_aware_document",
+                            "attention_savings",
+                            "semantic_rag_chunker",
+                            "llm_prompt_guard",
+                            "pii_redaction",
+                        ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
                             for k, cfg in PRETRAINED_MODEL_CONFIGS.items()
@@ -331,6 +339,59 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     self._send_json(200, {"results": results})
                 except Exception:
                     self._send_json(500, {"error": "Internal batch routing error"})
+                return
+
+            if route_path == "/api/chunk":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                max_tokens = int(payload.get("max_tokens", 256))
+                overlap_tokens = int(payload.get("overlap_tokens", 32))
+                auto_preprocess = bool(payload.get("auto_preprocess", True))
+                try:
+                    from ..rag import ArabicDiscourseChunker
+                    chunker = ArabicDiscourseChunker(
+                        max_tokens=max_tokens,
+                        overlap_tokens=overlap_tokens,
+                        target_model=router.model_key,
+                        auto_preprocess=auto_preprocess,
+                        router=router,
+                    )
+                    chunks = [c.to_dict() for c in chunker.chunk(text)]
+                    self._send_json(200, {
+                        "total_chunks": len(chunks),
+                        "max_tokens": max_tokens,
+                        "overlap_tokens": overlap_tokens,
+                        "chunks": chunks,
+                    })
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Chunking error: {str(exc)}"})
+                return
+
+            if route_path == "/api/guard":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                mask_pii = bool(payload.get("mask_pii", True))
+                detect_injection = bool(payload.get("detect_injection", True))
+                try:
+                    from ..guard import ArabicPromptGuard
+                    guard = ArabicPromptGuard(
+                        mask_pii=mask_pii,
+                        detect_injection=detect_injection,
+                    )
+                    res = guard.sanitize(text)
+                    self._send_json(200, res.to_dict())
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Guard error: {str(exc)}"})
                 return
 
             self._send_json(404, {"error": "Not found"})

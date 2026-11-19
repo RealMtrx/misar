@@ -452,6 +452,38 @@ class MisarRouter:
 
         return _wrapped
 
+    @property
+    def target_model(self) -> str:
+        return self.model_key
+
+    def chunk_document(
+        self,
+        text: str,
+        max_tokens: int = 256,
+        overlap_tokens: int = 32,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> List[Any]:
+        """Split document into semantic discourse chunks for Arabic RAG and vector databases."""
+        from .rag import ArabicDiscourseChunker
+        chunker = ArabicDiscourseChunker(
+            max_tokens=max_tokens,
+            overlap_tokens=overlap_tokens,
+            target_model=self.model_key,
+            router=self,
+        )
+        return chunker.chunk(text, extra_metadata=metadata)
+
+    def sanitize_prompt(
+        self,
+        text: str,
+        mask_pii: bool = True,
+        detect_injection: bool = True,
+    ) -> Any:
+        """Sanitize an Arabic prompt against injections, malicious unicode, and mask sensitive PII."""
+        from .guard import ArabicPromptGuard
+        guard = ArabicPromptGuard(mask_pii=mask_pii, detect_injection=detect_injection)
+        return guard.sanitize(text)
+
 
 _DEFAULT_ROUTER: Optional[MisarRouter] = None
 
@@ -473,3 +505,24 @@ def preprocess(text: str) -> str:
 
 def preprocess_batch(texts: Iterable[str]) -> List[str]:
     return _get_default_router().preprocess_batch(texts)
+
+
+def chunk_document(
+    text: str,
+    max_tokens: int = 256,
+    overlap_tokens: int = 32,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> List[Any]:
+    return _get_default_router().chunk_document(
+        text, max_tokens=max_tokens, overlap_tokens=overlap_tokens, metadata=metadata
+    )
+
+
+def sanitize_prompt(
+    text: str,
+    mask_pii: bool = True,
+    detect_injection: bool = True,
+) -> Any:
+    return _get_default_router().sanitize_prompt(
+        text, mask_pii=mask_pii, detect_injection=detect_injection
+    )

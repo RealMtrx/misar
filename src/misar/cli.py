@@ -103,6 +103,64 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_chunk(args: argparse.Namespace) -> int:
+    input_path = Path(args.source)
+    if input_path.exists() and input_path.is_file():
+        text = input_path.read_text(encoding="utf-8", errors="replace")
+    else:
+        text = args.source
+
+    from .rag import ArabicDiscourseChunker
+    chunker = ArabicDiscourseChunker(
+        max_tokens=args.max_tokens,
+        overlap_tokens=args.overlap,
+        target_model=args.model,
+        auto_preprocess=not args.raw,
+    )
+    chunks = chunker.chunk(text)
+
+    if args.json:
+        data = {
+            "total_chunks": len(chunks),
+            "max_tokens": args.max_tokens,
+            "overlap_tokens": args.overlap,
+            "chunks": [c.to_dict() for c in chunks],
+        }
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Misar RAG Semantic Chunker v{__version__} | Total Chunks: {len(chunks)} | Target Model: {args.model}")
+    print("=" * 84)
+    for c in chunks:
+        print(f"Chunk #{c.chunk_index} [{c.start_char}:{c.end_char}] | Tokens: {c.token_count} | Route: {c.route_used}")
+        print(f"  Text: {c.text}")
+        print("-" * 84)
+    return 0
+
+
+def cmd_guard(args: argparse.Namespace) -> int:
+    from .guard import ArabicPromptGuard
+    guard = ArabicPromptGuard(
+        mask_pii=not args.no_mask_pii,
+        detect_injection=not args.no_detect_injection,
+    )
+    res = guard.sanitize(args.text)
+
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+
+    status_tag = "⚠️ SUSPICIOUS / RISKY" if res.is_suspicious else "✅ CLEAN / SAFE"
+    print(f"Misar LLM Prompt Guard v{__version__} | Status: {status_tag} | Risk Score: {res.risk_score:.2f}")
+    print("=" * 84)
+    print(f"Detected Risks : {', '.join(res.detected_risks) if res.detected_risks else 'None'}")
+    print(f"Masked PII     : {res.masked_pii_count} item(s)")
+    print(f"Stripped Chars : {res.stripped_unicode_count} invisible/bidi char(s)")
+    print(f"Sanitized Text :\n{res.sanitized_text}")
+    print("=" * 84)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -150,6 +208,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_eval.add_argument("--json", action="store_true", help="Output structured JSON")
     p_eval.add_argument("--offline", action="store_true")
     p_eval.set_defaults(func=cmd_eval)
+
+    p_chunk = sub.add_parser("chunk", help="Chunk Arabic documents with discourse & negation preservation")
+    p_chunk.add_argument("source", help="File path or raw Arabic string to chunk")
+    p_chunk.add_argument("--max-tokens", type=int, default=256, help="Maximum WordPiece tokens per chunk")
+    p_chunk.add_argument("--overlap", type=int, default=32, help="Overlap WordPiece tokens between chunks")
+    p_chunk.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_chunk.add_argument("--raw", action="store_true", help="Do not auto-preprocess with Misar")
+    p_chunk.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_chunk.set_defaults(func=cmd_chunk)
+
+    p_guard = sub.add_parser("guard", help="Sanitize prompts against injection, jailbreaks, and mask PII")
+    p_guard.add_argument("text", help="Arabic prompt to inspect and sanitize")
+    p_guard.add_argument("--no-mask-pii", action="store_true", help="Disable PII masking")
+    p_guard.add_argument("--no-detect-injection", action="store_true", help="Disable injection detection")
+    p_guard.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_guard.set_defaults(func=cmd_guard)
 
     return parser
 
