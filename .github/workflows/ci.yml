@@ -1,0 +1,40 @@
+name: Misar CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-latest]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package in editable mode
+        run: python -m pip install --upgrade pip && pip install -e .
+
+      - name: Run full test suite
+        run: python -m unittest discover -s tests -v
+
+      - name: Verify CLI commands (offline & server self-test)
+        run: |
+          python -m misar --version
+          python -m misar demo --offline
+          python -m misar bench --offline
+          python -m misar route "الســــلام علــــيكم ومفيش أي مشكلة #تجربة_وطنية" --offline
+          python -m misar serve --test-once --offline

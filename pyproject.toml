@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "misar"
+version = "1.0.0"
+description = "Misar (مِسار): Adaptive context-aware Arabic NLP preprocessing router for optimizing Transformer language models."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+    {name = "Muneer Jarab Matrak Al-Theeb"}
+]
+keywords = [
+    "arabic",
+    "nlp",
+    "preprocessing",
+    "router",
+    "arabert",
+    "camelbert",
+    "llm",
+    "tokenization",
+    "dialect",
+    "saudi-arabia"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: Arabic",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Text Processing :: Linguistic",
+]
+dependencies = []
+
+[project.optional-dependencies]
+huggingface = ["transformers>=4.35.0", "torch>=2.0.0"]
+dev = ["pytest>=7.4.0", "build>=1.0.0", "twine>=5.0.0"]
+
+[project.scripts]
+misar = "misar.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/RealMtrx/misar"
+Repository = "https://github.com/RealMtrx/misar"
+Issues = "https://github.com/RealMtrx/misar/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+misar = ["web/*.html"]

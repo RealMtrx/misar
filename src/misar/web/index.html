@@ -1,0 +1,1344 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مِسار (Misar v1.0) — موجه المعالجة العربية التكيفية</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --border: #cbd5e1;
+      --border-soft: #e2e8f0;
+      --navy: #0f2942;
+      --navy-light: #1e3a5f;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-soft: #64748b;
+
+      --msa-accent: #15803d;
+      --msa-bg: #f0fdf4;
+      --dialect-accent: #b45309;
+      --dialect-bg: #fffbeb;
+      --noisy-accent: #b91c1c;
+      --noisy-bg: #fef2f2;
+
+      --radius: 10px;
+      --font-ar: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+      --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg-page);
+      color: var(--text-main);
+      font-family: var(--font-ar);
+      line-height: 1.65;
+    }
+
+    .ltr {
+      direction: ltr;
+      unicode-bidi: isolate;
+      font-family: var(--font-mono);
+    }
+
+    .topbar {
+      background: var(--navy);
+      color: #ffffff;
+      border-bottom: 3px solid #2563eb;
+      padding: 18px 24px;
+    }
+
+    .topbar-inner {
+      max-width: 1240px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand h1 {
+      margin: 0 0 3px 0;
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .version-tag {
+      font-size: 0.76rem;
+      font-weight: 600;
+      background: #2563eb;
+      color: #ffffff;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+
+    .status-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .meta-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      color: #f8fafc;
+    }
+
+    .engine-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      background: #064e3b;
+      border: 1px solid #10b981;
+      color: #ecfdf5;
+    }
+
+    .engine-badge.offline {
+      background: #1e293b;
+      border-color: #64748b;
+      color: #e2e8f0;
+    }
+
+    .engine-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34d399;
+    }
+
+    .engine-badge.offline .engine-dot { background: #38bdf8; }
+
+    .container {
+      max-width: 1240px;
+      margin: 22px auto 48px auto;
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+    }
+
+    .section-hint {
+      font-size: 0.85rem;
+      color: var(--text-soft);
+    }
+
+    .presets-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .preset-btn {
+      background: var(--bg-subtle);
+      color: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 7px 13px;
+      font-family: var(--font-ar);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .preset-btn:hover { background: #e2e8f0; }
+
+    .preset-btn.active {
+      background: var(--navy);
+      color: #ffffff;
+      border-color: var(--navy);
+    }
+
+    .input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    textarea#inputText {
+      width: 100%;
+      min-height: 94px;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: var(--font-ar);
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text-main);
+      background: #ffffff;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea#inputText:focus {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(15, 41, 66, 0.1);
+    }
+
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; }
+
+    .btn-primary {
+      background: var(--navy);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      font-family: var(--font-ar);
+      font-size: 0.93rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: var(--navy-light); }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-family: var(--font-ar);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover { background: var(--bg-subtle); }
+
+    .char-counter { font-size: 0.85rem; color: var(--text-soft); }
+
+    /* Routes */
+    .routes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .route-card {
+      border: 1.5px solid var(--border-soft);
+      border-radius: 9px;
+      padding: 14px 16px;
+      background: #ffffff;
+      opacity: 0.56;
+      transition: opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+    }
+
+    .route-card.active { opacity: 1; }
+    .route-card[data-route="FAST_MSA"].active { background: var(--msa-bg); border-color: var(--msa-accent); }
+    .route-card[data-route="DIALECT_PRESERVE"].active { background: var(--dialect-bg); border-color: var(--dialect-accent); }
+    .route-card[data-route="NOISY_SOCIAL"].active { background: var(--noisy-bg); border-color: var(--noisy-accent); }
+
+    .route-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .route-code {
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--bg-subtle);
+      color: var(--text-muted);
+    }
+
+    .route-card[data-route="FAST_MSA"].active .route-code { background: #dcfce7; color: var(--msa-accent); }
+    .route-card[data-route="DIALECT_PRESERVE"].active .route-code { background: #fef3c7; color: var(--dialect-accent); }
+    .route-card[data-route="NOISY_SOCIAL"].active .route-code { background: #fee2e2; color: var(--noisy-accent); }
+
+    .route-status { font-size: 0.76rem; font-weight: 700; display: none; }
+    .route-card.active .route-status { display: inline-block; }
+
+    .route-card h3 { margin: 0 0 4px 0; font-size: 0.97rem; color: var(--text-main); }
+    .route-card p { margin: 0; font-size: 0.83rem; color: var(--text-muted); }
+
+    .decision-banner {
+      margin-top: 14px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      border-right: 4px solid var(--navy);
+      font-size: 0.92rem;
+    }
+
+    /* Metrics Strip (5 scientific metrics) */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+
+    .metric-box {
+      border: 1px solid var(--border-soft);
+      border-radius: 9px;
+      padding: 13px 14px;
+      background: var(--bg-page);
+    }
+
+    .metric-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .metric-val {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+
+    .metric-sub {
+      margin-top: 6px;
+      font-size: 0.78rem;
+      color: var(--text-soft);
+    }
+
+    .progress-track {
+      height: 7px;
+      width: 100%;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--navy);
+      border-radius: 999px;
+      transition: width 0.22s ease;
+    }
+
+    .progress-fill.amber { background: var(--dialect-accent); }
+    .progress-fill.red { background: var(--noisy-accent); }
+    .progress-fill.green { background: var(--msa-accent); }
+    .progress-fill.blue { background: #2563eb; }
+
+    .markers-wrap {
+      margin-top: 7px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      min-height: 20px;
+    }
+
+    .marker-chip {
+      font-size: 0.75rem;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+      padding: 1px 7px;
+      border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* Comparison */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .compare-pane {
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 16px;
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      gap: 11px;
+    }
+
+    .compare-pane.after { border-color: #93c5fd; background: #f8fbff; }
+
+    .pane-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-soft);
+      padding-bottom: 8px;
+      gap: 8px;
+    }
+
+    .pane-head h3 { margin: 0; font-size: 0.95rem; color: var(--navy); }
+
+    .token-badge {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .compare-pane.after .token-badge { background: #dcfce7; color: var(--msa-accent); }
+
+    .text-display {
+      min-height: 58px;
+      padding: 12px;
+      border-radius: 7px;
+      background: var(--bg-page);
+      border: 1px solid var(--border-soft);
+      font-size: 1rem;
+      line-height: 1.75;
+      word-break: break-word;
+    }
+
+    .tokens-label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+
+    .tokens-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+    .tokens-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      align-items: center;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-green { background: #16a34a; }
+    .dot-blue { background: #0284c7; }
+    .dot-red { background: #dc2626; }
+
+    .tok-chip {
+      font-size: 0.82rem;
+      padding: 3px 9px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.15s ease;
+    }
+    .tok-chip:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    }
+    .tok-chip.clean {
+      background: #f0fdf4;
+      border-color: #86efac;
+      color: #166534;
+      font-weight: 500;
+    }
+    .tok-chip.subword {
+      background: #f0f9ff;
+      border-color: #bae6fd;
+      color: #0369a1;
+      font-family: var(--font-mono, monospace);
+    }
+    .tok-chip.unk {
+      background: #fef2f2;
+      border-color: #fca5a5;
+      color: #991b1b;
+      font-weight: 700;
+      box-shadow: 0 0 0 1px #fecaca;
+    }
+    .tok-chip.diac {
+      background: #fff1f2;
+      border-color: #fecdd3;
+      color: #e11d48;
+      font-weight: 700;
+      min-width: 22px;
+      text-align: center;
+    }
+    .tok-chip.raw {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      color: #475569;
+    }
+
+    /* Table */
+    .table-wrap { overflow-x: auto; }
+
+    table.suite-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+
+    .suite-table th {
+      background: var(--navy);
+      color: #ffffff;
+      font-weight: 600;
+      text-align: right;
+      padding: 10px 11px;
+      border: 1px solid #1e3a5f;
+      white-space: nowrap;
+    }
+
+    .suite-table td {
+      padding: 10px 11px;
+      border: 1px solid var(--border-soft);
+      vertical-align: top;
+    }
+
+    .suite-table tbody tr:nth-child(even) { background: #f8fafc; }
+    .suite-table tbody tr:hover { background: #eff6ff; cursor: pointer; }
+
+    .route-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .pill-FAST_MSA { background: #dcfce7; color: #166534; }
+    .pill-DIALECT_PRESERVE { background: #fef3c7; color: #92400e; }
+    .pill-NOISY_SOCIAL { background: #fee2e2; color: #991b1b; }
+
+    .suite-footer {
+      margin-top: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--navy);
+    }
+
+    .page-footer {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-soft);
+      padding: 8px 0 24px 0;
+    }
+
+    @media (max-width: 1024px) {
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 860px) {
+      .routes-grid { grid-template-columns: 1fr; }
+      .compare-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 520px) {
+      .metrics-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <h1>مِسار — Misar <span class="version-tag ltr">v1.0.0</span></h1>
+        <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
+      </div>
+      <div class="status-group">
+        <span class="meta-pill">تطوير: منير جراب مترك الذيب</span>
+        <span id="engineBadge" class="engine-badge offline">
+          <span class="engine-dot"></span>
+          <span id="engineLabel">وضع المتصفح المباشر (Offline JS)</span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="section-head">
+        <h2 class="section-title">1. إدخال النص العربي للاختبار الفوري</h2>
+        <span class="section-hint">اختر عينة مرجعية أو اكتب أي جملة عربية لفحص توجيه مِسار وتقطيع الرموز</span>
+      </div>
+
+      <div class="presets-row" id="presetsRow"></div>
+
+      <div class="input-wrap">
+        <textarea id="inputText" placeholder="اكتب هنا أي نص عربي (فصحى، لهجة سعودية/مصرية/شامية، أو تغريدة فيها مدود وإيموجي)..."></textarea>
+        <div class="actions-row">
+          <div class="btn-group">
+            <button type="button" class="btn-primary" id="analyzeBtn">تحليل وتوجيه النص</button>
+            <button type="button" class="btn-secondary" id="clearBtn">مسح النص</button>
+          </div>
+          <span class="char-counter" id="charCounter">0 حرف · 0 كلمة</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2 class="section-title">2. قرار التوجيه الديناميكي (<span class="ltr">Routing Decision</span>)</h2>
+        <span class="section-hint">مسارات واعية بمفردات المحولات تحفظ الهمزات والتاء المربوطة وتصون النفي اللهجي</span>
+      </div>
+
+      <div class="routes-grid">
+        <div class="route-card" data-route="FAST_MSA">
+          <div class="route-top">
+            <span class="route-code ltr">FAST_MSA</span>
+            <span class="route-status" style="color: var(--msa-accent);">✓ المسار النشط</span>
+          </div>
+          <h3>مسار الفصحى المباشر</h3>
+          <p>يُزيل التشكيل والتطويل ويعفي الفصحى من التحليل الصرفي الثقيل مع حفظ «أ/إ/آ» و«ة» لصون قاموس AraBERTv2.</p>
+        </div>
+
+        <div class="route-card" data-route="DIALECT_PRESERVE">
+          <div class="route-top">
+            <span class="route-code ltr">DIALECT_PRESERVE</span>
+            <span class="route-status" style="color: var(--dialect-accent);">✓ المسار النشط</span>
+          </div>
+          <h3>مسار التطبيع اللهجي الحافظ</h3>
+          <p>يصون أدوات النفي العامية («مو، مش، مب، مفيش») ويوحد التهجئة البسيطة مع حماية التضعيف الأصلي.</p>
+        </div>
+
+        <div class="route-card" data-route="NOISY_SOCIAL">
+          <div class="route-top">
+            <span class="route-code ltr">NOISY_SOCIAL</span>
+            <span class="route-status" style="color: var(--noisy-accent);">✓ المسار النشط</span>
+          </div>
+          <h3>مسار تنقية ضجيج التواصل</h3>
+          <p>يضغط المدود بوعي القاموس ويفك الهاشتاقات ويزيل الإيموجيز والروابط مع دعم هجين لحفظ اللهجة.</p>
+        </div>
+      </div>
+
+      <div class="decision-banner">
+        <strong>مبرر القرار: </strong>
+        <span id="decisionReason">بانتظار إدخال النص...</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2 class="section-title">3. مؤشرات المستكشف اللغوي (<span class="ltr">O(n) Linguistic Profiler</span>)</h2>
+        <span class="section-hint" id="tokenizerBanner">المجزئ النشط: —</span>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-label"><span>معامل اللهجة</span><span class="ltr">P_dial</span></div>
+          <div class="metric-val ltr" id="valDialect">0.00</div>
+          <div class="progress-track"><div class="progress-fill amber" id="barDialect"></div></div>
+          <div class="markers-wrap" id="markersList"></div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label"><span>كثافة التشكيل</span><span class="ltr">D_diac</span></div>
+          <div class="metric-val ltr" id="valDiac">0.00</div>
+          <div class="progress-track"><div class="progress-fill" id="barDiac"></div></div>
+          <div class="metric-sub" id="valCodeSwitch">التناوب اللغوي: 0%</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label"><span>مؤشر الضجيج</span><span class="ltr">E_noise</span></div>
+          <div class="metric-val ltr" id="valNoise">0.00</div>
+          <div class="progress-track"><div class="progress-fill red" id="barNoise"></div></div>
+          <div class="metric-sub" id="valRuns">سلاسل التمديد: 0</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label"><span>إنتروبيا شانون</span><span class="ltr">H_char</span></div>
+          <div class="metric-val ltr" id="valEntropy">0.00</div>
+          <div class="progress-track"><div class="progress-fill blue" id="barEntropy"></div></div>
+          <div class="metric-sub">التعقيد المعلوماتي (bits/char)</div>
+        </div>
+
+        <div class="metric-box">
+          <div class="metric-label"><span>السرعة وخفض الرموز</span><span class="ltr">Gain</span></div>
+          <div class="metric-val ltr" id="valLatency">0.00 ms</div>
+          <div class="progress-track"><div class="progress-fill green" id="barReduction"></div></div>
+          <div class="metric-sub" style="color: var(--msa-accent); font-weight: 700;" id="valReductionText">خفض الرموز: 0.0%</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2 class="section-title">4. تقطيع الرموز الفعلي ومقارنة النص (قبل وبعد مِسار)</h2>
+        <div class="tokens-legend">
+          <span class="legend-item"><span class="legend-dot dot-green"></span> كلمات معجمية سليمة (دقة 100%)</span>
+          <span class="legend-item"><span class="legend-dot dot-blue"></span> مقاطع صرفية فرعية (## Subwords)</span>
+          <span class="legend-item"><span class="legend-dot dot-red"></span> حركات تشكيل وتمديد زائدة يزيلها مسار</span>
+        </div>
+      </div>
+
+      <div class="compare-grid">
+        <div class="compare-pane">
+          <div class="pane-head">
+            <h3>النص الأصلي (قبل المعالجة)</h3>
+            <span class="token-badge ltr" id="rawTokensCount">0 Tokens · TFR 0.00</span>
+          </div>
+          <div class="text-display" id="rawTextDisplay">—</div>
+          <div class="tokens-label">تقطيع الرموز قبل مِسار:</div>
+          <div class="tokens-list" id="rawTokensChips"></div>
+        </div>
+
+        <div class="compare-pane after">
+          <div class="pane-head">
+            <h3>النص المخرَج (بعد مِسار)</h3>
+            <span class="token-badge ltr" id="procTokensCount">0 Tokens · TFR 0.00</span>
+          </div>
+          <div class="text-display" id="procTextDisplay">—</div>
+          <div class="tokens-label">الرموز النظيفة الجاهزة للنموذج:</div>
+          <div class="tokens-list" id="procTokensChips"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-head">
+        <h2 class="section-title">5. جدول الاختبارات المرجعية الشاملة (6 عينات)</h2>
+        <span class="section-hint">اضغط على أي صف لتحميل العينة فوراً في الأعلى</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="suite-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>التصنيف اللغوي</th>
+              <th>النص المدخل</th>
+              <th>المسار المختار</th>
+              <th>المخرج المعالج</th>
+              <th>الزمن</th>
+              <th>الرموز وـ TFR</th>
+            </tr>
+          </thead>
+          <tbody id="suiteBody"></tbody>
+        </table>
+      </div>
+      <div class="suite-footer" id="suiteSummary"></div>
+    </section>
+
+    <footer class="page-footer ltr">
+      Misar (مِسار) v1.0.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+    </footer>
+  </main>
+
+  <script>
+    const PRESETS = [
+      {
+        label: "لهجة سعودية / خليجية",
+        category: "لهجة سعودية / خليجية (Saudi/Gulf Dialect)",
+        text: "والله الفندق مره يجنن وتعامله فخم وما عليه كلام بس السعر غالي شويتين"
+      },
+      {
+        label: "لهجة مصرية دارجة",
+        category: "لهجة مصرية دارجة (Egyptian Dialect)",
+        text: "الفكرة مش بطالة خالص بس التطبيق كان محتاج شوية تظبيط ودعم فني أسرع"
+      },
+      {
+        label: "فصحى رسمية (حفظ الإملاء)",
+        category: "فصحى معيارية / بيان رسمي (MSA)",
+        text: "أعلنت الهيئة السعودية للبيانات والذكاء الاصطناعي سدايا عن إطلاق حزمة جديدة من المبادرات الوطنية لتعزيز الابتكار وريادة الأعمال في قطاع التقنية"
+      },
+      {
+        label: "تغريدة مشوبة بالضجيج واللهجة",
+        category: "تغريدة منصات تواصل هجينة (Noisy + Dialect)",
+        text: "المطعممممم سيييييء جداااااا ومفيش أسلوب خالصصصصص 😡😡😡👎 #تجربة_فاشلة"
+      },
+      {
+        label: "نص فصيح مشكول",
+        category: "نص فصيح وتراثي مشكول (Classical Diacritized)",
+        text: "إِنَّ الَّذِي مَلَأَ اللُّغَاتِ مَحَاسِناً، جَعَلَ الجَمَالَ وَسِرَّهُ فِي الضَّادِ"
+      },
+      {
+        label: "حماية النفي + التضعيف",
+        category: "اختبار النفي اللهجي والتضعيف",
+        text: "والللله المكان مو حلو أبداً والخدمة متكررررة وما أبي أرجع الحين"
+      }
+    ];
+
+    // Offline JS fallback aligned 1:1 with Misar v1.0.0 pipelines
+    const DIALECT_MARKERS = {
+      gulf_saudi: [
+        "يجنن", "يهبل", "حقت", "حقتي", "حقتك",
+        "هاذا", "هاذي", "هذول", "هذولي", "الحين", "دحين", "تكفى", "تكفون",
+        "ابغى", "أبغى", "ابغا", "تبغى", "يبغى", "نبغى", "تبي", "يبي",
+        "شويتين", "كذا", "كذه", "شلون", "شلونك", "شلونكم",
+        "ايش", "إيش", "وشو", "وش", "عشان", "شسالفة",
+        "يبيلها", "يبيله", "وشلون", "مافيه", "مافي", "ماكو", "مو", "مب",
+        "بالحيل", "وايد", "سالفة", "سالفه", "طقطقة", "طقطقه",
+        "ياخي", "ياخوي", "ماهو", "ماهي",
+        "خرابيط", "تضبيط", "كفو", "واللهي", "زبط", "انبسطت", "بغيت"
+      ],
+      egyptian: [
+        "مش", "علشان", "كده", "كدا", "اوي", "أوي",
+        "ده", "عاوز", "عايز", "عايزة", "عايزه", "عاوزين", "عايزين",
+        "بتعمل", "بيعمل", "بنعمل", "مفيش", "مافيش", "شوية", "شويه", "تظبيط",
+        "ازيك", "إزيك", "ازيكم", "ازاي", "إزاي", "فين", "ليه",
+        "كويس", "كويسة", "كويسه", "جدع", "برضه", "برضو", "دلوقتي", "ياباشا",
+        "ياعم", "مابلاش", "بلاش", "افتكس",
+        "النهاردة", "النهارده", "امبارح", "بص", "بتاع", "بتاعة"
+      ],
+      levantine: [
+        "هيك", "هاد", "هادا", "هيدي", "هيدا", "شو", "ليش", "منشان", "كرمال", "كتير",
+        "هلأ", "هلق", "بدي", "بدك", "بدنا", "مافي", "مو", "شلونك",
+        "منيح", "منيحة", "منيحه", "بركي", "يقبرني", "هون", "هونا", "يلا",
+        "زلمة", "مزبوط", "قديش", "وين"
+      ],
+      maghrebi: [
+        "ديال", "ديالي", "ديالك", "برشا", "بزاف", "واش", "كاين", "مزيان", "دابا",
+        "شكون", "علاش", "زوين", "زوينة", "واخا", "لاباس", "شنو", "باش", "غادي", "بصح", "خويا", "كيفاش"
+      ]
+    };
+
+    const RE_TASHKEEL = /[\u064B-\u065F\u0670]/g;
+    const RE_TATWEEL = /\u0640/g;
+    const RE_MARKS = /[\u0640\u064B-\u065F\u0670]/g;
+    const RE_ZERO_WIDTH = /[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
+    const RE_MARRA = /^[وفب]?مر{2,}[ةه]$/;
+    const RE_REPEATED = /(\p{L})\1{2,}/gu;
+    const RE_EMOJI = /[\u{10000}-\u{10FFFF}\u2600-\u27BF\uFE0F]/gu;
+    const RE_PUNCT_REPEAT = /([!?.،؛؟]){2,}/g;
+    const RE_HASHTAG = /#([\p{L}\p{N}_]+)/gu;
+    const RE_URL = /https?:\/\/\S+|www\.\S+/gi;
+    const RE_MENTION = /@[A-Za-z0-9_]+/g;
+    const RE_EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+    const RE_ARABIC_WORD = /[\u0621-\u064A\u0671-\u06D3]+/g;
+    const RE_ARABIC_LETTER = /[\u0621-\u064A\u0671-\u06D3]/g;
+    const RE_LATIN_LETTER = /[A-Za-z]/g;
+
+    function normLookup(tok) {
+      return tok.replace(RE_TASHKEEL, "").replace(RE_TATWEEL, "").replace(new RegExp(RE_REPEATED.source, "gu"), "$1")
+        .replace(/[إأآٱ]/g, "ا").replace(/ة$/g, "ه").replace(/ى$/g, "ي");
+    }
+
+    const NORMALIZED_DIALECT_MAP = {};
+    for (const r of Object.keys(DIALECT_MARKERS)) {
+      for (const w of DIALECT_MARKERS[r]) {
+        const k = normLookup(w);
+        if (!NORMALIZED_DIALECT_MAP[k]) NORMALIZED_DIALECT_MAP[k] = w;
+      }
+    }
+
+    const RE_MARRA_SPELL = /(^|[^\u0621-\u064A\u0671-\u06D3])([وف]?)مر{2,}[ةه](?=[^\u0621-\u064A\u0671-\u06D3]|$)/g;
+    const SPELLING_RULES = [
+      ["هاذا", "هذا"], ["هاذي", "هذه"], ["هذي", "هذه"], ["هذول", "هؤلاء"],
+      ["هذولي", "هؤلاء"], ["اللى", "اللي"], ["دا", "ده"], ["كدا", "كده"],
+      ["كتير", "كثير"], ["شويتين", "شوية"], ["علشان", "عشان"],
+      ["برضو", "برضه"], ["مابلاش", "بلاش"], ["ياباشا", "يا باشا"],
+      ["شسالفة", "ايش السالفة"], ["ابغا", "أبغى"]
+    ].map(([s, d]) => ({
+      re: new RegExp(`(^|[^\\u0621-\\u064A\\u0671-\\u06D3])([وف]?)${s}(?=[^\\u0621-\\u064A\\u0671-\\u06D3]|$)`, "g"),
+      d
+    }));
+
+    function computeEntropyJS(text) {
+      const chars = Array.from(text).filter(c => !/\s/.test(c));
+      if (!chars.length) return 0;
+      const counts = new Map();
+      for (const c of chars) counts.set(c, (counts.get(c) || 0) + 1);
+      let h = 0;
+      for (const cnt of counts.values()) {
+        const p = cnt / chars.length;
+        h -= p * Math.log2(p);
+      }
+      return h;
+    }
+
+    function heuristicTokenizeJS(text) {
+      if (!text || !text.trim()) return [];
+      const out = [];
+      for (const word of text.trim().split(/\s+/)) {
+        const emojis = word.match(RE_EMOJI) || [];
+        const clean = word.replace(RE_EMOJI, "");
+        if (clean) {
+          if (clean.startsWith("#")) {
+            out.push("#");
+            for (const sub of clean.slice(1).split("_")) if (sub) out.push(sub.length <= 5 ? `##${sub}` : sub);
+          } else {
+            const marks = clean.match(RE_MARKS) || [];
+            const base = clean.replace(RE_MARKS, "");
+            if (base) {
+              if (new RegExp(RE_REPEATED.source, "u").test(base)) {
+                const chars = Array.from(base);
+                let buf = "", i = 0; const pieces = [];
+                while (i < chars.length) {
+                  let run = 1; while (i + run < chars.length && chars[i + run] === chars[i]) run++;
+                  if (run >= 3) { if (buf) { pieces.push(buf); buf = ""; } pieces.push("##" + chars.slice(i, i + run).join("")); }
+                  else buf += chars[i].repeat(run);
+                  i += run;
+                }
+                if (buf) pieces.push(pieces.length ? "##" + buf : buf);
+                out.push(...(pieces.length ? pieces : [base]));
+              } else if (base.length > 8 || new RegExp(RE_PUNCT_REPEAT.source).test(base)) {
+                const m = Math.max(4, Math.floor(base.length / 2));
+                out.push(base.slice(0, m), "##" + base.slice(m));
+              } else {
+                out.push(base);
+              }
+            }
+            out.push(...marks);
+          }
+        }
+        out.push(...emojis);
+      }
+      return out;
+    }
+
+    function stripMarkupJS(text) {
+      return text.replace(/(^|\n)\s*#{1,6}\s+/g, "$1").replace(/[*~`]/g, "");
+    }
+
+    function collapseElongJS(text) {
+      return text
+        .replace(/(^|\s)الل{2,}ه(?=\s|$)/g, "$1الله")
+        .replace(/(^|\s)والل{2,}ه(?=\s|$)/g, "$1والله")
+        .replace(/(^|\s)بالل{2,}ه(?=\s|$)/g, "$1بالله")
+        .replace(/(^|\s)الل{2,}يل(?=\s|$)/g, "$1الليل")
+        .replace(/(^|\s)الل{2,}غة(?=\s|$)/g, "$1اللغة")
+        .replace(/(^|\s)الل{2,}غات(?=\s|$)/g, "$1اللغات")
+        .replace(new RegExp(RE_REPEATED.source, "gu"), "$1");
+    }
+
+    function routeOfflineJS(text) {
+      const t0 = performance.now();
+      const trimmed = (text || "").trim();
+      const totalChars = trimmed.length;
+      const arabicChars = (trimmed.match(RE_ARABIC_LETTER) || []).length;
+      const latinChars = (trimmed.match(RE_LATIN_LETTER) || []).length;
+      const csRatio = (arabicChars > 0 && latinChars > 0) ? latinChars / (arabicChars + latinChars) : 0;
+      const diacCount = (trimmed.match(RE_TASHKEEL) || []).length;
+      const diacDensity = arabicChars > 0 ? diacCount / arabicChars : 0;
+
+      const tatweel = (trimmed.match(RE_TATWEEL) || []).length;
+      const repMatches = trimmed.match(new RegExp(RE_REPEATED.source, "gu")) || [];
+      const repRuns = repMatches.length;
+      let excessRepeats = 0;
+      for (const m of repMatches) {
+        excessRepeats += Math.max(0, m.length - 1);
+      }
+      const emojis = (trimmed.match(RE_EMOJI) || []).length;
+      const punct = (trimmed.match(RE_PUNCT_REPEAT) || []).length;
+      const tags = (trimmed.match(RE_HASHTAG) || []).length;
+      const urls = (trimmed.match(RE_URL) || []).length + (trimmed.match(RE_MENTION) || []).length + (trimmed.match(RE_EMAIL) || []).length;
+
+      const noisePenalty = tatweel * 1.5 + repRuns * 2.5 + excessRepeats * 1.0 + emojis * 1.2 + punct * 1.5 + tags * 2.0 + urls * 2.5;
+      const noiseScore = totalChars ? Math.min(1.0, noisePenalty / Math.max(15, totalChars * 0.4)) : 0;
+
+      const words = trimmed ? trimmed.split(/\s+/) : [];
+      const arWords = trimmed.match(RE_ARABIC_WORD) || [];
+      const detected = [];
+      for (const w of arWords) {
+        const cleanSurface = w.replace(RE_TASHKEEL, "").replace(RE_TATWEEL, "");
+        if (RE_MARRA.test(cleanSurface)) {
+          detected.push("مرره");
+          continue;
+        }
+        const nw = normLookup(w);
+        if (NORMALIZED_DIALECT_MAP[nw]) detected.push(NORMALIZED_DIALECT_MAP[nw]);
+        else if (nw.length > 3 && ["و", "ف", "ب", "ل"].includes(nw[0]) && NORMALIZED_DIALECT_MAP[nw.slice(1)]) {
+          detected.push(NORMALIZED_DIALECT_MAP[nw.slice(1)]);
+        }
+      }
+      const dialRatio = arWords.length ? detected.length / arWords.length : 0;
+      const entropy = computeEntropyJS(trimmed);
+
+      let routeName, displayAr, reason, processed;
+      if (totalChars === 0) {
+        routeName = "FAST_MSA"; displayAr = "مسار الفصحى المباشر"; reason = "نص فارغ"; processed = "";
+      } else if (noiseScore >= 0.18 || repRuns >= 1) {
+        const hybrid = detected.length > 0;
+        routeName = "NOISY_SOCIAL";
+        displayAr = hybrid ? "مسار تنقية التواصل الاجتماعي (مع صون اللهجة)" : "مسار تنقية شبكات التواصل والضجيج";
+        reason = `ارتفاع مؤشر الضجيج (${noiseScore.toFixed(2)} >= 0.18)` + (hybrid ? ` مع رصد سمات لهجية (${detected.slice(0, 3).join("، ")})` : " وتكرار الحروف غير القياسي");
+        let t = stripMarkupJS(trimmed).replace(RE_ZERO_WIDTH, "").replace(RE_TATWEEL, "")
+          .replace(RE_EMAIL, " ").replace(RE_URL, " ").replace(RE_MENTION, " ");
+        t = t.replace(RE_HASHTAG, (_, c) => c.replace(/_/g, " ")).replace(RE_EMOJI, " ").replace(RE_PUNCT_REPEAT, "$1");
+        t = t.replace(RE_TASHKEEL, "").replace(/\u0671/g, "ا");
+        if (hybrid) t = t.replace(RE_MARRA_SPELL, "$1$2مرة");
+        t = collapseElongJS(t);
+        if (hybrid) for (const r of SPELLING_RULES) t = t.replace(r.re, `$1$2${r.d}`);
+        processed = t.replace(/\s+/g, " ").trim();
+      } else if (dialRatio >= 0.10 || detected.length >= 1) {
+        routeName = "DIALECT_PRESERVE";
+        displayAr = "مسار التطبيع اللهجي الحافظ للأدوات";
+        reason = `رصد سمات لهجية (${(dialRatio * 100).toFixed(1)}% من الكلمات: ${[...new Set(detected)].slice(0, 3).join("، ")})`;
+        let t = stripMarkupJS(trimmed).replace(RE_ZERO_WIDTH, "").replace(RE_TASHKEEL, "").replace(RE_TATWEEL, "").replace(/\u0671/g, "ا");
+        t = collapseElongJS(t.replace(RE_MARRA_SPELL, "$1$2مرة"));
+        for (const r of SPELLING_RULES) t = t.replace(r.re, `$1$2${r.d}`);
+        processed = t.replace(/\s+/g, " ").trim();
+      } else {
+        routeName = "FAST_MSA";
+        displayAr = "مسار الفصحى المباشر فائق السرعة";
+        reason = diacDensity >= 0.25
+          ? `نص فصيح مشكول (كثافة التشكيل ${diacDensity.toFixed(2)}) تم تفريغ حركاته مع حفظ الإملاء`
+          : "نص فصحى نقي تم إعفاؤه من التحليل الصرفي الثقيل مع صون الهمزات والتاء المربوطة";
+        let p = stripMarkupJS(trimmed).replace(RE_ZERO_WIDTH, "").replace(RE_TASHKEEL, "").replace(RE_TATWEEL, "").replace(/\u0671/g, "ا");
+        if (new RegExp(RE_REPEATED.source, "u").test(p)) p = collapseElongJS(p);
+        processed = p.replace(/\s+/g, " ").trim();
+      }
+
+      const latencyMs = performance.now() - t0;
+      const rawToks = heuristicTokenizeJS(text);
+      const procToks = heuristicTokenizeJS(processed);
+      const procWords = processed ? processed.split(/\s+/).length : 1;
+      const tfrRaw = rawToks.length ? rawToks.length / Math.max(1, words.length) : 0;
+      const tfrProc = procToks.length ? procToks.length / Math.max(1, procWords) : 0;
+      const redPct = rawToks.length ? ((rawToks.length - procToks.length) / rawToks.length) * 100 : 0;
+
+      return {
+        original_text: text,
+        processed_text: processed,
+        route_name: routeName,
+        route_display_ar: displayAr,
+        decision_reason: reason,
+        latency_ms: latencyMs,
+        tokenizer_backend: "offline-browser-js",
+        is_real_tokenizer: false,
+        raw_tokens: rawToks,
+        processed_tokens: procToks,
+        raw_token_count: rawToks.length,
+        processed_token_count: procToks.length,
+        tfr_raw: tfrRaw,
+        tfr_processed: tfrProc,
+        token_reduction_pct: redPct,
+        profile: {
+          total_chars: totalChars,
+          arabic_chars: arabicChars,
+          latin_chars: latinChars,
+          word_count: words.length,
+          dialect_ratio: dialRatio,
+          diacritic_density: diacDensity,
+          elongation_noise_score: noiseScore,
+          shannon_entropy: entropy,
+          code_switching_ratio: csRatio,
+          detected_markers: detected,
+          repeated_char_runs: repRuns
+        }
+      };
+    }
+
+    let backendAvailable = false;
+
+    async function checkBackend() {
+      if (window.location.protocol === "file:") return false;
+      try {
+        const res = await fetch("/api/health", { cache: "no-store" });
+        if (res.ok) {
+          const info = await res.json();
+          backendAvailable = true;
+          const badge = document.getElementById("engineBadge");
+          badge.classList.remove("offline");
+          document.getElementById("engineLabel").textContent = info.is_real_tokenizer
+            ? `متصل بـ Python + ${info.tokenizer_backend}`
+            : `متصل بـ Python (${info.tokenizer_backend})`;
+          return true;
+        }
+      } catch (_) {}
+      return false;
+    }
+
+    async function routeText(text) {
+      if (backendAvailable) {
+        try {
+          const res = await fetch("/api/route", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+          });
+          if (res.ok) return await res.json();
+        } catch (_) { backendAvailable = false; }
+      }
+      return routeOfflineJS(text);
+    }
+
+    function renderChips(id, tokens, isRaw) {
+      const el = document.getElementById(id);
+      el.textContent = "";
+      if (!tokens || !tokens.length) {
+        const s = document.createElement("span");
+        s.className = "section-hint"; s.textContent = "لا توجد رموز";
+        el.appendChild(s); return;
+      }
+      const MAX_CHIPS = 1500;
+      const slice = tokens.slice(0, MAX_CHIPS);
+      const frag = document.createDocumentFragment();
+      for (const tok of slice) {
+        const chip = document.createElement("span");
+        const isDiac = /^[\u064B-\u065F\u0670\u0640]+$/.test(tok);
+        if (tok === "[UNK]") {
+          chip.className = "tok-chip unk";
+          chip.title = "رمز مجهول: عجز النموذج الخام عن قراءته";
+        } else if (isDiac) {
+          chip.className = "tok-chip diac";
+          chip.title = "حركة تشكيل أو تمديد زائدة تستهلك توكنات النموذج الخام";
+        } else if (tok.startsWith("##")) {
+          chip.className = "tok-chip subword";
+          chip.title = "مقطع لغوي فرعي (Subword)";
+        } else {
+          chip.className = "tok-chip " + (isRaw ? "raw" : "clean");
+        }
+        chip.textContent = tok;
+        frag.appendChild(chip);
+      }
+      if (tokens.length > MAX_CHIPS) {
+        const more = document.createElement("span");
+        more.className = "section-hint";
+        more.textContent = `... (+${tokens.length - MAX_CHIPS} رمز إضافي)`;
+        frag.appendChild(more);
+      }
+      el.appendChild(frag);
+    }
+
+    function renderResult(data) {
+      const p = data.profile;
+      document.getElementById("charCounter").textContent = `${p.total_chars} حرف · ${p.word_count} كلمة`;
+      document.getElementById("tokenizerBanner").textContent = `المجزئ النشط: ${data.tokenizer_backend}`;
+
+      document.querySelectorAll(".route-card").forEach(c => c.classList.toggle("active", c.dataset.route === data.route_name));
+      document.getElementById("decisionReason").textContent = data.decision_reason;
+
+      document.getElementById("valDialect").textContent = p.dialect_ratio.toFixed(2);
+      document.getElementById("barDialect").style.width = `${Math.min(100, Math.round(p.dialect_ratio * 100))}%`;
+
+      const markersEl = document.getElementById("markersList");
+      markersEl.textContent = "";
+      const uniq = [...new Set(p.detected_markers || [])];
+      if (uniq.length) {
+        for (const m of uniq.slice(0, 6)) {
+          const tag = document.createElement("span");
+          tag.className = "marker-chip"; tag.textContent = m;
+          markersEl.appendChild(tag);
+        }
+      } else {
+        const none = document.createElement("span");
+        none.style.cssText = "font-size:0.75rem; color:var(--text-soft);";
+        none.textContent = "لا توجد مؤشرات لهجية";
+        markersEl.appendChild(none);
+      }
+
+      document.getElementById("valDiac").textContent = p.diacritic_density.toFixed(2);
+      document.getElementById("barDiac").style.width = `${Math.min(100, Math.round(p.diacritic_density * 100))}%`;
+      document.getElementById("valCodeSwitch").textContent = `التناوب اللغوي: ${Math.round((p.code_switching_ratio || 0) * 100)}%`;
+
+      document.getElementById("valNoise").textContent = p.elongation_noise_score.toFixed(2);
+      document.getElementById("barNoise").style.width = `${Math.min(100, Math.round(p.elongation_noise_score * 100))}%`;
+      document.getElementById("valRuns").textContent = `سلاسل التمديد: ${p.repeated_char_runs || 0}`;
+
+      document.getElementById("valEntropy").textContent = (p.shannon_entropy || 0).toFixed(2);
+      document.getElementById("barEntropy").style.width = `${Math.min(100, Math.round(((p.shannon_entropy || 0) / 5.5) * 100))}%`;
+
+      document.getElementById("valLatency").textContent = `${data.latency_ms.toFixed(3)} ms`;
+
+      const barRed = document.getElementById("barReduction");
+      const txtRed = document.getElementById("valReductionText");
+
+      const redVal = Math.max(0, data.token_reduction_pct);
+      barRed.style.width = `${Math.min(100, Math.round(redVal))}%`;
+      barRed.style.backgroundColor = "";
+      const sign = data.token_reduction_pct >= 0 ? "-" : "+";
+      txtRed.textContent = `خفض الرموز وتوفير التكلفة: ${sign}${Math.abs(data.token_reduction_pct).toFixed(1)}%`;
+
+      document.getElementById("rawTextDisplay").textContent = data.original_text || "—";
+      document.getElementById("procTextDisplay").textContent = data.processed_text || "—";
+      document.getElementById("rawTokensCount").textContent = `${data.raw_token_count} Tokens · TFR ${data.tfr_raw.toFixed(2)}`;
+      document.getElementById("procTokensCount").textContent = `${data.processed_token_count} Tokens · TFR ${data.tfr_processed.toFixed(2)}`;
+
+      renderChips("rawTokensChips", data.raw_tokens, true);
+      renderChips("procTokensChips", data.processed_tokens, false);
+    }
+
+    function makeSummaryItem(label, ltrText) {
+      const wrap = document.createElement("span");
+      wrap.textContent = label + " ";
+      const ltr = document.createElement("span");
+      ltr.className = "ltr";
+      ltr.textContent = ltrText;
+      wrap.appendChild(ltr);
+      return wrap;
+    }
+
+    async function renderSuite() {
+      let suite = null;
+      if (backendAvailable) {
+        try {
+          const res = await fetch("/api/suite", { cache: "no-store" });
+          if (res.ok) suite = await res.json();
+        } catch (_) {}
+      }
+      if (!suite) {
+        const samples = PRESETS.map((it, i) => {
+          const r = routeOfflineJS(it.text);
+          r.idx = i + 1; r.category = it.category; return r;
+        });
+        const avgLat = samples.reduce((a, b) => a + b.latency_ms, 0) / samples.length;
+        const avgRed = samples.reduce((a, b) => a + b.token_reduction_pct, 0) / samples.length;
+        const avgTfrR = samples.reduce((a, b) => a + b.tfr_raw, 0) / samples.length;
+        const avgTfrP = samples.reduce((a, b) => a + b.tfr_processed, 0) / samples.length;
+        suite = {
+          samples,
+          summary: { avg_latency_ms: avgLat, avg_reduction_pct: avgRed, avg_tfr_raw: avgTfrR, avg_tfr_processed: avgTfrP }
+        };
+      }
+
+      const tbody = document.getElementById("suiteBody");
+      tbody.textContent = "";
+      for (const row of suite.samples) {
+        const tr = document.createElement("tr");
+        const cleanCat = row.category.split(" (")[0];
+
+        const tdIdx = document.createElement("td");
+        tdIdx.textContent = String(row.idx);
+
+        const tdCat = document.createElement("td");
+        const strongCat = document.createElement("strong");
+        strongCat.textContent = cleanCat;
+        tdCat.appendChild(strongCat);
+
+        const tdOrig = document.createElement("td");
+        tdOrig.textContent = row.original_text;
+
+        const tdRoute = document.createElement("td");
+        const pill = document.createElement("span");
+        pill.className = `route-pill pill-${row.route_name} ltr`;
+        pill.textContent = row.route_name;
+        tdRoute.appendChild(pill);
+
+        const tdProc = document.createElement("td");
+        tdProc.textContent = row.processed_text;
+
+        const tdLat = document.createElement("td");
+        tdLat.className = "ltr";
+        tdLat.textContent = `${row.latency_ms.toFixed(2)} ms`;
+
+        const tdTok = document.createElement("td");
+        tdTok.className = "ltr";
+        const sign = row.token_reduction_pct >= 0 ? "-" : "+";
+        const strongTok = document.createElement("strong");
+        strongTok.textContent = `${sign}${Math.abs(row.token_reduction_pct).toFixed(1)}%`;
+        tdTok.appendChild(strongTok);
+        tdTok.appendChild(document.createTextNode(` (${row.raw_token_count} → ${row.processed_token_count})`));
+
+        tr.append(tdIdx, tdCat, tdOrig, tdRoute, tdProc, tdLat, tdTok);
+        tr.addEventListener("click", () => {
+          document.getElementById("inputText").value = row.original_text;
+          document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+          triggerAnalysis();
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        tbody.appendChild(tr);
+      }
+
+      const summaryEl = document.getElementById("suiteSummary");
+      summaryEl.textContent = "";
+      const avgSign = suite.summary.avg_reduction_pct >= 0 ? "-" : "+";
+      summaryEl.append(
+        makeSummaryItem("متوسط زمن التوجيه:", `${suite.summary.avg_latency_ms.toFixed(3)} ms`),
+        makeSummaryItem("متوسط خفض الرموز:", `${avgSign}${Math.abs(suite.summary.avg_reduction_pct).toFixed(1)}%`),
+        makeSummaryItem("معدل التفتت TFR:", `${suite.summary.avg_tfr_raw.toFixed(2)} → ${suite.summary.avg_tfr_processed.toFixed(2)}`)
+      );
+    }
+
+    let timer = null;
+    async function triggerAnalysis() {
+      const text = document.getElementById("inputText").value;
+      const result = await routeText(text);
+      renderResult(result);
+    }
+
+    function initPresets() {
+      const row = document.getElementById("presetsRow");
+      PRESETS.forEach((p, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "preset-btn" + (idx === 0 ? " active" : "");
+        btn.textContent = p.label;
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          document.getElementById("inputText").value = p.text;
+          triggerAnalysis();
+        });
+        row.appendChild(btn);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      initPresets();
+      await checkBackend();
+      const ta = document.getElementById("inputText");
+      ta.value = PRESETS[0].text;
+      ta.addEventListener("input", () => {
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+        clearTimeout(timer);
+        timer = setTimeout(triggerAnalysis, 90);
+      });
+      document.getElementById("analyzeBtn").addEventListener("click", triggerAnalysis);
+      document.getElementById("clearBtn").addEventListener("click", () => {
+        document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
+        ta.value = "";
+        triggerAnalysis();
+        ta.focus();
+      });
+      await triggerAnalysis();
+      await renderSuite();
+    });
+  </script>
+</body>
+</html>
