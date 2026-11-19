@@ -654,7 +654,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.0.0</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v2.0.1</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -872,7 +872,7 @@
     </section>
 
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.0.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v2.0.1 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -950,7 +950,7 @@
     const RE_ZERO_WIDTH = /[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
     const RE_MARRA = /^[وفب]?مر{2,}[ةه]$/;
     const RE_REPEATED = /(\p{L})\1{2,}/gu;
-    const RE_EMOJI = /[\u{10000}-\u{10FFFF}\u2600-\u27BF\uFE0F]/gu;
+    const RE_EMOJI = /[\u{10000}-\u{10FFFF}\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F]/gu;
     const RE_PUNCT_REPEAT = /([!?.،؛؟]){2,}/g;
     const RE_HASHTAG = /#([\p{L}\p{N}_]+)/gu;
     const RE_URL = /https?:\/\/\S+|www\.\S+/gi;
@@ -1066,8 +1066,8 @@
     }
 
     function processEmojiJS(text, mode) {
-      if (mode === "keep") return text.replace(/[\u{10000}-\u{10FFFF}\u2600-\u27BF\uFE0F\u200D]+/gu, m => { const d = [...m].filter(c => c !== "\uFE0F" && c !== "\u200D"); const u = d.filter((c, i) => i === 0 || c !== d[i - 1]); return u.length ? ` ${u.join("")} ` : " "; });
-      if (mode === "sentiment") return text.replace(/[\u{10000}-\u{10FFFF}\u2600-\u27BF\uFE0F\u200D]+/gu, m => { let pos = 0, neg = 0; for (const c of m) { if (JS_POS_EMOJI.has(c)) pos++; if (JS_NEG_EMOJI.has(c)) neg++; } return neg > pos ? " سلبي " : (pos > neg ? " إيجابي " : " "); }).replace(/\b(سلبي|إيجابي)(\s+\1)+/g, "$1");
+      if (mode === "keep") return text.replace(/[\u{10000}-\u{10FFFF}\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F\u200D]+/gu, m => { const d = [...m].filter(c => c !== "\uFE0F" && c !== "\u200D"); const u = d.filter((c, i) => i === 0 || c !== d[i - 1]); return u.length ? ` ${u.join("")} ` : " "; });
+      if (mode === "sentiment") return text.replace(/[\u{10000}-\u{10FFFF}\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F\u200D]+/gu, m => { let pos = 0, neg = 0; for (const c of m) { if (JS_POS_EMOJI.has(c)) pos++; if (JS_NEG_EMOJI.has(c)) neg++; } return neg > pos ? " سلبي " : (pos > neg ? " إيجابي " : " "); }).replace(/\b(سلبي|إيجابي)(\s+\1)+/g, "$1");
       return text.replace(RE_EMOJI, " ");
     }
 
@@ -1363,21 +1363,44 @@
       barRed.style.width = `${Math.min(100, Math.round(redVal))}%`;
       barRed.style.backgroundColor = "";
       const sign = data.token_reduction_pct >= 0 ? "-" : "+";
-      txtRed.textContent = `خفض الرموز وتوفير التكلفة: ${sign}${Math.abs(data.token_reduction_pct).toFixed(1)}%`;
+      txtRed.textContent = "خفض الرموز وتوفير التكلفة: ";
+      const redSpan = document.createElement("span");
+      redSpan.className = "ltr";
+      redSpan.textContent = `${sign}${Math.abs(data.token_reduction_pct).toFixed(1)}%`;
+      txtRed.appendChild(redSpan);
+
+      let legacyText = data.legacy_text;
+      let legacyTokens = data.legacy_tokens;
+      let legacyCount = data.legacy_token_count;
+      let legacyTfr = data.legacy_tfr;
+      let vsLeg = data.vs_legacy_reduction_pct;
+      if (legacyText === undefined) {
+        const fb = routeOfflineJS(data.original_text || "");
+        legacyText = fb.legacy_text;
+        legacyTokens = fb.legacy_tokens;
+        legacyCount = fb.legacy_token_count;
+        legacyTfr = fb.legacy_tfr;
+        vsLeg = legacyCount ? ((legacyCount - data.processed_token_count) / legacyCount) * 100 : 0;
+      }
 
       document.getElementById("rawTextDisplay").textContent = data.original_text || "—";
-      document.getElementById("legacyTextDisplay").textContent = data.legacy_text || "—";
+      document.getElementById("legacyTextDisplay").textContent = legacyText || "—";
       document.getElementById("procTextDisplay").textContent = data.processed_text || "—";
       document.getElementById("rawTokensCount").textContent = `${data.raw_token_count} Tokens · TFR ${data.tfr_raw.toFixed(2)}`;
-      document.getElementById("legacyTokensCount").textContent = `${data.legacy_token_count || 0} Tokens · TFR ${(data.legacy_tfr || 0).toFixed(2)}`;
+      document.getElementById("legacyTokensCount").textContent = `${legacyCount || 0} Tokens · TFR ${(legacyTfr || 0).toFixed(2)}`;
       document.getElementById("procTokensCount").textContent = `${data.processed_token_count} Tokens · TFR ${data.tfr_processed.toFixed(2)}`;
 
-      const vsLeg = data.vs_legacy_reduction_pct || 0;
-      const legSign = vsLeg >= 0 ? "-" : "+";
-      document.getElementById("v2AdvantageBadge").textContent = `تفوق على التقليدي: ${legSign}${Math.abs(vsLeg).toFixed(1)}% | ترميم إملائي: ${data.auto_healed_count || 0} | صلة لغوية: ${data.clitic_fixed_count || 0}`;
+      const legSign = (vsLeg || 0) >= 0 ? "-" : "+";
+      const advEl = document.getElementById("v2AdvantageBadge");
+      advEl.textContent = "تفوق على التقليدي: ";
+      const advPct = document.createElement("span");
+      advPct.className = "ltr";
+      advPct.textContent = `${legSign}${Math.abs(vsLeg || 0).toFixed(1)}%`;
+      advEl.appendChild(advPct);
+      advEl.appendChild(document.createTextNode(` | ترميم إملائي: ${data.auto_healed_count || 0} | صلة لغوية: ${data.clitic_fixed_count || 0}`));
 
       renderChips("rawTokensChips", data.raw_tokens, true);
-      renderChips("legacyTokensChips", data.legacy_tokens || [], true);
+      renderChips("legacyTokensChips", legacyTokens || [], true);
       renderChips("procTokensChips", data.processed_tokens, false);
     }
 

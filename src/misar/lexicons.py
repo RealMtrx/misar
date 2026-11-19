@@ -11,7 +11,7 @@ TATWEEL_REGEX = re.compile(r"\u0640")
 DECORATION_MARKS_REGEX = re.compile(r"[\u0640\u064B-\u065F\u0670]")
 REPEATED_CHARS_REGEX = re.compile(r"([^\s\d\W_])\1{2,}")
 EMOJI_REGEX = re.compile(
-    r"[\U00010000-\U0010FFFF\u2600-\u27BF\uFE0F]",
+    r"[\U00010000-\U0010FFFF\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F]",
     flags=re.UNICODE,
 )
 PUNCT_REPEAT_REGEX = re.compile(r"([!?.،؛؟]){2,}")
@@ -39,7 +39,7 @@ POSSESSIVE_AMBIGUOUS_H_WORDS: Set[str] = {
 
 POSITIVE_EMOJIS: Set[str] = {
     "😍", "🥰", "😘", "😊", "😁", "😄", "😃", "🥳", "🤩", "🙌", "👏",
-    "👍", "👌", "🔥", "🚀", "✨", "🌟", "💯", "✅", "♥", "❤", "💖", "💙", "💚",
+    "👍", "👌", "🔥", "🚀", "✨", "🌟", "⭐", "💯", "✅", "♥", "❤", "💖", "💙", "💚",
 }
 
 NEGATIVE_EMOJIS: Set[str] = {

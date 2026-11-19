@@ -109,7 +109,10 @@ class MisarRouter:
         self.emoji_mode = emoji_mode
         self.arabizi_mode = arabizi_mode
         self.profiler = LinguisticProfiler()
-        self.msa_pipeline = MSALightPipeline(preserve_orthography=preserve_orthography)
+        self.msa_pipeline = MSALightPipeline(
+            preserve_orthography=preserve_orthography,
+            emoji_mode=emoji_mode,
+        )
         self.dialect_pipeline = DialectPreservePipeline(
             preserve_orthography=preserve_orthography,
             tokenizer=self.tokenizer,
@@ -192,9 +195,6 @@ class MisarRouter:
         else:
             reason = "نص فصحى معياري نقي تم إعفاؤه من التحليل الصرفي الثقيل مع صون الهمزات والتاء المربوطة"
         processed, healed, clitic_fixed = self.msa_pipeline.process_with_stats(text)
-        if self.emoji_mode != "strip":
-            from .pipelines import MULTISPACE_REGEX, process_emojis
-            processed = MULTISPACE_REGEX.sub(" ", process_emojis(processed, self.emoji_mode)).strip()
         return route_name, route_display, reason, processed, healed, clitic_fixed
 
     def preprocess(self, text: str) -> str:

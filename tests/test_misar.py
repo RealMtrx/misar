@@ -244,6 +244,18 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertTrue(args.compare)
         self.assertTrue(args.offline)
 
+    def test_fast_msa_long_diacritized_essay_strips_all_emojis(self):
+        essay = (
+            "🌍 ✨ فِي هَذِهِ الحَيَاةِ الوَاسِعَةِ، تَتَعَاقَبُ الأَيَّامُ وَتَمْضِي السَّاعَاتُ، وَيَبْقَى الإِنْسَانُ يَسْعَى نَحْوَ أَحْلَامِهِ "
+            "حَامِلاً فِي قَلْبِهِ أَمَلاً جَدِيداً. ⏳ ⭐ إِنَّ العِلْمَ نُورٌ يُضِيءُ دُرُوبَ المُسْتَقْبَلِ، وَالمَعْرِفَةُ كَنْزٌ لَا يَنْفَدُ، "
+            "وَالْعَمَلُ الطَّرِيقُ الحَقِيقِيُّ لِبُلُوغِ النَّجَاحِ وَتَحْقِيقِ الطُّمُوحِ."
+        )
+        res = self.router_offline.route(essay)
+        self.assertEqual(res.route_name, "FAST_MSA")
+        for em in ("🌍", "✨", "⏳", "⭐"):
+            self.assertNotIn(em, res.processed_text)
+        self.assertEqual(res.unk_count_processed, 0)
+
 
 class TestRealAraBERTv2WordPiece(unittest.TestCase):
     """Empirical proof against the authentic 64,000-token AraBERTv2 vocabulary."""

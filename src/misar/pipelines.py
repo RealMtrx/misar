@@ -43,7 +43,7 @@ MULTISPACE_REGEX = re.compile(r"\s+")
 MARKDOWN_HEADER_REGEX = re.compile(r"(^|\n)\s*#{1,6}\s+")
 MARKDOWN_FORMAT_REGEX = re.compile(r"[*~`]")
 ARABIC_FINAL_HAA_WORD_REGEX = re.compile(r"\b([\u0621-\u064A]{4,})\b")
-EMOJI_RUN_REGEX = re.compile(r"[\U00010000-\U0010FFFF\u2600-\u27BF\uFE0F\u200D]+", flags=re.UNICODE)
+EMOJI_RUN_REGEX = re.compile(r"[\U00010000-\U0010FFFF\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F\u200D]+", flags=re.UNICODE)
 ARABIZI_CANDIDATE_REGEX = re.compile(r"\b([A-Za-z][A-Za-z0-9]*|[2356789][A-Za-z]{2,}[0-9]*)\b")
 SUPPORTED_EMOJI_MODES = ("strip", "keep", "sentiment")
 
@@ -193,14 +193,21 @@ class MSALightPipeline:
     preserving Transformer-native orthography (أ/إ/آ, ة, ى) by default.
     """
 
-    def __init__(self, preserve_orthography: bool = True, normalize_digits: bool = False):
+    def __init__(
+        self,
+        preserve_orthography: bool = True,
+        normalize_digits: bool = False,
+        emoji_mode: str = "strip",
+    ):
         self.preserve_orthography = preserve_orthography
         self.normalize_digits = normalize_digits
+        self.emoji_mode = emoji_mode
 
     def process_with_stats(self, text: str) -> Tuple[str, int, int]:
         t = strip_markup_noise(text)
         t = ZERO_WIDTH_REGEX.sub("", t)
         t, clitic_fixed = clean_code_switching_clitics(t)
+        t = process_emojis(t, self.emoji_mode)
         t = TASHKEEL_REGEX.sub("", t)
         t = TATWEEL_REGEX.sub("", t)
         if self.preserve_orthography:

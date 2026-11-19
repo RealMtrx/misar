@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "misar"
-version = "2.0.0"
+version = "2.0.1"
 description = "Misar (مِسار): Adaptive context-aware Arabic NLP preprocessing router for optimizing Transformer language models."
 readme = "README.md"
 license = {text = "MIT"}
