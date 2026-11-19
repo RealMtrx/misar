@@ -8,7 +8,7 @@
 [![CI](https://github.com/RealMtrx/misar/actions/workflows/ci.yml/badge.svg)](https://github.com/RealMtrx/misar/actions/workflows/ci.yml)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-1e40af.svg)](https://www.python.org/downloads/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero%20mandatory-15803d.svg)](#installation)
-[![License: MIT](https://img.shields.io/badge/License-MIT-0f2942.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-0f2942.svg)](https://github.com/RealMtrx/misar/blob/main/LICENSE)
 [![Latency](https://img.shields.io/badge/CPU%20latency-0.22%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
 [![Token Reduction](https://img.shields.io/badge/tokens%20saved--46.57%25-16a34a.svg)](#empirical-benchmarks)
 
@@ -16,7 +16,7 @@
 
 <br/>
 
-<img src="docs/misar-architecture.png" alt="Misar Adaptive Arabic NLP Preprocessing Router Architecture" width="100%" />
+<img src="https://raw.githubusercontent.com/RealMtrx/misar/main/docs/misar-architecture.png" alt="Misar Adaptive Arabic NLP Preprocessing Router Architecture" width="100%" />
 
 </div>
 
@@ -53,7 +53,7 @@ flowchart LR
 
 ## Empirical Benchmarks
 
-Measured reproducibly via `python benchmarks/run_benchmark.py` against the authentic **64,000-token `aubmindlab/bert-base-arabertv02` WordPiece vocabulary** across 15 curated multi-domain samples ([`latest_benchmark_report.json`](benchmarks/latest_benchmark_report.json)):
+Measured reproducibly via `python benchmarks/run_benchmark.py` against the authentic **64,000-token `aubmindlab/bert-base-arabertv02` WordPiece vocabulary** across 15 curated multi-domain samples ([`latest_benchmark_report.json`](https://github.com/RealMtrx/misar/blob/main/benchmarks/latest_benchmark_report.json)):
 
 | Domain Category | Samples | Raw Tokens | Legacy Static (`ة→ه`, `أ→ا`) | **Misar Adaptive** | Misar Gain vs. Raw |
 | :--- | :---: | :---: | :---: | :---: | :---: |
@@ -239,6 +239,6 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 <div align="center">
 
 Authored and maintained by **Muneer Jarab Matrak Al-Theeb (منير جراب مترك الذيب)**  
-Released under the [MIT License](LICENSE) © 2026
+Released under the [MIT License](https://github.com/RealMtrx/misar/blob/main/LICENSE) © 2026
 
 </div>
