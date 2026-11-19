@@ -2,6 +2,22 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.4.1] — 2026-11-20
+
+### Added & Improved
+- **Interactive Web Workbench v2.4.1 (`web/index.html`):**
+  - Added dedicated **Section 6: Arabic Lexicon & Morphology Explorer**:
+    - Real-time lexical lookup with visual cards displaying linguistic roots, dialect classification, MSA lemma, Part-of-Speech, definitions, synonyms, and contextual examples.
+    - Full sentence deconstruction and canonical MSA re-synthesis with dialect density percentages.
+  - Added dedicated **Section 7: Prompt Guard & PII Security Inspector**:
+    - Real-time adversarial risk scoring with visual progress bars.
+    - Automated detection tags for Tatweel evasion, BiDi overrides, zero-width characters, and instruction injection.
+    - Live sanitization demonstrating automated redaction of Saudi National IDs and IBANs.
+- **Packaging & Typing Integrity:**
+  - Full PEP 561 compliance with packaged `py.typed` marker for downstream IDE type hint resolution.
+  - Enterprise `examples/` directory containing verified standalone reference implementations.
+  - Fully modular test architecture with 8 domain suites.
+
 ## [2.4.0] — 2026-11-19
 
 ### Architecture & Project Structure
