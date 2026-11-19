@@ -4,6 +4,29 @@ All notable releases and engineering updates to **Misar (مِسار)** are docum
 
 ## [2.4.0] — 2026-11-19
 
+### Architecture & Project Structure
+- **Modularized Test Suite (`tests/`):**
+  - Replaced monolithic 1000-line test file with 8 dedicated domain test suites:
+    - `test_router.py`: Linguistic profiler & adaptive pipeline routing (28 tests).
+    - `test_tokenizer.py`: WordPiece tokenizer & AraBERTv2 vocab tests (6 tests).
+    - `test_server.py`: Hardened HTTP REST API & web server tests (8 tests).
+    - `test_rag.py`: Semantic discourse chunker & LangChain tests (4 tests).
+    - `test_guard.py`: Prompt guard, BiDi & Saudi PII redaction tests (5 tests).
+    - `test_classifier.py`: Sub-dialect classification & prompt cache tests (8 tests).
+    - `test_parallel.py`: Multi-core dataset parallel processing tests (2 tests).
+    - `test_lexicon.py`: Multi-dialect dictionary & morphological root tests (4 tests).
+- **Executable Reference Examples (`examples/`):**
+  - Added 5 standalone, enterprise-grade runnable scripts covering all core capabilities:
+    - `01_quickstart.py`: Adaptive routing & 3-way baseline comparison.
+    - `02_semantic_rag_chunking.py`: Discourse-aware semantic chunking & LangChain integration.
+    - `03_prompt_guard_and_pii.py`: Adversarial prompt inspection & Saudi ID/IBAN PII redaction.
+    - `04_dialect_and_morphology.py`: Multi-dialect dictionary lookups, root extraction, sentence explanation.
+    - `05_parallel_dataset_cleaning.py`: Multi-core parallel batch processing.
+- **PEP 561 Type Marker (`py.typed`):**
+  - Included `py.typed` marker in package data (`pyproject.toml`) ensuring full type-hinting support in IDEs and type checkers.
+- **Module Roles Clarification:**
+  - Added architectural docstrings distinguishing low-level regex patterns (`misar.lexicons`) from high-level semantic dictionaries (`misar.lexicon`).
+
 ### Added & Improved
 - **Arabic Semantic Lexicon & Multi-Dialect Dictionary (`misar.lexicon` & `ArabicLexicon`):**
   - High-speed zero-dependency in-memory dictionary linking Arabic words directly to:

@@ -63,4 +63,4 @@ Issues = "https://github.com/RealMtrx/misar/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-misar = ["web/*.html"]
+misar = ["web/*.html", "py.typed"]

@@ -332,13 +332,20 @@ misar/
 ├── benchmarks/
 │   ├── run_benchmark.py               # Reproducible benchmark runner
 │   └── latest_benchmark_report.json   # Verified telemetry snapshot
+├── examples/
+│   ├── 01_quickstart.py               # Adaptive routing & 3-way baseline comparison
+│   ├── 02_semantic_rag_chunking.py    # Discourse-aware RAG chunking & LangChain integration
+│   ├── 03_prompt_guard_and_pii.py     # Prompt guard, BiDi defense & Saudi ID/IBAN PII redaction
+│   ├── 04_dialect_and_morphology.py   # Multi-dialect lexicon, roots & sentence explanation
+│   └── 05_parallel_dataset_cleaning.py# Multi-core parallel batch ETL engine
 ├── src/misar/
 │   ├── __init__.py                    # Public API exports
+│   ├── py.typed                       # PEP 561 inline type hints marker
 │   ├── profiler.py                    # O(n) 5-signal LinguisticProfiler & Shannon entropy
 │   ├── classifier.py                  # Microsecond sub-dialect & register classifier + prompt cache
 │   ├── lexicon.py                     # Multi-dialect semantic lexicon, morphology & root extractor
 │   ├── parallel.py                    # High-throughput multi-core batch processing engine
-│   ├── lexicons.py                    # MSA-safe multi-region dialect & negation lexicons
+│   ├── lexicons.py                    # Fast regexes, token filters & orthographic mapping maps
 │   ├── pipelines.py                   # FAST_MSA, DIALECT_PRESERVE & NOISY_SOCIAL passes
 │   ├── tokenizer.py                   # Pure-Python WordPieceTokenizer + HF & offline adapters
 │   ├── router.py                      # MisarRouter orchestration & wrap_hf_pipeline
@@ -350,7 +357,15 @@ misar/
 │   └── web/
 │       ├── server.py                  # Hardened zero-dependency ThreadingHTTPServer REST API
 │       └── index.html                 # Interactive Arabic RTL Workbench & token visualizer
-├── tests/test_misar.py                # 65 unit, API, RAG, security, dialect & lexicon tests
+├── tests/
+│   ├── test_router.py                 # Linguistic profiler & adaptive pipeline routing tests
+│   ├── test_tokenizer.py              # WordPiece tokenizer & AraBERTv2 vocab tests
+│   ├── test_server.py                 # Hardened HTTP REST API & web server tests
+│   ├── test_rag.py                    # Semantic discourse chunker & LangChain tests
+│   ├── test_guard.py                  # Prompt guard, BiDi & Saudi PII redaction tests
+│   ├── test_classifier.py             # Sub-dialect classification & prompt cache tests
+│   ├── test_parallel.py               # Multi-core dataset parallel processing tests
+│   └── test_lexicon.py                # Multi-dialect dictionary & morphological root tests
 ├── CITATION.cff                       # Native GitHub repository citation metadata
 ├── CONTRIBUTING.md                    # Developer setup & contribution standards
 ├── SECURITY.md                        # Built-in API & frontend hardening controls

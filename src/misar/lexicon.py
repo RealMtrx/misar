@@ -6,6 +6,12 @@ Provides high-speed zero-dependency lexical lookup, trilateral/quadrilateral roo
 extraction, multi-dialect translation to Standard Modern Arabic (MSA), part-of-speech
 tagging, semantic definitions, and comprehensive sentence-level vocabulary explanation.
 
+Architecture Note:
+    - `misar.lexicon` (singular): High-level semantic dictionary (`lookup_word`),
+      morphological root extraction (`extract_root`), and sentence explanation (`explain_text`).
+    - `misar.lexicons` (plural): Low-level regex patterns, token filters, and orthographic
+      normalization tables used internally by the router pipelines.
+
 Supports dialects across:
 - Saudi & Gulf (`saudi_gulf`): Najdi, Hijazi, Southern, Kuwaiti, Emirati
 - Egyptian (`egyptian`): Cairene, Sa'idi

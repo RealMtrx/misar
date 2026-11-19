@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-Curated Arabic dialect lexicons, regex patterns, and orthographic spelling maps for Misar.
+Low-Level Regex Patterns, Normalization Tables & Fast Orthographic Maps for Misar.
+
+Architecture Note:
+    - `misar.lexicons` (plural): Low-level module providing precompiled regexes
+      (tashkeel, tatweel, emoji, urls, hashtags), dialect negation token sets,
+      and static orthographic mapping dictionaries used inside the pipeline passes.
+    - `misar.lexicon` (singular): High-level semantic lexicon providing word lookups,
+      morphological tri-consonantal root extraction, definitions, and sentence-level
+      dialect-to-MSA explanation.
 """
 
 import re
