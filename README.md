@@ -52,8 +52,15 @@ Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneou
 
 Every incoming text passes once through `LinguisticProfiler` (`< 0.25 ms` on CPU) to compute five quantitative signals (`dialect_ratio` $P_{\text{dial}}$, `diacritic_density` $D_{\text{diac}}$, `elongation_noise_score` $E_{\text{noise}}$, character Shannon Entropy $H_{\text{char}}$, and `code_switching_ratio` $R_{\text{latin}}$), then dispatches dynamically to the optimal micro-pipeline:
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/RealMtrx/misar/main/docs/misar-architecture-flow.png" alt="Misar Dynamic Architecture Flow" width="100%" />
+</div>
+
+<details>
+<summary><b>📐 View Interactive Diagram Source (Mermaid Flowchart)</b></summary>
+
 ```mermaid
-flowchart LR
+flowchart TD
     A["Raw Arabic Input<br/>(MSA / Diacritized / Dialect / Social)"] --> B["LinguisticProfiler O(n)<br/>P_dial · D_diac · E_noise · H_char · R_latin"]
     B -->|"High Noise / Tatweel / Stretches ≥ 3"| C["NOISY_SOCIAL (+ Hybrid Dialect)<br/>Gemination-Safe Collapse + Emoji Polarity"]
     B -->|"Dialect Markers / Protected Negations"| D["DIALECT_PRESERVE<br/>Negation Protection + Vocab Auto-Heal"]
@@ -62,6 +69,7 @@ flowchart LR
     D --> F
     E --> F
 ```
+</details>
 
 ---
 
@@ -208,7 +216,9 @@ misar serve
 ```text
 misar/
 ├── .github/workflows/ci.yml           # Cross-OS Python 3.9–3.13 CI pipeline
-├── docs/misar-architecture.png        # High-resolution system architecture diagram
+├── docs/
+│   ├── misar-architecture.png        # High-resolution system architecture & benchmark banner
+│   └── misar-architecture-flow.png   # Responsive mobile-optimized dynamic routing flow
 ├── benchmarks/
 │   ├── run_benchmark.py               # Reproducible benchmark runner
 │   └── latest_benchmark_report.json   # Verified telemetry snapshot
