@@ -2,6 +2,11 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.1.1] — 2026-11-19
+
+### Changed
+- **Documentation & PyPI Architecture:** Replaced raw client-side Mermaid flowchart block with high-resolution responsive vector-flow infographic (`docs/misar-architecture-flow.png`) for seamless cross-platform rendering across PyPI package descriptions, mobile GitHub views, and dark/light themes.
+
 ## [2.1.0] — 2026-11-19
 
 ### Added & Improved

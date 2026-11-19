@@ -3,7 +3,7 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.1.0"
+__version__ = "2.1.1"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
 from .evaluation import evaluate_system, run_evaluation
