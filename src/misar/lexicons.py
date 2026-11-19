@@ -4,6 +4,7 @@ Curated Arabic dialect lexicons, regex patterns, and orthographic spelling maps 
 """
 
 import re
+import unicodedata
 from typing import Dict, Set, Tuple
 
 TASHKEEL_REGEX = re.compile(r"[\u064B-\u065F\u0670]")
@@ -22,12 +23,36 @@ EMAIL_REGEX = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 ARABIC_WORD_REGEX = re.compile(r"[\u0621-\u064A\u0671-\u06D3]+")
 ARABIC_CHAR_REGEX = re.compile(r"[\u0621-\u064A\u0671-\u06D3]")
 LATIN_CHAR_REGEX = re.compile(r"[A-Za-z]")
-ZERO_WIDTH_REGEX = re.compile(r"[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]")
+ZERO_WIDTH_REGEX = re.compile(r"[\u00AD\u200B-\u200F\u202A-\u202E\u2060\uFEFF]")
 CLITIC_LATIN_REGEX = re.compile(
     r"(^|[\s\"'(\[{])(ال|وال|بال|كال|فال|لل|[وبفلك])\u0640+\s*([A-Za-z][A-Za-z0-9_.-]*)"
 )
 
 ARABIC_INDIC_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩۰۱۲۳۴۵۶۷۸۹", "01234567890123456789")
+
+UNICODE_VARIANT_TRANS = str.maketrans({
+    "\u06A9": "ك",
+    "\u06AA": "ك",
+    "\u06CC": "ي",
+    "\u06D2": "ي",
+    "\u06C0": "ة",
+    "\u06C1": "ه",
+    "\u06BE": "ه",
+    "\u00A0": " ",
+    "\u201C": '"',
+    "\u201D": '"',
+    "\u2018": "'",
+    "\u2019": "'",
+    "\u2013": "-",
+    "\u2014": "-",
+})
+
+
+def normalize_unicode_safety(text: str) -> str:
+    """Fold PDF Arabic Presentation Forms (NFKC) and Farsi/Urdu keyboard lookalikes without breaking أإآةى."""
+    if not text:
+        return text
+    return unicodedata.normalize("NFKC", text).translate(UNICODE_VARIANT_TRANS)
 
 # Nouns referring to male roles/kinship ending in possessive -ه where +ة is a valid feminine noun;
 # protected from Vocab Auto-Heal so "مديره" (his manager) is never turned into "مديرة" (female manager).

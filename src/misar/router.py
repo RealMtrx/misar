@@ -3,6 +3,7 @@
 MisarRouter: Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
+import re
 import time
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Optional
@@ -43,6 +44,7 @@ class RoutingResult:
     token_reduction_pct: float
     auto_healed_count: int = 0
     clitic_fixed_count: int = 0
+    attention_savings_pct: float = 0.0
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -64,9 +66,51 @@ class RoutingResult:
             "tfr_raw": round(self.tfr_raw, 3),
             "tfr_processed": round(self.tfr_processed, 3),
             "token_reduction_pct": round(self.token_reduction_pct, 2),
+            "attention_savings_pct": round(self.attention_savings_pct, 2),
             "auto_healed_count": self.auto_healed_count,
             "clitic_fixed_count": self.clitic_fixed_count,
         }
+
+
+@dataclass
+class DocumentRoutingResult:
+    original_text: str
+    processed_text: str
+    segments: List[RoutingResult]
+    segment_count: int
+    route_distribution: Dict[str, int]
+    latency_ms: float
+    tokenizer_backend: str
+    raw_token_count: int
+    processed_token_count: int
+    unk_count_raw: int
+    unk_count_processed: int
+    token_reduction_pct: float
+    attention_savings_pct: float
+    auto_healed_count: int
+    clitic_fixed_count: int
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "original_text": self.original_text,
+            "processed_text": self.processed_text,
+            "segment_count": self.segment_count,
+            "route_distribution": dict(self.route_distribution),
+            "latency_ms": round(self.latency_ms, 4),
+            "tokenizer_backend": self.tokenizer_backend,
+            "raw_token_count": self.raw_token_count,
+            "processed_token_count": self.processed_token_count,
+            "unk_count_raw": self.unk_count_raw,
+            "unk_count_processed": self.unk_count_processed,
+            "token_reduction_pct": round(self.token_reduction_pct, 2),
+            "attention_savings_pct": round(self.attention_savings_pct, 2),
+            "auto_healed_count": self.auto_healed_count,
+            "clitic_fixed_count": self.clitic_fixed_count,
+            "segments": [seg.to_dict() for seg in self.segments],
+        }
+
+
+SENTENCE_BOUNDARY_REGEX = re.compile(r"(?<=[.؟!])\s+(?=[^\s])")
 
 
 class MisarRouter:
@@ -148,7 +192,11 @@ class MisarRouter:
                 0,
             )
 
-        if profile.elongation_noise_score >= self.noise_threshold or profile.repeated_char_runs >= 1:
+        if (
+            profile.elongation_noise_score >= self.noise_threshold
+            or profile.repeated_char_runs >= 1
+            or profile.social_artifact_count >= 1
+        ):
             hybrid = len(profile.detected_markers) > 0
             route_name = "NOISY_SOCIAL"
             route_display = (
@@ -157,8 +205,8 @@ class MisarRouter:
                 else "مسار تنقية شبكات التواصل والضجيج اللفظي"
             )
             reason = (
-                f"ارتفاع مؤشر الضجيج والمدود ({profile.elongation_noise_score:.2f} >= {self.noise_threshold:.2f})"
-                + (f" مع رصد سمات لهجية ({', '.join(profile.detected_markers[:3])})" if hybrid else " وتكرار الحروف غير القياسي")
+                f"رصد مؤشرات ضجيج أو روابط/هاشتاغ ({profile.elongation_noise_score:.2f} >= {self.noise_threshold:.2f} أو عناصر ويب={profile.social_artifact_count})"
+                + (f" مع رصد سمات لهجية ({', '.join(profile.detected_markers[:3])})" if hybrid else "")
             )
             processed, healed, clitic_fixed = self.noisy_pipeline.process_with_stats(
                 text, apply_dialect_cleanup=hybrid
@@ -229,6 +277,7 @@ class MisarRouter:
         tfr_raw = (raw_count / raw_words) if raw_count > 0 else 0.0
         tfr_proc = (proc_count / proc_words) if proc_count > 0 else 0.0
         reduction_pct = ((raw_count - proc_count) / raw_count * 100.0) if raw_count > 0 else 0.0
+        attn_pct = ((1.0 - (proc_count / raw_count) ** 2) * 100.0) if raw_count > 0 else 0.0
 
         return RoutingResult(
             original_text=text,
@@ -251,6 +300,80 @@ class MisarRouter:
             token_reduction_pct=reduction_pct,
             auto_healed_count=healed,
             clitic_fixed_count=clitic_fixed,
+            attention_savings_pct=attn_pct,
+        )
+
+    def route_document(self, document: str) -> DocumentRoutingResult:
+        """
+        Clause-aware document routing: independently profiles and routes each paragraph/sentence
+        (e.g., FAST_MSA for formal prose, DIALECT_PRESERVE for quotes/replies, NOISY_SOCIAL for tweets)
+        so mixed documents get optimal normalization without sacrificing local precision.
+        """
+        t0 = time.perf_counter()
+        if not document or not document.strip():
+            return DocumentRoutingResult(
+                original_text=document,
+                processed_text="",
+                segments=[],
+                segment_count=0,
+                route_distribution={"FAST_MSA": 0, "DIALECT_PRESERVE": 0, "NOISY_SOCIAL": 0},
+                latency_ms=0.0,
+                tokenizer_backend=self.tokenizer.backend_name,
+                raw_token_count=0,
+                processed_token_count=0,
+                unk_count_raw=0,
+                unk_count_processed=0,
+                token_reduction_pct=0.0,
+                attention_savings_pct=0.0,
+                auto_healed_count=0,
+                clitic_fixed_count=0,
+            )
+
+        segments: List[RoutingResult] = []
+        para_outputs: List[str] = []
+        dist: Dict[str, int] = {"FAST_MSA": 0, "DIALECT_PRESERVE": 0, "NOISY_SOCIAL": 0}
+
+        for line in document.splitlines():
+            clean_line = line.strip()
+            if not clean_line:
+                continue
+            clauses = SENTENCE_BOUNDARY_REGEX.split(clean_line)
+            clause_outputs: List[str] = []
+            for clause in clauses:
+                c = clause.strip()
+                if not c:
+                    continue
+                seg = self.route(c)
+                segments.append(seg)
+                dist[seg.route_name] = dist.get(seg.route_name, 0) + 1
+                if seg.processed_text:
+                    clause_outputs.append(seg.processed_text)
+            if clause_outputs:
+                para_outputs.append(" ".join(clause_outputs))
+
+        combined = "\n".join(para_outputs)
+        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        raw_sum = sum(s.raw_token_count for s in segments)
+        proc_sum = sum(s.processed_token_count for s in segments)
+        red_pct = ((raw_sum - proc_sum) / raw_sum * 100.0) if raw_sum > 0 else 0.0
+        attn_pct = ((1.0 - (proc_sum / raw_sum) ** 2) * 100.0) if raw_sum > 0 else 0.0
+
+        return DocumentRoutingResult(
+            original_text=document,
+            processed_text=combined,
+            segments=segments,
+            segment_count=len(segments),
+            route_distribution=dist,
+            latency_ms=elapsed_ms,
+            tokenizer_backend=self.tokenizer.backend_name,
+            raw_token_count=raw_sum,
+            processed_token_count=proc_sum,
+            unk_count_raw=sum(s.unk_count_raw for s in segments),
+            unk_count_processed=sum(s.unk_count_processed for s in segments),
+            token_reduction_pct=red_pct,
+            attention_savings_pct=attn_pct,
+            auto_healed_count=sum(s.auto_healed_count for s in segments),
+            clitic_fixed_count=sum(s.clitic_fixed_count for s in segments),
         )
 
     def route_batch(self, texts: Iterable[str]) -> List[RoutingResult]:

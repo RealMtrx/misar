@@ -16,6 +16,7 @@ from typing import List, Optional
 
 from . import __version__
 from .benchmark import run_benchmark
+from .evaluation import run_evaluation
 from .pipelines import SUPPORTED_EMOJI_MODES
 from .router import MisarRouter
 from .tokenizer import PRETRAINED_MODEL_CONFIGS
@@ -96,6 +97,12 @@ def cmd_bench(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_eval(args: argparse.Namespace) -> int:
+    keys = sorted(PRETRAINED_MODEL_CONFIGS.keys()) if args.all_models else [args.model]
+    run_evaluation(model_keys=keys, offline=args.offline, json_output=args.json)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -136,6 +143,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_bench.add_argument("--offline", action="store_true")
     p_bench.add_argument("--save-report", default="", help="Optional JSON output path")
     p_bench.set_defaults(func=cmd_bench)
+
+    p_eval = sub.add_parser("eval", help="Run semantic disambiguation, negation & cross-model evaluation")
+    p_eval.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_eval.add_argument("--all-models", action="store_true", help="Evaluate across all 5 Arabic Transformer vocabs")
+    p_eval.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_eval.add_argument("--offline", action="store_true")
+    p_eval.set_defaults(func=cmd_eval)
 
     return parser
 

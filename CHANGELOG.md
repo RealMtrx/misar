@@ -2,6 +2,16 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.1.0] — 2026-11-19
+
+### Added & Improved
+- **Unicode Presentation Forms & Keyboard Lookalike Defense (`normalize_unicode_safety`):** Recovers PDF Arabic Presentation Forms-A/B (`NFKC`: `ﺍﻟﺒﺮﻣﺠﺔ → البرمجة`, `ﻻ → لا`) without collapsing hamzas or taa marbuta, normalizes Persian/Urdu lookalikes (`ک → ك`, `ی/ے → ي`, `ۀ → ة`, `ہ/ھ → ه`), strips soft hyphens (`\u00AD`), and cleans smart typography/NBSP to eliminate `[UNK]` blindness on copied documents and multi-locale keyboards.
+- **Long-Essay Social Artifact Routing (`social_artifact_count`):** Inputs with explicit URLs, `@mentions`, or inline `#hashtags` (`hashtags + urls_mentions >= 1`) now dispatch cleanly through `NOISY_SOCIAL` (`preserve_orthography=True`) even on long MSA essays—stripping tracking links while respecting Markdown `# Heading` syntax.
+- **Clause-Aware Multi-Route Document Engine (`route_document` & `DocumentRoutingResult`):** Splits multi-paragraph / multi-sentence documents on line and punctuation boundaries (`SENTENCE_BOUNDARY_REGEX`), routes each clause independently (`FAST_MSA`, `DIALECT_PRESERVE`, `NOISY_SOCIAL`), and aggregates token, UNK, and route-distribution telemetry across the entire document.
+- **Quadratic Transformer Attention Economics (`attention_savings_pct`):** Computes $O(L^2)$ self-attention compute savings (`1 - (L_proc / L_raw)^2`) across `RoutingResult`, `DocumentRoutingResult`, REST API payloads, Web UI badges, and evaluation reports (saving **67.8%–74.3%** attention FLOPs across all 5 Arabic Transformer models).
+- **Scientific Cross-Model Evaluation Suite (`evaluation.py` & `misar eval`):** Added reproducible empirical verification across `arabertv02`, `arbertv2`, `camelbert-mix`, `marbertv2`, and `qarib` measuring Minimal-Pair Semantic Disambiguation (`عالمة/عالمه`, `مديرة/مديره`: **100% Misar vs 0% Legacy**), Dialectal Negation Preservation (**100%**), Sentiment Polarity Retention (**100%**), and Token/`O(L^2)` gains.
+- **Web Workbench & REST API (`v2.1.0`):** Added `POST /api/document`, optional `"document_mode": true` on `POST /api/route`, Clause-Aware per-segment badges (`#segmentsBar`), offline JS `normalizeUnicodeJS` + `routeDocumentJS` fallback, and quadratic `O(L²)` savings telemetry across **39/39** automated tests.
+
 ## [2.0.1] — 2026-11-19
 
 ### Fixed

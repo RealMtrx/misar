@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v1.0) — موجه المعالجة العربية التكيفية</title>
+  <title>مِسار (Misar v2.1.0) — موجه المعالجة العربية التكيفية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -319,6 +319,25 @@
       background: var(--bg-subtle);
       border-right: 4px solid var(--navy);
       font-size: 0.92rem;
+    }
+
+    .segments-bar {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .seg-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.78rem;
+      color: var(--text-main);
     }
 
     /* Metrics Strip (5 scientific metrics) */
@@ -654,7 +673,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.0.1</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v2.1.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -713,6 +732,10 @@
             <input type="checkbox" id="arabiziToggle" />
             <span>العربيزي (Arabizi)</span>
           </label>
+          <label class="ctrl-check">
+            <input type="checkbox" id="documentModeToggle" />
+            <span>توجيه متعدد الجمل والفقرات (<span class="ltr">Clause-Aware</span>)</span>
+          </label>
         </div>
       </div>
     </section>
@@ -756,6 +779,7 @@
         <strong>مبرر القرار: </strong>
         <span id="decisionReason">بانتظار إدخال النص...</span>
       </div>
+      <div class="segments-bar" id="segmentsBar" style="display: none;"></div>
     </section>
 
     <section class="card">
@@ -836,7 +860,7 @@
 
         <div class="compare-pane after">
           <div class="pane-head">
-            <h3>3. مِسار التكيفي (Misar v2.0)</h3>
+            <h3>3. مِسار التكيفي (Misar v2.1)</h3>
             <span class="token-badge ltr" id="procTokensCount">0 Tokens · TFR 0.00</span>
           </div>
           <div class="text-display" id="procTextDisplay">—</div>
@@ -872,7 +896,7 @@
     </section>
 
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.0.1 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v2.1.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -907,6 +931,12 @@
         label: "حماية النفي البرمجي والتضعيف",
         category: "اختبار النفي التقني والتضعيف (Negation & Gemination)",
         text: "والللله الكود مو معقد والأخطاء متكررررة في السيرفر وما أبي أعيد بناء Docker الحين"
+      },
+      {
+        label: "مستند مختلط (Clause-Aware + PDF)",
+        category: "وثيقة متعددة الفقرات واستعادة Unicode",
+        docMode: true,
+        text: "ﺍﻟﺒﺮﻣﺠﺔ هندسة دقيقة باستخدام کود سريع.\nالسيرفررررر الحين يجنن في الـ API والله يستاهل 😍🚀"
       }
     ];
 
@@ -947,7 +977,20 @@
     const RE_TASHKEEL = /[\u064B-\u065F\u0670]/g;
     const RE_TATWEEL = /\u0640/g;
     const RE_MARKS = /[\u0640\u064B-\u065F\u0670]/g;
-    const RE_ZERO_WIDTH = /[\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
+    const RE_ZERO_WIDTH = /[\u00AD\u200B-\u200F\u202A-\u202E\u2060\uFEFF]/g;
+    function normalizeUnicodeJS(text) {
+      if (!text) return "";
+      let s = text.replace(RE_ZERO_WIDTH, "").normalize("NFKC");
+      return s
+        .replace(/\u06A9/g, "\u0643")
+        .replace(/[\u06CC\u06D2]/g, "\u064A")
+        .replace(/\u06C0/g, "\u0629")
+        .replace(/[\u06C1\u06BE]/g, "\u0647")
+        .replace(/[\u00A0\u202F]/g, " ")
+        .replace(/[«»“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .replace(/[–—]/g, "-");
+    }
     const RE_MARRA = /^[وفب]?مر{2,}[ةه]$/;
     const RE_REPEATED = /(\p{L})\1{2,}/gu;
     const RE_EMOJI = /[\u{10000}-\u{10FFFF}\u2600-\u27BF\u2300-\u23FF\u2B00-\u2BFF\uFE0F]/gu;
@@ -1076,7 +1119,7 @@
       const emojiMode = opts.emoji_mode || "strip";
       const autoHeal = opts.auto_heal !== false;
       const arabiziMode = Boolean(opts.arabizi_mode);
-      const trimmed = (text || "").trim();
+      const trimmed = normalizeUnicodeJS(text || "").trim();
       const totalChars = trimmed.length;
       const arabicChars = (trimmed.match(RE_ARABIC_LETTER) || []).length;
       const latinChars = (trimmed.match(RE_LATIN_LETTER) || []).length;
@@ -1095,6 +1138,7 @@
       const punct = (trimmed.match(RE_PUNCT_REPEAT) || []).length;
       const tags = (trimmed.match(RE_HASHTAG) || []).length;
       const urls = (trimmed.match(RE_URL) || []).length + (trimmed.match(RE_MENTION) || []).length + (trimmed.match(RE_EMAIL) || []).length;
+      const socialArtifacts = tags + urls;
 
       const noisePenalty = tatweel * 1.5 + repRuns * 2.5 + excessRepeats * 1.0 + emojis * 1.2 + punct * 1.5 + tags * 2.0 + urls * 2.5;
       const noiseScore = totalChars ? Math.min(1.0, noisePenalty / Math.max(15, totalChars * 0.4)) : 0;
@@ -1123,7 +1167,7 @@
 
       if (totalChars === 0) {
         routeName = "FAST_MSA"; displayAr = "مسار الفصحى المباشر"; reason = "نص فارغ"; processed = "";
-      } else if (noiseScore >= 0.18 || repRuns >= 1) {
+      } else if (noiseScore >= 0.18 || repRuns >= 1 || socialArtifacts >= 1) {
         const hybrid = detected.length > 0;
         routeName = "NOISY_SOCIAL";
         displayAr = hybrid ? "مسار تنقية التواصل الاجتماعي (مع صون اللهجة)" : "مسار تنقية شبكات التواصل والضجيج";
@@ -1183,6 +1227,7 @@
       const tfrLeg = legacyToks.length ? legacyToks.length / Math.max(1, legacyWords) : 0;
       const tfrProc = procToks.length ? procToks.length / Math.max(1, procWords) : 0;
       const redPct = rawToks.length ? ((rawToks.length - procToks.length) / rawToks.length) * 100 : 0;
+      const attnPct = rawToks.length ? (1 - Math.pow(procToks.length / rawToks.length, 2)) * 100 : 0;
       const vsLegacyPct = legacyToks.length ? ((legacyToks.length - procToks.length) / legacyToks.length) * 100 : 0;
 
       return {
@@ -1193,6 +1238,7 @@
         legacy_token_count: legacyToks.length,
         legacy_tfr: tfrLeg,
         vs_legacy_reduction_pct: vsLegacyPct,
+        attention_savings_pct: attnPct,
         auto_healed_count: healedCount,
         clitic_fixed_count: cliticCount,
         route_name: routeName,
@@ -1221,6 +1267,61 @@
           detected_markers: detected,
           repeated_char_runs: repRuns
         }
+      };
+    }
+
+    function routeDocumentJS(text, opts = {}) {
+      const t0 = performance.now();
+      const base = routeOfflineJS(text, opts);
+      const lines = (text || "").split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      const segments = [];
+      const paraOutputs = [];
+      const dist = { FAST_MSA: 0, DIALECT_PRESERVE: 0, NOISY_SOCIAL: 0 };
+      for (const line of lines) {
+        const clauses = line.split(/(?<=[.؟!])\s+(?=[^\s])/).map(c => c.trim()).filter(Boolean);
+        const clauseOut = [];
+        for (const c of clauses) {
+          const seg = routeOfflineJS(c, opts);
+          segments.push(seg);
+          dist[seg.route_name] = (dist[seg.route_name] || 0) + 1;
+          if (seg.processed_text) clauseOut.push(seg.processed_text);
+        }
+        if (clauseOut.length) paraOutputs.push(clauseOut.join(" "));
+      }
+      if (!segments.length) return { ...base, is_document_mode: true, segments: [], segment_count: 0, route_distribution: dist };
+
+      const rawToks = segments.flatMap(s => s.raw_tokens);
+      const procToks = segments.flatMap(s => s.processed_tokens);
+      const combined = paraOutputs.join("\n");
+      const rawWords = Math.max(1, base.profile.word_count || 1);
+      const procWords = Math.max(1, combined ? combined.split(/\s+/).length : 1);
+      const redPct = rawToks.length ? ((rawToks.length - procToks.length) / rawToks.length) * 100 : 0;
+      const attnPct = rawToks.length ? (1 - Math.pow(procToks.length / rawToks.length, 2)) * 100 : 0;
+      const vsLegacyPct = base.legacy_token_count ? ((base.legacy_token_count - procToks.length) / base.legacy_token_count) * 100 : 0;
+      const activeParts = Object.entries(dist).filter(([, v]) => v > 0);
+      const dominant = activeParts.length ? activeParts.sort((a, b) => b[1] - a[1])[0][0] : "FAST_MSA";
+
+      return {
+        ...base,
+        is_document_mode: true,
+        processed_text: combined,
+        segments,
+        segment_count: segments.length,
+        route_distribution: dist,
+        route_name: dominant,
+        decision_reason: `توجيه سياقي على مستوى الجمل (${segments.length} مقاطع: ${activeParts.map(([k, v]) => `${v} ${k}`).join(" · ")})`,
+        latency_ms: performance.now() - t0,
+        raw_tokens: rawToks,
+        processed_tokens: procToks,
+        raw_token_count: rawToks.length,
+        processed_token_count: procToks.length,
+        tfr_raw: rawToks.length / rawWords,
+        tfr_processed: procToks.length / procWords,
+        token_reduction_pct: redPct,
+        attention_savings_pct: attnPct,
+        vs_legacy_reduction_pct: vsLegacyPct,
+        auto_healed_count: segments.reduce((a, b) => a + b.auto_healed_count, 0),
+        clitic_fixed_count: segments.reduce((a, b) => a + b.clitic_fixed_count, 0)
       };
     }
 
@@ -1260,6 +1361,7 @@
         emoji_mode: document.getElementById("emojiModeSelect").value || "strip",
         auto_heal: document.getElementById("autoHealToggle").checked,
         arabizi_mode: document.getElementById("arabiziToggle").checked,
+        document_mode: document.getElementById("documentModeToggle").checked,
       };
     }
 
@@ -1267,7 +1369,8 @@
       const opts = getActiveOptions();
       if (backendAvailable) {
         try {
-          const res = await fetch("/api/route", {
+          const endpoint = opts.document_mode ? "/api/document" : "/api/route";
+          const res = await fetch(endpoint, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text, ...opts })
@@ -1275,7 +1378,7 @@
           if (res.ok) return await res.json();
         } catch (_) { backendAvailable = false; }
       }
-      return routeOfflineJS(text, opts);
+      return opts.document_mode ? routeDocumentJS(text, opts) : routeOfflineJS(text, opts);
     }
 
     function renderChips(id, tokens, isRaw) {
@@ -1321,8 +1424,34 @@
       document.getElementById("charCounter").textContent = `${p.total_chars} حرف · ${p.word_count} كلمة`;
       document.getElementById("tokenizerBanner").textContent = `المجزئ النشط: ${data.tokenizer_backend}`;
 
-      document.querySelectorAll(".route-card").forEach(c => c.classList.toggle("active", c.dataset.route === data.route_name));
+      document.querySelectorAll(".route-card").forEach(c => {
+        const isActive = data.is_document_mode && data.route_distribution
+          ? (data.route_distribution[c.dataset.route] || 0) > 0
+          : c.dataset.route === data.route_name;
+        c.classList.toggle("active", isActive);
+      });
       document.getElementById("decisionReason").textContent = data.decision_reason;
+
+      const segBar = document.getElementById("segmentsBar");
+      segBar.textContent = "";
+      if (data.is_document_mode && Array.isArray(data.segments) && data.segments.length) {
+        segBar.style.display = "flex";
+        data.segments.forEach((seg, idx) => {
+          const badge = document.createElement("span");
+          badge.className = "seg-badge";
+          const pill = document.createElement("span");
+          pill.className = `route-pill pill-${seg.route_name} ltr`;
+          pill.textContent = `#${idx + 1} ${seg.route_name}`;
+          const stats = document.createElement("span");
+          stats.className = "ltr";
+          const sSign = seg.token_reduction_pct >= 0 ? "-" : "+";
+          stats.textContent = `${sSign}${Math.abs(seg.token_reduction_pct).toFixed(0)}% tok`;
+          badge.append(pill, stats);
+          segBar.appendChild(badge);
+        });
+      } else {
+        segBar.style.display = "none";
+      }
 
       document.getElementById("valDialect").textContent = p.dialect_ratio.toFixed(2);
       document.getElementById("barDialect").style.width = `${Math.min(100, Math.round(p.dialect_ratio * 100))}%`;
@@ -1391,12 +1520,21 @@
       document.getElementById("procTokensCount").textContent = `${data.processed_token_count} Tokens · TFR ${data.tfr_processed.toFixed(2)}`;
 
       const legSign = (vsLeg || 0) >= 0 ? "-" : "+";
+      const attnPct = typeof data.attention_savings_pct === "number"
+        ? data.attention_savings_pct
+        : (data.raw_token_count > 0 ? (1 - Math.pow(data.processed_token_count / data.raw_token_count, 2)) * 100 : 0);
+      const attnSign = attnPct >= 0 ? "-" : "+";
       const advEl = document.getElementById("v2AdvantageBadge");
       advEl.textContent = "تفوق على التقليدي: ";
       const advPct = document.createElement("span");
       advPct.className = "ltr";
       advPct.textContent = `${legSign}${Math.abs(vsLeg || 0).toFixed(1)}%`;
       advEl.appendChild(advPct);
+      advEl.appendChild(document.createTextNode(" | وفر الانتباه التربيعي "));
+      const attnLtr = document.createElement("span");
+      attnLtr.className = "ltr";
+      attnLtr.textContent = `O(L²): ${attnSign}${Math.abs(attnPct).toFixed(1)}%`;
+      advEl.appendChild(attnLtr);
       advEl.appendChild(document.createTextNode(` | ترميم إملائي: ${data.auto_healed_count || 0} | صلة لغوية: ${data.clitic_fixed_count || 0}`));
 
       renderChips("rawTokensChips", data.raw_tokens, true);
@@ -1512,6 +1650,7 @@
         btn.addEventListener("click", () => {
           document.querySelectorAll(".preset-btn").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
+          document.getElementById("documentModeToggle").checked = Boolean(p.docMode);
           document.getElementById("inputText").value = p.text;
           triggerAnalysis();
         });
@@ -1530,7 +1669,7 @@
         timer = setTimeout(triggerAnalysis, 90);
       });
       document.getElementById("analyzeBtn").addEventListener("click", triggerAnalysis);
-      for (const ctrlId of ["modelSelect", "emojiModeSelect", "autoHealToggle", "arabiziToggle"]) {
+      for (const ctrlId of ["modelSelect", "emojiModeSelect", "autoHealToggle", "arabiziToggle", "documentModeToggle"]) {
         document.getElementById(ctrlId).addEventListener("change", triggerAnalysis);
       }
       document.getElementById("clearBtn").addEventListener("click", () => {

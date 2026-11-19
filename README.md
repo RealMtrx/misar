@@ -10,9 +10,10 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-1e40af.svg)](https://www.python.org/downloads/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero%20mandatory-15803d.svg)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0f2942.svg)](https://github.com/RealMtrx/misar/blob/main/LICENSE)
-[![Latency](https://img.shields.io/badge/CPU%20latency-0.24%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
+[![Latency](https://img.shields.io/badge/CPU%20latency-0.27%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
 [![Token Reduction](https://img.shields.io/badge/tokens%20saved--46.91%25-16a34a.svg)](#empirical-benchmarks)
-[![Throughput](https://img.shields.io/badge/ETL%20throughput-4%2C763%20texts%2Fs-0d9488.svg)](#empirical-benchmarks)
+[![Attention FLOPs](https://img.shields.io/badge/O(L%C2%B2)%20attention%20saved--71.8%25-7c3aed.svg)](#scientific-cross-model-evaluation)
+[![Throughput](https://img.shields.io/badge/ETL%20throughput-4%2C771%20texts%2Fs-0d9488.svg)](#empirical-benchmarks)
 
 [Architecture](#architecture) • [Benchmarks](#empirical-benchmarks) • [Installation](#installation) • [Quick Start](#quick-start) • [CLI & Workbench](#cli--web-workbench) • [Citation](#citation) • [النسخة العربية](#-نظرة-عامة-بالعربية)
 
@@ -34,16 +35,16 @@ Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneou
 
 **Misar (`مِسار`)** solves these bottlenecks **without retraining any model (`Zero Parameter Update`)** by acting as an ultra-lightweight, zero-dependency, linear-time $O(n)$ routing gateway directly in front of **AraBERTv2, MARBERTv2, CAMeLBERT-Mix, ARBERTv2, QARiB**, or generative LLMs.
 
-### How Misar v2.0 Compares to Existing Arabic Preprocessors
+### How Misar v2.1 Compares to Existing Arabic Preprocessors
 
-| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v2.0 (`مِسار`)** |
+| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v2.1 (`مِسار`)** |
 | :--- | :---: | :---: | :---: | :---: |
-| **Dynamic $O(n)$ Per-Text Routing** | Static pipeline | Static pipeline | Manual utilities | **Automatic 3-route profiling** |
+| **Dynamic $O(n)$ + Clause-Aware Routing** | Static pipeline | Static pipeline | Manual utilities | **Per-text & Multi-Clause `route_document()`** |
 | **Zero Mandatory Dependencies** | Requires `pyarabic` / extras | Light deps | Heavy ML / data packs | **100% Pure Python Stdlib** |
-| **Vocab-Verified Auto-Heal (`ة`/`ه`)** | Collapses `ة→ه` blindly | Optional regex | Separate disambig | **$O(1)$ Pronoun-Safe Vocab Repair** |
+| **Unicode Presentation Forms & Farsi Lookalikes** | Partial regex | Partial regex | Partial utils | **`NFKC` + Lookalike Defense (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`)** |
+| **Vocab-Verified Auto-Heal & Semantic Pairs** | Collapses `ة→ه` (`0%` pair disambig) | Optional regex | Separate disambig | **`100%` Minimal-Pair Disambiguation + Auto-Heal** |
 | **5 Arabic Transformer Vocabs (`do_lower_case`)** | AraBERT focus | Generic | General NLP | **AraBERTv2, MARBERTv2, ARBERTv2, CAMeLBERT, QARiB** |
-| **Emoji Polarity Modes & Code-Switch Clitics** | Strip / Placeholders | Strip | Strip | **Strip / Keep / Sentiment Tag + `الـAPI` Fix** |
-| **3-Way Scientific Web Workbench + REST API** | — | — | CLI only | **Built-in Live Comparator UI (`Raw` vs `Legacy` vs `Misar`)** |
+| **Scientific Evaluator & $O(L^2)$ Telemetry** | — | — | CLI only | **Built-in `misar eval --all-models` & Live UI** |
 
 ---
 
@@ -57,7 +58,7 @@ flowchart LR
     B -->|"High Noise / Tatweel / Stretches ≥ 3"| C["NOISY_SOCIAL (+ Hybrid Dialect)<br/>Gemination-Safe Collapse + Emoji Polarity"]
     B -->|"Dialect Markers / Protected Negations"| D["DIALECT_PRESERVE<br/>Negation Protection + Vocab Auto-Heal"]
     B -->|"Clean MSA / Classical Diacritized"| E["FAST_MSA<br/>Strip Harakat · Preserve أ/إ/آ, ة, ى"]
-    C --> F["AraBERTv2 / MARBERTv2 / CAMeLBERT / LLMs<br/>(-46.91% Tokens · 0 [UNK] · 4,763 texts/s)"]
+    C --> F["AraBERTv2 / MARBERTv2 / CAMeLBERT / LLMs<br/>(-46.91% Tokens · -71.8% O(L²) Attn · 4,771 texts/s)"]
     D --> F
     E --> F
 ```
@@ -74,9 +75,21 @@ Measured reproducibly via `python benchmarks/run_benchmark.py` against the authe
 | **Classical Diacritized (Heritage)** | 3 | 186 *(147 OOV `[UNK]`)* | 48 | **39** | **`-79.03%`** vs Raw · **`-18.75%`** vs Legacy (`0 [UNK]`) |
 | **Saudi / Gulf / Levantine / Maghrebi Dev** | 6 | 124 | 131 | **117** | **`-5.65%`** vs Raw · **`-10.69%`** vs Legacy (+ Auto-Heal & Negations) |
 | **Noisy Tech Social & Code-Switching** | 3 | 102 | 40 | **36** | **`-64.71%`** vs Raw · **`-10.00%`** vs Legacy + gemination intact |
-| **Full Corpus Summary** | **15** | **469** | **298** | **249** | **`-46.91%` vs Raw · `-16.44%` vs Fair Legacy · `4,763 texts/s`** |
+| **Full Corpus Summary** | **15** | **469** | **298** | **249** | **`-46.91%` vs Raw · `-16.44%` vs Fair Legacy · `4,771 texts/s`** |
 
-> **Key Scientific Proof:** Even when competing against an identical full-denoising Legacy Static baseline (`URL/Emoji/Hashtag/Stretch removal + ة→ه, أ→ا`), Misar v2.0 still saves **16.44%** fewer tokens than Legacy Static (**46.91%** vs Raw), eliminates **`157 → 0 [UNK]`** tokens, repairs broken orthography (`Auto-Heal`), preserves dialectal negations, and streams at **4,763 texts/sec** on CPU.
+> **Key Scientific Proof:** Even when competing against an identical full-denoising Legacy Static baseline (`URL/Emoji/Hashtag/Stretch removal + ة→ه, أ→ا`), Misar v2.1 still saves **16.44%** fewer tokens than Legacy Static (**46.91%** vs Raw), eliminates **`157 → 0 [UNK]`** tokens, repairs broken orthography (`Auto-Heal`), preserves dialectal negations, and streams at **4,771 texts/sec** on CPU.
+
+### Scientific Cross-Model Evaluation (`misar eval --all-models`)
+
+Measured live across all 5 authentic Hugging Face Arabic Transformer vocabularies (`evaluation.py`):
+
+| Model Key | Vocabulary Backend | Semantic Minimal-Pair Disambig (`Misar` vs `Legacy`) | Dialect Negation Safety | Emoji Polarity Retention | Tokens vs Raw / vs Legacy | Quadratic $O(L^2)$ Attention Saved |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **`arabertv02`** | `aubmindlab/bert-base-arabertv02` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-46.9%` / `-16.4%`** | **`-71.8%`** |
+| **`arbertv2`** | `UBC-NLP/ARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-49.3%` / `-15.6%`** | **`-74.3%`** |
+| **`camelbert-mix`** | `CAMeL-Lab/bert-base-arabic-camelbert-mix` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-43.2%` / `-8.7%`** | **`-67.8%`** |
+| **`marbertv2`** | `UBC-NLP/MARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-47.9%` / `-7.5%`** | **`-72.8%`** |
+| **`qarib`** | `qarib/bert-base-qarib` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-45.5%` / `-9.0%`** | **`-70.3%`** |
 
 ---
 
@@ -121,23 +134,24 @@ print("Reduction: ", f"-{result.token_reduction_pct:.1f}%")                     
 print("Latency:   ", f"{result.latency_ms:.3f} ms")
 ```
 
-### 2. Zero-Latency ETL Batching, `Auto-Heal`, Sentiment Emoji & Hugging Face `datasets`
+### 2. Clause-Aware Multi-Route Documents, Unicode PDF Defense & Batching
 
 ```python
 from misar import MisarRouter, preprocess, preprocess_batch
 
-# One-line module helpers
-clean = preprocess("الســــلام علــــيكم ومافيه مشكلة #تطوير_البرمجيات")
-# -> "السلام عليكم ومافيه مشكلة تطوير البرمجيات"
+router = MisarRouter(model_key="arabertv02", emoji_mode="sentiment", auto_heal=True)
 
-# MARBERTv2 social mode: preserves sentiment emojis as 1-token tags + vocab-verified Auto-Heal + Clitics
-router = MisarRouter(model_key="marbertv2", emoji_mode="sentiment", auto_heal=True)
-comp = router.compare_baselines("ياخي البرمجه في المنصه هاذي بطييييئه 😡😡 في الـ Backend")
-print("Processed:", comp["misar"]["processed_text"])
-print("vs Legacy:", f"{comp['vs_legacy_reduction_pct']:+.1f}%")
+# Recovers PDF Arabic Presentation Forms + Persian keyboard lookalikes (کود -> كود)
+# AND routes formal vs. social sentences independently in multi-clause documents:
+doc_res = router.route_document(
+    "ﺍﻟﺒﺮﻣﺠﺔ هندسة دقيقة باستخدام کود سريع.\n"
+    "السيرفررررر الحين يجنن في الـ API والله يستاهل 😍🚀"
+)
+print("Distribution:", doc_res.route_distribution)      # {'FAST_MSA': 1, 'DIALECT_PRESERVE': 0, 'NOISY_SOCIAL': 1}
+print("Attention Saved:", f"-{doc_res.attention_savings_pct:.1f}%")
 
 # Fast streaming batch preprocessing & Hugging Face Datasets .map(..., batched=True)
-cleaned_list = router.preprocess_batch(["نص أول", "نص ثاااني 😡"])
+cleaned_list = preprocess_batch(["نص أول", "نص ثاااني 😡"])
 # dataset = dataset.map(router.hf_dataset_map, batched=True)
 ```
 
@@ -169,8 +183,9 @@ misar route "ياخي البرمجه في المنصه هاذي بطيييئة �
 # Select target model vocab (arabertv02, camelbert-mix, marbertv2, arbertv2, qarib)
 misar route "أعلنت منصة المطورين عن ترقية واجهة البرمجة API" --model marbertv2 --json
 
-# Run the reproducible 15-sample benchmark suite
+# Run the reproducible 15-sample benchmark suite & 5-model scientific evaluation
 misar bench
+misar eval --all-models
 
 # Launch the interactive RTL Web Workbench & hardened REST API on http://127.0.0.1:8050
 misar serve
@@ -182,7 +197,8 @@ misar serve
 | :--- | :--- | :--- |
 | `GET` | `/api/health` | Service status, version, and active tokenizer backend |
 | `GET` | `/api/suite` | Evaluates the 6 standard cross-domain reference samples |
-| `POST` | `/api/route` | Body `{"text": "..."}` → Returns full `RoutingResult` telemetry |
+| `POST` | `/api/route` | Body `{"text": "..."}` → Full `RoutingResult` (supports `document_mode: true`) |
+| `POST` | `/api/document` | Body `{"text": "..."}` → Clause-aware `DocumentRoutingResult` + $O(L^2)$ metrics |
 | `POST` | `/api/batch` | Body `{"texts": ["...", "..."]}` → Batch routes up to 500 strings (`1 MiB` payload limit) |
 
 ---
@@ -203,12 +219,13 @@ misar/
 │   ├── pipelines.py                   # FAST_MSA, DIALECT_PRESERVE & NOISY_SOCIAL passes
 │   ├── tokenizer.py                   # Pure-Python WordPieceTokenizer + HF & offline adapters
 │   ├── router.py                      # MisarRouter orchestration & wrap_hf_pipeline
+│   ├── evaluation.py                  # Multi-model scientific evaluation suite (disambig/polarity/O(L^2))
 │   ├── benchmark.py                   # Shared benchmark suite module
-│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `bench`, `serve`)
+│   ├── cli.py                         # `misar` CLI (`demo`, `route`, `bench`, `eval`, `serve`)
 │   └── web/
 │       ├── server.py                  # Hardened zero-dependency ThreadingHTTPServer REST API
 │       └── index.html                 # Interactive Arabic RTL Workbench & token visualizer
-├── tests/test_misar.py                # 32 unit, v2 feature, server & real-vocab tests
+├── tests/test_misar.py                # 39 unit, v2.1 feature, server & real-vocab tests
 ├── CITATION.cff                       # Native GitHub repository citation metadata
 ├── CONTRIBUTING.md                    # Developer setup & contribution standards
 ├── SECURITY.md                        # Built-in API & frontend hardening controls
@@ -225,7 +242,7 @@ misar/
 python -m unittest discover -s tests -v
 ```
 
-All **32 automated tests** verify profiler mathematics, MSA homograph false-positive resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
+All **39 automated tests** verify profiler mathematics, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
 
 ---
 
@@ -238,7 +255,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
   author       = {Muneer Jarab Matrak Al-Theeb},
   title        = {Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router for Transformer Language Models},
   year         = {2026},
-  version      = {2.0.0},
+  version      = {2.1.0},
   url          = {https://github.com/RealMtrx/misar},
   license      = {MIT}
 }
@@ -248,10 +265,10 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v2.0.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.24 مللي ثانية** للنص وبسرعة **4,763 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v2.1.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.27 مللي ثانية** للنص وبسرعة **4,771 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
-* **توجيه ثلاثي المسارات + الترميم المعجمي (`Vocab Auto-Heal`):** يختار ديناميكياً بين `FAST_MSA` و`DIALECT_PRESERVE` و`NOISY_SOCIAL`، ويرمّم أخطاء التاء المربوطة الشائعة (`البرمجه ← البرمجة`) بالتحقق اللحظي من قاموس النموذج دون المساس بالضمائر (`بيته، ملفه، مديره`)، ويعالج سوابق اللغات المختلطة (`الـ Backend ← الBackend`) مع أوضاع مرنة لحفظ قطبية الإيموجي ودعم العربيزي و`Hugging Face Datasets`.
-* **توفير التوكنات وتكاليف الـ APIs:** أظهرت التجارب الموثقة على معجم `AraBERTv2` خفض التوكنات بنسبة **46.91%** مقارنة بالنص الخام و**16.44%** مقارنة بالمناهج التدميرية التقليدية، مع استعادة **100%** من الكلمات المتأثرة بالتشكيل والكشيدة (`157 → 0 [UNK]`).
+* **توجيه سياقي متعدد الجمل (`route_document`) + دفاع Unicode:** يختار ديناميكياً على مستوى المستند أو كل فقرة وجملة بين `FAST_MSA` و`DIALECT_PRESERVE` و`NOISY_SOCIAL`، يستعيد أشكال العرض المعزولة لملفات PDF (`NFKC`: `ﺍﻟﺒﺮﻣﺠﺔ ← البرمجة`) ومحارف لوحات المفاتيح الفارسية/الأردية (`ک/ی ← ك/ي`)، ويرمّم أخطاء التاء المربوطة (`البرمجه ← البرمجة`) دون المساس بالضمائر (`بيته، ملفه، مديره`).
+* **توفير التوكنات وتكاليف الانتباه التربيعي $O(L^2)$:** أظهرت التجارب الموثقة (`misar eval --all-models`) تفوق **100% مقابل 0%** في تمييز الثنائيات الصرفية (`عالمة/عالمه`)، وحفظ **100%** من النفي اللهجي وقطبية المشاعر، وخفض التوكنات بنسبة **46.91%** مقابل الخام و**16.44%** مقابل المناهج التقليدية (ما يوفّر **67.8%–74.3%** من عمليات الانتباه $O(L^2)$ واستعادة `157 → 0 [UNK]`).
 
 ---
 

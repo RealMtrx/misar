@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.1.0",
   "tokenizer": "aubmindlab/bert-base-arabertv02 (WordPiece)",
   "corpus_size": 15,
   "total_raw_tokens": 469,
@@ -11,8 +11,8 @@
   "total_unk_misar": 0,
   "token_reduction_vs_raw_pct": 46.91,
   "token_reduction_vs_legacy_pct": 16.44,
-  "avg_latency_ms": 0.2362,
-  "throughput_texts_per_sec": 4762.5,
+  "avg_latency_ms": 0.2712,
+  "throughput_texts_per_sec": 4771.1,
   "rows": [
     {
       "idx": 1,
@@ -27,7 +27,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 30.43,
-      "latency_ms": 0.3268
+      "latency_ms": 0.3208
     },
     {
       "idx": 2,
@@ -42,7 +42,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 23.33,
-      "latency_ms": 0.1944
+      "latency_ms": 0.1897
     },
     {
       "idx": 3,
@@ -57,7 +57,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 30.77,
-      "latency_ms": 0.1816
+      "latency_ms": 0.1749
     },
     {
       "idx": 4,
@@ -72,7 +72,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.46,
       "reduction_vs_legacy_pct": 12.5,
-      "latency_ms": 0.2844
+      "latency_ms": 0.3
     },
     {
       "idx": 5,
@@ -87,7 +87,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 80.33,
       "reduction_vs_legacy_pct": 20.0,
-      "latency_ms": 0.268
+      "latency_ms": 0.2874
     },
     {
       "idx": 6,
@@ -102,7 +102,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.33,
       "reduction_vs_legacy_pct": 23.53,
-      "latency_ms": 0.2512
+      "latency_ms": 0.2829
     },
     {
       "idx": 7,
@@ -117,7 +117,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 4.35,
       "reduction_vs_legacy_pct": 8.33,
-      "latency_ms": 0.3124
+      "latency_ms": 0.3757
     },
     {
       "idx": 8,
@@ -132,7 +132,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 6.67,
       "reduction_vs_legacy_pct": 17.65,
-      "latency_ms": 0.2087
+      "latency_ms": 0.307
     },
     {
       "idx": 9,
@@ -147,7 +147,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 5.88,
       "reduction_vs_legacy_pct": 15.79,
-      "latency_ms": 0.1792
+      "latency_ms": 0.4038
     },
     {
       "idx": 10,
@@ -162,7 +162,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 14.81,
       "reduction_vs_legacy_pct": 14.81,
-      "latency_ms": 0.2142
+      "latency_ms": 0.2433
     },
     {
       "idx": 11,
@@ -177,7 +177,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 8.0,
-      "latency_ms": 0.1952
+      "latency_ms": 0.1962
     },
     {
       "idx": 12,
@@ -192,7 +192,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 0.0,
-      "latency_ms": 0.1954
+      "latency_ms": 0.2034
     },
     {
       "idx": 13,
@@ -207,7 +207,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 50.0,
       "reduction_vs_legacy_pct": 12.5,
-      "latency_ms": 0.3167
+      "latency_ms": 0.3309
     },
     {
       "idx": 14,
@@ -222,7 +222,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 79.17,
       "reduction_vs_legacy_pct": 0.0,
-      "latency_ms": 0.1906
+      "latency_ms": 0.1959
     },
     {
       "idx": 15,
@@ -237,7 +237,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 53.85,
       "reduction_vs_legacy_pct": 14.29,
-      "latency_ms": 0.2247
+      "latency_ms": 0.2562
     }
   ]
 }

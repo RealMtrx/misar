@@ -32,6 +32,7 @@ from .lexicons import (
     TATWEEL_REGEX,
     URL_REGEX,
     ZERO_WIDTH_REGEX,
+    normalize_unicode_safety,
 )
 from .tokenizer import TokenizerProtocol
 
@@ -204,7 +205,8 @@ class MSALightPipeline:
         self.emoji_mode = emoji_mode
 
     def process_with_stats(self, text: str) -> Tuple[str, int, int]:
-        t = strip_markup_noise(text)
+        t = normalize_unicode_safety(text)
+        t = strip_markup_noise(t)
         t = ZERO_WIDTH_REGEX.sub("", t)
         t, clitic_fixed = clean_code_switching_clitics(t)
         t = process_emojis(t, self.emoji_mode)
@@ -249,7 +251,8 @@ class DialectPreservePipeline:
         self.emoji_mode = emoji_mode
 
     def process_with_stats(self, text: str) -> Tuple[str, int, int]:
-        t = strip_markup_noise(text)
+        t = normalize_unicode_safety(text)
+        t = strip_markup_noise(t)
         t = ZERO_WIDTH_REGEX.sub("", t)
         t, clitic_fixed = clean_code_switching_clitics(t)
         t = process_emojis(t, self.emoji_mode)
@@ -303,7 +306,8 @@ class NoisySocialPipeline:
         self.arabizi_mode = arabizi_mode
 
     def process_with_stats(self, text: str, apply_dialect_cleanup: bool = False) -> Tuple[str, int, int]:
-        t = strip_markup_noise(text)
+        t = normalize_unicode_safety(text)
+        t = strip_markup_noise(t)
         t = ZERO_WIDTH_REGEX.sub("", t)
         t, clitic_fixed = clean_code_switching_clitics(t)
         t = TATWEEL_REGEX.sub("", t)

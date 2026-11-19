@@ -19,6 +19,7 @@ from misar import (
     compute_shannon_entropy,
 )
 from misar.cli import build_parser
+from misar.evaluation import evaluate_system
 from misar.tokenizer import PRETRAINED_MODEL_CONFIGS, PRETRAINED_VOCAB_URLS, load_default_tokenizer
 from misar.web.server import bind_server
 
@@ -256,6 +257,53 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
             self.assertNotIn(em, res.processed_text)
         self.assertEqual(res.unk_count_processed, 0)
 
+    def test_unicode_presentation_forms_and_farsi_variants_recovered(self):
+        messy = "ﺍﻟﺒﺮﻣﺠﺔ ﻻ تقتصر على کود\u00A0سریع في أإآةى"
+        res = self.router_offline.route(messy)
+        self.assertIn("البرمجة", res.processed_text)
+        self.assertIn("لا", res.processed_text)
+        self.assertIn("كود سريع", res.processed_text)
+        self.assertIn("أإآةى", res.processed_text)
+
+    def test_long_essay_cleans_trailing_url_and_inline_hashtag(self):
+        long_msa = (
+            "تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة لتحسين كفاءة المعالجة وتقليل زمن الاستدلال. "
+            "كما تواصل المختبرات البحثية تطوير أدوات قياس جودة المفردات العربية بدقة عالية وتكلفة منخفضة في بيئات الإنتاج السحابية "
+            "عبر معايير هندسية موثوقة لجميع المطورين في العالم العربي. https://github.com/RealMtrx/misar #هندسة_البرمجيات"
+        )
+        res = self.router_offline.route(long_msa)
+        self.assertEqual(res.route_name, "NOISY_SOCIAL")
+        self.assertNotIn("https://", res.processed_text)
+        self.assertNotIn("#", res.processed_text)
+        self.assertIn("الحوسبة", res.processed_text)
+        self.assertIn("هندسة البرمجيات", res.processed_text)
+
+    def test_route_document_multi_clause_and_attention_flops(self):
+        doc = (
+            "تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة.\n"
+            "والله السيرفر الحين صار يجنن واستجابته سريعة شويتين.\n"
+            "السيرفررررر بطييييء جداااااا 😡 #هندسة_البرمجيات"
+        )
+        doc_res = self.router_offline.route_document(doc)
+        self.assertEqual(doc_res.segment_count, 3)
+        self.assertEqual(
+            [seg.route_name for seg in doc_res.segments],
+            ["FAST_MSA", "DIALECT_PRESERVE", "NOISY_SOCIAL"],
+        )
+        self.assertIn("\n", doc_res.processed_text)
+        self.assertGreater(doc_res.attention_savings_pct, 0.0)
+
+    def test_scientific_evaluation_minimal_pairs_and_polarity(self):
+        report = evaluate_system(router=self.router_offline)
+        self.assertEqual(report["misar_disambiguation_pct"], 100.0)
+        self.assertEqual(report["legacy_disambiguation_pct"], 0.0)
+        self.assertEqual(report["negation_preservation_pct"], 100.0)
+        self.assertEqual(report["sentiment_polarity_pct"], 100.0)
+        parser = build_parser()
+        args = parser.parse_args(["eval", "--all-models", "--offline"])
+        self.assertTrue(args.all_models)
+        self.assertTrue(args.offline)
+
 
 class TestRealAraBERTv2WordPiece(unittest.TestCase):
     """Empirical proof against the authentic 64,000-token AraBERTv2 vocabulary."""
@@ -345,6 +393,16 @@ class TestRealAraBERTv2WordPiece(unittest.TestCase):
         self.assertLess(res.processed_token_count, res.raw_token_count)
         self.assertEqual(res.unk_count_processed, 0)
 
+    def test_real_arabert_recovers_presentation_forms_and_farsi_zero_unk(self):
+        if not self.available:
+            self.skipTest("AraBERTv2 vocab unavailable offline")
+        raw = "ﺍﻟﺒﺮﻣﺠﺔ ﻻ تقبل کود سرييييیع جــــديدة"
+        res = self.router.route(raw)
+        self.assertGreaterEqual(res.unk_count_raw, 4)
+        self.assertEqual(res.unk_count_processed, 0)
+        self.assertEqual(res.processed_text, "البرمجة لا تقبل كود سريع جديدة")
+        self.assertGreater(res.attention_savings_pct, 0.0)
+
 
 class TestMisarHTTPServer(unittest.TestCase):
     @classmethod
@@ -424,6 +482,41 @@ class TestMisarHTTPServer(unittest.TestCase):
             self.assertIn("سلبي", data["processed_text"])
             self.assertIn("إيجابي", data["processed_text"])
             self.assertIn("الAPI", data["processed_text"])
+            self.assertIn("attention_savings_pct", data)
+
+    def test_v21_document_mode_and_attention_savings(self):
+        doc = "البرمجة منهج علمي دقيق.\nالسيرفررررر بطييييء مررررة!!"
+        for endpoint, extra in (("/api/document", {}), ("/api/route", {"document_mode": True})):
+            body = {"text": doc, **extra}
+            req = urllib.request.Request(
+                f"{self.base}{endpoint}",
+                data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+                headers={"Content-Type": "application/json; charset=utf-8"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                self.assertEqual(resp.status, 200)
+                data = json.loads(resp.read().decode("utf-8"))
+                self.assertEqual(data["segment_count"], 2)
+                self.assertEqual(len(data["segments"]), 2)
+                self.assertEqual(data["segments"][0]["route_name"], "FAST_MSA")
+                self.assertEqual(data["segments"][1]["route_name"], "NOISY_SOCIAL")
+                self.assertGreater(data["attention_savings_pct"], 0.0)
+                self.assertIn("legacy_text", data)
+                self.assertIn("vs_legacy_reduction_pct", data)
+                self.assertIn("raw_tokens", data)
+                self.assertIn("processed_tokens", data)
+
+        bad_req = urllib.request.Request(
+            f"{self.base}/api/route",
+            data=json.dumps({"text": doc, "document_mode": "yes"}).encode("utf-8"),
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with self.assertRaises(urllib.error.HTTPError) as ctx:
+            urllib.request.urlopen(bad_req, timeout=5)
+        self.assertEqual(ctx.exception.code, 400)
+        ctx.exception.close()
 
 
 if __name__ == "__main__":

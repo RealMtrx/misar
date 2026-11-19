@@ -69,6 +69,57 @@ def _format_compare_payload(comp: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
+def _format_document_payload(active_router: MisarRouter, text: str) -> Dict[str, Any]:
+    doc_res = active_router.route_document(text)
+    out = doc_res.to_dict()
+    profile = active_router.profiler.analyze(text)
+    raw_tokens = [tok for seg in doc_res.segments for tok in seg.raw_tokens]
+    proc_tokens = [tok for seg in doc_res.segments for tok in seg.processed_tokens]
+
+    legacy_text = active_router._legacy_baseline.process(text, apply_dialect_cleanup=False)
+    legacy_tokens = active_router.tokenizer.tokenize(legacy_text)
+    legacy_count = len(legacy_tokens)
+    if active_router.tokenizer.is_real_vocab:
+        legacy_unk = sum(1 for tok in legacy_tokens if tok == "[UNK]" or not active_router.tokenizer.has_token(tok))
+    else:
+        legacy_unk = legacy_tokens.count("[UNK]")
+    legacy_words = max(1, len(legacy_text.split())) if legacy_text else 1
+    legacy_tfr = (legacy_count / legacy_words) if legacy_count > 0 else 0.0
+    vs_legacy_pct = (
+        ((legacy_count - doc_res.processed_token_count) / legacy_count * 100.0)
+        if legacy_count > 0
+        else 0.0
+    )
+
+    raw_words = max(1, profile.word_count) if profile.word_count > 0 else 1
+    proc_words = max(1, len(doc_res.processed_text.split())) if doc_res.processed_text else 1
+    active_routes = [(k, v) for k, v in doc_res.route_distribution.items() if v > 0]
+    dominant = max(active_routes, key=lambda kv: kv[1])[0] if active_routes else "FAST_MSA"
+    summary_parts = " · ".join(f"{cnt} {name}" for name, cnt in active_routes) or "0 segments"
+
+    out.update(
+        {
+            "is_document_mode": True,
+            "is_real_tokenizer": active_router.tokenizer.is_real_vocab,
+            "route_name": dominant,
+            "route_display_ar": "التوجيه متعدد الجمل والفقرات (Clause-Aware)",
+            "decision_reason": f"توجيه سياقي على مستوى الجمل ({doc_res.segment_count} مقاطع: {summary_parts})",
+            "profile": profile.to_dict(),
+            "raw_tokens": raw_tokens,
+            "processed_tokens": proc_tokens,
+            "tfr_raw": round((doc_res.raw_token_count / raw_words) if doc_res.raw_token_count > 0 else 0.0, 3),
+            "tfr_processed": round((doc_res.processed_token_count / proc_words) if doc_res.processed_token_count > 0 else 0.0, 3),
+            "legacy_text": legacy_text,
+            "legacy_tokens": legacy_tokens,
+            "legacy_token_count": legacy_count,
+            "legacy_unk_count": legacy_unk,
+            "legacy_tfr": round(legacy_tfr, 3),
+            "vs_legacy_reduction_pct": round(vs_legacy_pct, 2),
+        }
+    )
+    return out
+
+
 def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
     cache_lock = threading.Lock()
     tok_cache: Dict[str, TokenizerProtocol] = {router.model_key: router.tokenizer}
@@ -220,37 +271,48 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
 
             self._send_json(404, {"error": "Not found"})
 
+        def _handle_route_post(self, force_document: bool = False) -> None:
+            payload = self._read_json_object()
+            if payload is None:
+                return
+            text = payload.get("text", "")
+            if not isinstance(text, str):
+                self._send_json(400, {"error": "'text' must be a string"})
+                return
+
+            model_key = payload.get("model_key", router.model_key)
+            emoji_mode = payload.get("emoji_mode", router.emoji_mode)
+            auto_heal = payload.get("auto_heal", router.auto_heal)
+            arabizi_mode = payload.get("arabizi_mode", router.arabizi_mode)
+            document_mode = payload.get("document_mode", force_document)
+
+            if model_key not in PRETRAINED_MODEL_CONFIGS:
+                self._send_json(400, {"error": f"Unknown model_key '{model_key}'"})
+                return
+            if emoji_mode not in SUPPORTED_EMOJI_MODES:
+                self._send_json(400, {"error": f"Invalid emoji_mode '{emoji_mode}'"})
+                return
+            if not isinstance(auto_heal, bool) or not isinstance(arabizi_mode, bool) or not isinstance(document_mode, bool):
+                self._send_json(400, {"error": "'auto_heal', 'arabizi_mode', and 'document_mode' must be booleans"})
+                return
+
+            try:
+                active_router = _resolve_router(model_key, auto_heal, emoji_mode, arabizi_mode)
+                if force_document or document_mode:
+                    self._send_json(200, _format_document_payload(active_router, text))
+                else:
+                    self._send_json(200, _format_compare_payload(active_router.compare_baselines(text)))
+            except Exception:
+                self._send_json(500, {"error": "Internal routing error"})
+
         def do_POST(self) -> None:
             route_path = urllib.parse.urlparse(self.path).path
             if route_path == "/api/route":
-                payload = self._read_json_object()
-                if payload is None:
-                    return
-                text = payload.get("text", "")
-                if not isinstance(text, str):
-                    self._send_json(400, {"error": "'text' must be a string"})
-                    return
+                self._handle_route_post(force_document=False)
+                return
 
-                model_key = payload.get("model_key", router.model_key)
-                emoji_mode = payload.get("emoji_mode", router.emoji_mode)
-                auto_heal = payload.get("auto_heal", router.auto_heal)
-                arabizi_mode = payload.get("arabizi_mode", router.arabizi_mode)
-
-                if model_key not in PRETRAINED_MODEL_CONFIGS:
-                    self._send_json(400, {"error": f"Unknown model_key '{model_key}'"})
-                    return
-                if emoji_mode not in SUPPORTED_EMOJI_MODES:
-                    self._send_json(400, {"error": f"Invalid emoji_mode '{emoji_mode}'"})
-                    return
-                if not isinstance(auto_heal, bool) or not isinstance(arabizi_mode, bool):
-                    self._send_json(400, {"error": "'auto_heal' and 'arabizi_mode' must be booleans"})
-                    return
-
-                try:
-                    active_router = _resolve_router(model_key, auto_heal, emoji_mode, arabizi_mode)
-                    self._send_json(200, _format_compare_payload(active_router.compare_baselines(text)))
-                except Exception:
-                    self._send_json(500, {"error": "Internal routing error"})
+            if route_path == "/api/document":
+                self._handle_route_post(force_document=True)
                 return
 
             if route_path == "/api/batch":
@@ -348,7 +410,7 @@ def run_server(
     print(f"  Misar (مِسار) v{__version__} — Official Arabic NLP Workbench & API")
     print(f"  Tokenizer : {router.tokenizer.backend_name}")
     print(f"  Web UI    : {url}/")
-    print(f"  REST API  : POST {url}/api/route | POST {url}/api/batch")
+    print(f"  REST API  : POST {url}/api/route | POST {url}/api/document | POST {url}/api/batch")
     print("  Press Ctrl+C to stop.")
     print("=" * 68)
 

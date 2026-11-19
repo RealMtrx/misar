@@ -27,6 +27,7 @@ from .lexicons import (
     TATWEEL_REGEX,
     URL_REGEX,
     normalize_token_for_lookup,
+    normalize_unicode_safety,
 )
 
 
@@ -45,6 +46,7 @@ class LinguisticProfile:
     detected_regions: List[str] = field(default_factory=list)
     has_protected_negation: bool = False
     repeated_char_runs: int = 0
+    social_artifact_count: int = 0
 
     def to_dict(self) -> Dict[str, object]:
         return {
@@ -61,6 +63,7 @@ class LinguisticProfile:
             "detected_regions": list(self.detected_regions),
             "has_protected_negation": self.has_protected_negation,
             "repeated_char_runs": self.repeated_char_runs,
+            "social_artifact_count": self.social_artifact_count,
         }
 
 
@@ -82,7 +85,7 @@ class LinguisticProfiler:
     """Extracts structural and sociolinguistic features of Arabic text in O(n) time."""
 
     def analyze(self, text: str) -> LinguisticProfile:
-        trimmed = text.strip()
+        trimmed = normalize_unicode_safety(text.strip())
         total_chars = len(trimmed)
         if total_chars == 0:
             return LinguisticProfile(
@@ -168,4 +171,5 @@ class LinguisticProfiler:
             detected_regions=sorted(region_set),
             has_protected_negation=has_protected_negation,
             repeated_char_runs=repeated_char_runs,
+            social_artifact_count=hashtags + urls_mentions,
         )
