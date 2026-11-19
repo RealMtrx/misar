@@ -38,7 +38,7 @@ class TestLinguisticProfiler(unittest.TestCase):
         # 2 equiprobable symbols -> 1.0 bit
         self.assertAlmostEqual(compute_shannon_entropy("اباب"), 1.0, places=5)
         # Rich Arabic text > 2.5 bits
-        self.assertGreater(compute_shannon_entropy("أعلنت الهيئة السعودية للبيانات والذكاء الاصطناعي"), 3.0)
+        self.assertGreater(compute_shannon_entropy("تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة"), 3.0)
 
     def test_code_switching_ratio(self):
         p = self.profiler.analyze("أطلقنا مشروع Misar لتسريع AraBERT")
@@ -46,7 +46,7 @@ class TestLinguisticProfiler(unittest.TestCase):
         self.assertLess(p.code_switching_ratio, 0.7)
 
     def test_protected_negation_flag(self):
-        p = self.profiler.analyze("المكان مو حلو أبداً والخدمة مش كويسة")
+        p = self.profiler.analyze("الكود مو معقد أبداً والأداء مش بطيء")
         self.assertTrue(p.has_protected_negation)
         self.assertIn("مو", p.detected_markers)
         self.assertIn("مش", p.detected_markers)
@@ -66,19 +66,19 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertEqual(res_en.processed_text, "Hello Misar 2027")
 
     def test_msa_preserves_transformer_orthography(self):
-        text = "أعلنت الهيئة السعودية للبيانات والذكاء الاصطناعي عن إطلاق مبادرة وطنية"
+        text = "أعلنت اللجنة الهندسية عن إطلاق الحوسبة السحابية ومعالجة البيانات وإدارة الخوادم"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "FAST_MSA")
         # Must preserve أ, إ, ة for AraBERTv2/CAMeLBERT vocabulary integrity
         self.assertIn("أعلنت", res.processed_text)
-        self.assertIn("الهيئة", res.processed_text)
-        self.assertIn("السعودية", res.processed_text)
-        self.assertIn("إطلاق", res.processed_text)
+        self.assertIn("الحوسبة", res.processed_text)
+        self.assertIn("السحابية", res.processed_text)
+        self.assertIn("وإدارة", res.processed_text)
 
     def test_legacy_msa_normalization_opt_in(self):
         legacy = MSALightPipeline(preserve_orthography=False)
-        out = legacy.process("الهيئة السعودية")
-        self.assertEqual(out, "الهيئه السعوديه")
+        out = legacy.process("الحوسبة السحابية")
+        self.assertEqual(out, "الحوسبه السحابيه")
 
     def test_classical_diacritized_text(self):
         text = "بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ"
@@ -88,7 +88,7 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertEqual(res.processed_text, "بسم الله الرحمن الرحيم")
 
     def test_saudi_dialect_negation_preserved(self):
-        text = "المكان مو حلو أبداً وما أبي أرجع الحين"
+        text = "الكود مو معقد أبداً وما أبي أبدل السيرفر الحين"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "DIALECT_PRESERVE")
         self.assertIn("مو", res.processed_text)
@@ -96,7 +96,7 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertTrue(res.profile.has_protected_negation)
 
     def test_egyptian_dialect_normalization(self):
-        text = "الفكرة مش بطالة خالص وعلشان كدا عاوزين تظبيط"
+        text = "المكتبة مش معقدة خالص وعلشان كدا عاوزين تحديث في API"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "DIALECT_PRESERVE")
         self.assertIn("مش", res.processed_text)
@@ -104,24 +104,24 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertIn("كده", res.processed_text)
 
     def test_hybrid_noisy_social_plus_dialect(self):
-        text = "المطعممممم سيييييء جداااااا ومفيش أسلوب علشان كدا 😡😡 #تجربة_فاشلة https://example.com"
+        text = "السيرفررررر بطييييء جداااااا ومفيش استجابة علشان كدا 😡😡 #هندسة_البرمجيات https://example.com"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "NOISY_SOCIAL")
-        self.assertIn("المطعم", res.processed_text)
-        self.assertIn("سيء", res.processed_text)
+        self.assertIn("السيرفر", res.processed_text)
+        self.assertIn("بطيء", res.processed_text)
         self.assertIn("مفيش", res.processed_text)
         self.assertIn("عشان", res.processed_text)
-        self.assertIn("تجربة فاشلة", res.processed_text)
+        self.assertIn("هندسة البرمجيات", res.processed_text)
         self.assertNotIn("#", res.processed_text)
         self.assertNotIn("https://", res.processed_text)
 
     def test_gemination_preservation(self):
-        text = "والللله المكان مو حلو ابدا"
+        text = "والللله الكود مو معقد ابدا"
         res = self.router_offline.route(text)
         self.assertIn("والله", res.processed_text)
 
     def test_batch_and_hf_pipeline_wrapper(self):
-        texts = ["أعلنت الهيئة السعودية", "المطعممممم سيييييء #فاشل"]
+        texts = ["تعتمد الحوسبة السحابية", "السيرفررررر بطييييء #مشكلة"]
         results = self.router_offline.route_batch(texts)
         self.assertEqual(len(results), 2)
         self.assertEqual(results[0].route_name, "FAST_MSA")
@@ -129,8 +129,8 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
 
         captured = []
         wrapped = self.router_offline.wrap_hf_pipeline(lambda x: captured.append(x) or x)
-        wrapped("المطعممممم سيييييء #فاشل")
-        self.assertEqual(captured[0], "المطعم سيء فاشل")
+        wrapped("السيرفررررر بطييييء #مشكلة")
+        self.assertEqual(captured[0], "السيرفر بطيء مشكلة")
 
     def test_single_elongated_word_collapsed(self):
         text = "السلام" + "م" * 30 + " عليكم"
@@ -154,19 +154,19 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
             self.assertEqual(res.profile.detected_markers, [])
 
     def test_expressive_marra_triggers_dialect_preserve(self):
-        res = self.router_offline.route("الفندق مرره جميل")
+        res = self.router_offline.route("السيرفر مرره سريع")
         self.assertEqual(res.route_name, "DIALECT_PRESERVE")
         self.assertIn("مرة", res.processed_text)
-        res_noisy = self.router_offline.route("الفندق مررره جميل")
+        res_noisy = self.router_offline.route("السيرفر مررره سريع")
         self.assertEqual(res_noisy.route_name, "NOISY_SOCIAL")
         self.assertIn("مرة", res_noisy.processed_text)
 
     def test_offline_tokenizer_no_double_tokens_or_false_unks(self):
-        toks_hash = self.router_offline.tokenizer.tokenize("#تجربة_فاشلة")
-        self.assertEqual(toks_hash, ["#", "##تجربة", "##فاشلة"])
+        toks_hash = self.router_offline.tokenizer.tokenize("#ذكاء_مفيد")
+        self.assertEqual(toks_hash, ["#", "##ذكاء", "##مفيد"])
         toks_rep = self.router_offline.tokenizer.tokenize("السلاممممم")
         self.assertEqual(toks_rep, ["السلا", "##ممممم"])
-        res = self.router_offline.route("أعلنت الهيئة السعودية للبيانات")
+        res = self.router_offline.route("تعتمد الحوسبة السحابية الحديثة")
         self.assertEqual(res.unk_count_raw, 0)
         self.assertEqual(res.unk_count_processed, 0)
 
@@ -193,7 +193,7 @@ class TestRealAraBERTv2WordPiece(unittest.TestCase):
     def test_real_arabert_vocab_orthography_beats_legacy(self):
         if not self.available:
             self.skipTest("AraBERTv2 vocab unavailable offline")
-        msa = "أعلنت الهيئة السعودية للبيانات والذكاء الاصطناعي عن إطلاق المبادرات الوطنية"
+        msa = "تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة لتحسين كفاءة المعالجة وتقليل زمن الاستدلال"
         res_misar = self.router.route(msa)
         res_legacy = self.legacy_router.route(msa)
         self.assertTrue(res_misar.is_real_tokenizer)
@@ -204,14 +204,14 @@ class TestRealAraBERTv2WordPiece(unittest.TestCase):
     def test_real_arabert_vocab_reduces_noisy_and_diacritized_tokens(self):
         if not self.available:
             self.skipTest("AraBERTv2 vocab unavailable offline")
-        noisy = "المطعممممم سيييييء جداااااا ومفيش أسلوب خالصصصصص 😡😡😡 #تجربة_فاشلة"
+        noisy = "السيرفررررر بطييييء جداااااا ومفيش استجابة في API خالصصصصص 😡😡👎 #هندسة_البرمجيات"
         res_noisy = self.router.route(noisy)
         self.assertLess(res_noisy.processed_token_count, res_noisy.raw_token_count)
         self.assertGreater(res_noisy.token_reduction_pct, 40.0)
 
-        classical = "إِنَّ الَّذِي مَلَأَ اللُّغَاتِ مَحَاسِناً، جَعَلَ الجَمَالَ وَسِرَّهُ فِي الضَّادِ"
+        classical = "وَضَعَ الْخَوَارِزْمِيُّ أُسُسَ الْجَبْرِ وَالْحِسَابِ لِيَبْنِيَ مِنْهَا الْعُلَمَاءُ مَنَاهِجَ الْبَرْمَجَةِ الْحَدِيثَةِ"
         res_class = self.router.route(classical)
-        # Without Misar, AraBERTv2 collapses diacritized words into [UNK] (10/10 OOV collapse).
+        # Without Misar, AraBERTv2 collapses diacritized words into [UNK] (OOV collapse).
         # Misar recovers 100% of words to valid AraBERTv2 vocabulary tokens (0 [UNK]).
         self.assertGreaterEqual(res_class.unk_count_raw, 8)
         self.assertEqual(res_class.unk_count_processed, 0)
@@ -272,7 +272,7 @@ class TestMisarHTTPServer(unittest.TestCase):
 
         req_ok = urllib.request.Request(
             f"{self.base}/api/batch",
-            data=json.dumps({"texts": ["مرحبا", "المطعمممم سييييء"]}, ensure_ascii=False).encode("utf-8"),
+            data=json.dumps({"texts": ["مرحبا", "السيرفررررر بطييييء"]}, ensure_ascii=False).encode("utf-8"),
             headers={"Content-Type": "application/json; charset=utf-8"},
             method="POST",
         )
