@@ -2,17 +2,17 @@
   "version": "2.1.0",
   "tokenizer": "aubmindlab/bert-base-arabertv02 (WordPiece)",
   "corpus_size": 15,
-  "total_raw_tokens": 469,
-  "total_legacy_tokens": 298,
-  "total_misar_tokens": 249,
+  "total_raw_tokens": 473,
+  "total_legacy_tokens": 311,
+  "total_misar_tokens": 256,
   "total_auto_healed": 2,
-  "total_clitics_fixed": 1,
-  "total_unk_raw": 157,
+  "total_clitics_fixed": 2,
+  "total_unk_raw": 159,
   "total_unk_misar": 0,
-  "token_reduction_vs_raw_pct": 46.91,
-  "token_reduction_vs_legacy_pct": 16.44,
-  "avg_latency_ms": 0.2712,
-  "throughput_texts_per_sec": 4771.1,
+  "token_reduction_vs_raw_pct": 45.88,
+  "token_reduction_vs_legacy_pct": 17.68,
+  "avg_latency_ms": 0.3036,
+  "throughput_texts_per_sec": 3778.0,
   "rows": [
     {
       "idx": 1,
@@ -27,7 +27,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 30.43,
-      "latency_ms": 0.3208
+      "latency_ms": 0.3366
     },
     {
       "idx": 2,
@@ -42,7 +42,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 23.33,
-      "latency_ms": 0.1897
+      "latency_ms": 0.2107
     },
     {
       "idx": 3,
@@ -57,7 +57,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
       "reduction_vs_legacy_pct": 30.77,
-      "latency_ms": 0.1749
+      "latency_ms": 0.189
     },
     {
       "idx": 4,
@@ -72,7 +72,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.46,
       "reduction_vs_legacy_pct": 12.5,
-      "latency_ms": 0.3
+      "latency_ms": 0.3427
     },
     {
       "idx": 5,
@@ -87,7 +87,7 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 80.33,
       "reduction_vs_legacy_pct": 20.0,
-      "latency_ms": 0.2874
+      "latency_ms": 0.3322
     },
     {
       "idx": 6,
@@ -102,142 +102,142 @@
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.33,
       "reduction_vs_legacy_pct": 23.53,
-      "latency_ms": 0.2829
+      "latency_ms": 0.3051
     },
     {
       "idx": 7,
       "domain": "Saudi Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 23,
-      "legacy_tokens": 24,
-      "misar_tokens": 22,
+      "raw_tokens": 20,
+      "legacy_tokens": 21,
+      "misar_tokens": 18,
       "auto_healed": 0,
-      "clitic_fixed": 0,
-      "unk_raw": 0,
+      "clitic_fixed": 1,
+      "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 4.35,
-      "reduction_vs_legacy_pct": 8.33,
-      "latency_ms": 0.3757
+      "reduction_vs_raw_pct": 10.0,
+      "reduction_vs_legacy_pct": 14.29,
+      "latency_ms": 0.373
     },
     {
       "idx": 8,
       "domain": "Saudi Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 15,
-      "legacy_tokens": 17,
-      "misar_tokens": 14,
+      "raw_tokens": 22,
+      "legacy_tokens": 23,
+      "misar_tokens": 21,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 6.67,
-      "reduction_vs_legacy_pct": 17.65,
-      "latency_ms": 0.307
+      "reduction_vs_raw_pct": 4.55,
+      "reduction_vs_legacy_pct": 8.7,
+      "latency_ms": 0.2823
     },
     {
       "idx": 9,
       "domain": "Saudi Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 17,
-      "legacy_tokens": 19,
-      "misar_tokens": 16,
+      "raw_tokens": 19,
+      "legacy_tokens": 21,
+      "misar_tokens": 18,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 5.88,
-      "reduction_vs_legacy_pct": 15.79,
-      "latency_ms": 0.4038
+      "reduction_vs_raw_pct": 5.26,
+      "reduction_vs_legacy_pct": 14.29,
+      "latency_ms": 0.2527
     },
     {
       "idx": 10,
       "domain": "Gulf Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 27,
-      "legacy_tokens": 27,
-      "misar_tokens": 23,
+      "raw_tokens": 26,
+      "legacy_tokens": 25,
+      "misar_tokens": 22,
       "auto_healed": 2,
       "clitic_fixed": 1,
       "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 14.81,
-      "reduction_vs_legacy_pct": 14.81,
-      "latency_ms": 0.2433
+      "reduction_vs_raw_pct": 15.38,
+      "reduction_vs_legacy_pct": 12.0,
+      "latency_ms": 0.2476
     },
     {
       "idx": 11,
       "domain": "Levantine Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 23,
+      "raw_tokens": 25,
       "legacy_tokens": 25,
-      "misar_tokens": 23,
+      "misar_tokens": 24,
       "auto_healed": 0,
       "clitic_fixed": 0,
-      "unk_raw": 0,
+      "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 0.0,
-      "reduction_vs_legacy_pct": 8.0,
-      "latency_ms": 0.1962
+      "reduction_vs_raw_pct": 4.0,
+      "reduction_vs_legacy_pct": 4.0,
+      "latency_ms": 0.246
     },
     {
       "idx": 12,
       "domain": "Levantine/Maghrebi",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 19,
-      "legacy_tokens": 19,
-      "misar_tokens": 19,
+      "raw_tokens": 20,
+      "legacy_tokens": 23,
+      "misar_tokens": 20,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "reduction_vs_legacy_pct": 0.0,
-      "latency_ms": 0.2034
+      "reduction_vs_legacy_pct": 13.04,
+      "latency_ms": 0.2491
     },
     {
       "idx": 13,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
-      "raw_tokens": 28,
-      "legacy_tokens": 16,
-      "misar_tokens": 14,
+      "raw_tokens": 22,
+      "legacy_tokens": 17,
+      "misar_tokens": 13,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 2,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 50.0,
-      "reduction_vs_legacy_pct": 12.5,
-      "latency_ms": 0.3309
+      "reduction_vs_raw_pct": 40.91,
+      "reduction_vs_legacy_pct": 23.53,
+      "latency_ms": 0.663
     },
     {
       "idx": 14,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
       "raw_tokens": 48,
-      "legacy_tokens": 10,
+      "legacy_tokens": 11,
       "misar_tokens": 10,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 5,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 79.17,
-      "reduction_vs_legacy_pct": 0.0,
-      "latency_ms": 0.1959
+      "reduction_vs_legacy_pct": 9.09,
+      "latency_ms": 0.2424
     },
     {
       "idx": 15,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
-      "raw_tokens": 26,
-      "legacy_tokens": 14,
-      "misar_tokens": 12,
+      "raw_tokens": 28,
+      "legacy_tokens": 18,
+      "misar_tokens": 14,
       "auto_healed": 0,
       "clitic_fixed": 0,
       "unk_raw": 1,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 53.85,
-      "reduction_vs_legacy_pct": 14.29,
-      "latency_ms": 0.2562
+      "reduction_vs_raw_pct": 50.0,
+      "reduction_vs_legacy_pct": 22.22,
+      "latency_ms": 0.2819
     }
   ]
 }

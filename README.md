@@ -10,10 +10,10 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-1e40af.svg)](https://www.python.org/downloads/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero%20mandatory-15803d.svg)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0f2942.svg)](https://github.com/RealMtrx/misar/blob/main/LICENSE)
-[![Latency](https://img.shields.io/badge/CPU%20latency-0.27%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
-[![Token Reduction](https://img.shields.io/badge/tokens%20saved--46.91%25-16a34a.svg)](#empirical-benchmarks)
-[![Attention FLOPs](https://img.shields.io/badge/O(L%C2%B2)%20attention%20saved--71.8%25-7c3aed.svg)](#scientific-cross-model-evaluation)
-[![Throughput](https://img.shields.io/badge/ETL%20throughput-4%2C771%20texts%2Fs-0d9488.svg)](#empirical-benchmarks)
+[![Latency](https://img.shields.io/badge/CPU%20latency-0.30%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
+[![Token Reduction](https://img.shields.io/badge/tokens%20saved--45.88%25-16a34a.svg)](#empirical-benchmarks)
+[![Attention FLOPs](https://img.shields.io/badge/O(L%C2%B2)%20attention%20saved--70.7%25-7c3aed.svg)](#scientific-cross-model-evaluation)
+[![Throughput](https://img.shields.io/badge/ETL%20throughput-3%2C778%20texts%2Fs-0d9488.svg)](#empirical-benchmarks)
 
 [Architecture](#architecture) • [Benchmarks](#empirical-benchmarks) • [Installation](#installation) • [Quick Start](#quick-start) • [CLI & Workbench](#cli--web-workbench) • [Citation](#citation) • [النسخة العربية](#-نظرة-عامة-بالعربية)
 
@@ -31,7 +31,7 @@ Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneou
 
 1. **Legacy Normalization Damages Modern Transformers:** Classical regex pipelines blindly collapse `ة → ه` and `أ/إ/آ → ا`. However, modern Transformer vocabularies such as **AraBERTv2** (`64k` WordPiece) and **CAMeLBERT** explicitly preserve Hamzas and Taa Marbuta—meaning legacy normalization shatters known whole words (e.g., `الحوسبة` as `1` token splits into `الحو` + `##سبه` as `2` tokens).
 2. **Dialectal Sentiment & Negation Erasure:** Over-aggressive cleaning distorts critical colloquial negation and sentiment markers (`مو`, `مب`, `مافيه`, `ماكو`), reversing downstream classification polarity.
-3. **Diacritic, Tatweel & Elongation Token Explosion:** Unstripped harakat (`تشكيل`), kashida (`ـ`), and character stretches (`بطييييء`, `السيرفررررر`) trigger OOV `[UNK]` blindness or inflate subword token counts—multiplying Transformer $O(L^2)$ self-attention cost and API billing.
+3. **Diacritic, Tatweel & Elongation Token Explosion:** Unstripped harakat (`تشكيل`), kashida (`ـ`), and character stretches (`بطيييئة`, `الخدمةةةة`) trigger OOV `[UNK]` blindness or inflate subword token counts—multiplying Transformer $O(L^2)$ self-attention cost and API billing.
 
 **Misar (`مِسار`)** solves these bottlenecks **without retraining any model (`Zero Parameter Update`)** by acting as an ultra-lightweight, zero-dependency, linear-time $O(n)$ routing gateway directly in front of **AraBERTv2, MARBERTv2, CAMeLBERT-Mix, ARBERTv2, QARiB**, or generative LLMs.
 
@@ -58,7 +58,7 @@ flowchart LR
     B -->|"High Noise / Tatweel / Stretches ≥ 3"| C["NOISY_SOCIAL (+ Hybrid Dialect)<br/>Gemination-Safe Collapse + Emoji Polarity"]
     B -->|"Dialect Markers / Protected Negations"| D["DIALECT_PRESERVE<br/>Negation Protection + Vocab Auto-Heal"]
     B -->|"Clean MSA / Classical Diacritized"| E["FAST_MSA<br/>Strip Harakat · Preserve أ/إ/آ, ة, ى"]
-    C --> F["AraBERTv2 / MARBERTv2 / CAMeLBERT / LLMs<br/>(-46.91% Tokens · -71.8% O(L²) Attn · 4,771 texts/s)"]
+    C --> F["AraBERTv2 / MARBERTv2 / CAMeLBERT / LLMs<br/>(-45.88% Tokens · -70.7% O(L²) Attn · 3,778 texts/s)"]
     D --> F
     E --> F
 ```
@@ -69,15 +69,15 @@ flowchart LR
 
 Measured reproducibly via `python benchmarks/run_benchmark.py` against the authentic **64,000-token `aubmindlab/bert-base-arabertv02` WordPiece vocabulary** across 15 curated multi-domain samples ([`latest_benchmark_report.json`](https://github.com/RealMtrx/misar/blob/main/benchmarks/latest_benchmark_report.json)):
 
-| Domain Category | Samples | Raw Tokens | Fair Legacy Static (`ة→ه`, `أ→ا`) | **Misar v2.0** | Misar Gain |
+| Domain Category | Samples | Raw Tokens | Fair Legacy Static (`ة→ه`, `أ→ا`) | **Misar v2.1** | Misar Gain |
 | :--- | :---: | :---: | :---: | :---: | :--- |
 | **MSA Engineering & Code-Switch** | 3 | 57 | 79 *(+38.6% fragmentation)* | **57** | Preserves `100%` orthography (**`-27.85%`** vs Legacy) |
 | **Classical Diacritized (Heritage)** | 3 | 186 *(147 OOV `[UNK]`)* | 48 | **39** | **`-79.03%`** vs Raw · **`-18.75%`** vs Legacy (`0 [UNK]`) |
-| **Saudi / Gulf / Levantine / Maghrebi Dev** | 6 | 124 | 131 | **117** | **`-5.65%`** vs Raw · **`-10.69%`** vs Legacy (+ Auto-Heal & Negations) |
-| **Noisy Tech Social & Code-Switching** | 3 | 102 | 40 | **36** | **`-64.71%`** vs Raw · **`-10.00%`** vs Legacy + gemination intact |
-| **Full Corpus Summary** | **15** | **469** | **298** | **249** | **`-46.91%` vs Raw · `-16.44%` vs Fair Legacy · `4,771 texts/s`** |
+| **Saudi / Gulf / Levantine / Maghrebi Dev** | 6 | 132 | 136 | **120** | **`-9.09%`** vs Raw · **`-11.76%`** vs Legacy (+ Auto-Heal & Negations) |
+| **Noisy Tech Social & Code-Switching** | 3 | 98 | 48 | **40** | **`-59.18%`** vs Raw · **`-16.67%`** vs Legacy + gemination intact |
+| **Full Corpus Summary** | **15** | **473** | **311** | **256** | **`-45.88%` vs Raw · `-17.68%` vs Fair Legacy · `3,778 texts/s`** |
 
-> **Key Scientific Proof:** Even when competing against an identical full-denoising Legacy Static baseline (`URL/Emoji/Hashtag/Stretch removal + ة→ه, أ→ا`), Misar v2.1 still saves **16.44%** fewer tokens than Legacy Static (**46.91%** vs Raw), eliminates **`157 → 0 [UNK]`** tokens, repairs broken orthography (`Auto-Heal`), preserves dialectal negations, and streams at **4,771 texts/sec** on CPU.
+> **Key Scientific Proof:** Even when competing against an identical full-denoising Legacy Static baseline (`URL/Emoji/Hashtag/Stretch removal + ة→ه, أ→ا`), Misar v2.1 still saves **17.68%** fewer tokens than Legacy Static (**45.88%** vs Raw), eliminates **`159 → 0 [UNK]`** tokens, repairs broken orthography (`Auto-Heal`), preserves dialectal negations, and streams at **3,778 texts/sec** on CPU.
 
 ### Scientific Cross-Model Evaluation (`misar eval --all-models`)
 
@@ -85,11 +85,11 @@ Measured live across all 5 authentic Hugging Face Arabic Transformer vocabularie
 
 | Model Key | Vocabulary Backend | Semantic Minimal-Pair Disambig (`Misar` vs `Legacy`) | Dialect Negation Safety | Emoji Polarity Retention | Tokens vs Raw / vs Legacy | Quadratic $O(L^2)$ Attention Saved |
 | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
-| **`arabertv02`** | `aubmindlab/bert-base-arabertv02` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-46.9%` / `-16.4%`** | **`-71.8%`** |
-| **`arbertv2`** | `UBC-NLP/ARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-49.3%` / `-15.6%`** | **`-74.3%`** |
-| **`camelbert-mix`** | `CAMeL-Lab/bert-base-arabic-camelbert-mix` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-43.2%` / `-8.7%`** | **`-67.8%`** |
-| **`marbertv2`** | `UBC-NLP/MARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-47.9%` / `-7.5%`** | **`-72.8%`** |
-| **`qarib`** | `qarib/bert-base-qarib` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-45.5%` / `-9.0%`** | **`-70.3%`** |
+| **`arabertv02`** | `aubmindlab/bert-base-arabertv02` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-45.9%` / `-17.7%`** | **`-70.7%`** |
+| **`arbertv2`** | `UBC-NLP/ARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-47.0%` / `-15.1%`** | **`-71.9%`** |
+| **`camelbert-mix`** | `CAMeL-Lab/bert-base-arabic-camelbert-mix` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-42.3%` / `-11.0%`** | **`-66.7%`** |
+| **`marbertv2`** | `UBC-NLP/MARBERTv2` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-46.1%` / `-8.7%`** | **`-71.0%`** |
+| **`qarib`** | `qarib/bert-base-qarib` | **`100%` vs `0%`** | **`100%`** | **`100%`** | **`-45.1%` / `-12.5%`** | **`-69.8%`** |
 
 ---
 
@@ -125,12 +125,12 @@ from misar import MisarRouter
 
 router = MisarRouter()  # Uses real AraBERTv2 64k WordPiece vocabulary
 
-result = router.route("السيرفررررر بطييييء مررررة ومافيه استجابة في API أبدددداً 😡😡👎 #هندسة_البرمجيات")
+result = router.route("استجابة الخادم بطيييئة مرررة ومافيه أي اتصال في المنظومة أبدددداً 😡😡👎 #انقطاع_الخدمة")
 
 print("Route:     ", result.route_name)          # NOISY_SOCIAL
-print("Processed: ", result.processed_text)      # السيرفر بطيء مرة ومافيه استجابة في API أبدا هندسة البرمجيات
-print("Tokens:    ", result.raw_token_count, "->", result.processed_token_count)  # 28 -> 14
-print("Reduction: ", f"-{result.token_reduction_pct:.1f}%")                       # -50.0%
+print("Processed: ", result.processed_text)      # استجابة الخادم بطيئة مرة ومافيه أي اتصال في المنظومة أبدا انقطاع الخدمة
+print("Tokens:    ", result.raw_token_count, "->", result.processed_token_count)  # 22 -> 13
+print("Reduction: ", f"-{result.token_reduction_pct:.1f}%")                       # -40.9%
 print("Latency:   ", f"{result.latency_ms:.3f} ms")
 ```
 
@@ -144,8 +144,8 @@ router = MisarRouter(model_key="arabertv02", emoji_mode="sentiment", auto_heal=T
 # Recovers PDF Arabic Presentation Forms + Persian keyboard lookalikes (کود -> كود)
 # AND routes formal vs. social sentences independently in multi-clause documents:
 doc_res = router.route_document(
-    "ﺍﻟﺒﺮﻣﺠﺔ هندسة دقيقة باستخدام کود سريع.\n"
-    "السيرفررررر الحين يجنن في الـ API والله يستاهل 😍🚀"
+    "ﺍﻟﺒﺮﻣﺠﺔ ركيزة أساسية في بناء الأنظمة الموثوقة باستخدام کود نظيف ومعياري.\n"
+    "لكن استجابة الخدمةةةة الحين تحتاج متابعة عاجلة، ومستعدين لإطلاق التحديث قريباً إن شاء الله ✅🚀"
 )
 print("Distribution:", doc_res.route_distribution)      # {'FAST_MSA': 1, 'DIALECT_PRESERVE': 0, 'NOISY_SOCIAL': 1}
 print("Attention Saved:", f"-{doc_res.attention_savings_pct:.1f}%")
@@ -164,7 +164,7 @@ from misar import MisarRouter
 sentiment = pipeline("sentiment-analysis", model="CAMeL-Lab/bert-base-arabic-camelbert-mix-sentiment")
 smart_sentiment = MisarRouter(tokenizer=sentiment.tokenizer).wrap_hf_pipeline(sentiment)
 
-print(smart_sentiment("الكود مو معقد أبداً بس السيرفررررر بطييييء #مشكلة"))
+print(smart_sentiment("بنية النظام مو معقدة أبداً ولكن استجابة الخادم بطيييئة #مشكلة_تقنية"))
 ```
 
 ---
@@ -178,7 +178,7 @@ Misar includes a clean command-line interface and a self-hosted HTTP server + Ar
 misar demo
 
 # Route a sentence and compare Raw vs Legacy Static vs Misar side-by-side
-misar route "ياخي البرمجه في المنصه هاذي بطيييئة 😡 في الـ Backend" --compare --emoji-mode sentiment
+misar route "توثيق البرمجه في المنصه هاذي دقيق وموثوق وماكو أي تعقيد في تكامل الـ Backend" --compare
 
 # Select target model vocab (arabertv02, camelbert-mix, marbertv2, arbertv2, qarib)
 misar route "أعلنت منصة المطورين عن ترقية واجهة البرمجة API" --model marbertv2 --json
@@ -265,10 +265,10 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v2.1.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.27 مللي ثانية** للنص وبسرعة **4,771 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v2.1.0`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
 * **توجيه سياقي متعدد الجمل (`route_document`) + دفاع Unicode:** يختار ديناميكياً على مستوى المستند أو كل فقرة وجملة بين `FAST_MSA` و`DIALECT_PRESERVE` و`NOISY_SOCIAL`، يستعيد أشكال العرض المعزولة لملفات PDF (`NFKC`: `ﺍﻟﺒﺮﻣﺠﺔ ← البرمجة`) ومحارف لوحات المفاتيح الفارسية/الأردية (`ک/ی ← ك/ي`)، ويرمّم أخطاء التاء المربوطة (`البرمجه ← البرمجة`) دون المساس بالضمائر (`بيته، ملفه، مديره`).
-* **توفير التوكنات وتكاليف الانتباه التربيعي $O(L^2)$:** أظهرت التجارب الموثقة (`misar eval --all-models`) تفوق **100% مقابل 0%** في تمييز الثنائيات الصرفية (`عالمة/عالمه`)، وحفظ **100%** من النفي اللهجي وقطبية المشاعر، وخفض التوكنات بنسبة **46.91%** مقابل الخام و**16.44%** مقابل المناهج التقليدية (ما يوفّر **67.8%–74.3%** من عمليات الانتباه $O(L^2)$ واستعادة `157 → 0 [UNK]`).
+* **توفير التوكنات وتكاليف الانتباه التربيعي $O(L^2)$:** أظهرت التجارب الموثقة (`misar eval --all-models`) تفوق **100% مقابل 0%** في تمييز الثنائيات الصرفية (`عالمة/عالمه`)، وحفظ **100%** من النفي اللهجي وقطبية المشاعر، وخفض التوكنات بنسبة **45.88%** مقابل الخام و**17.68%** مقابل المناهج التقليدية (ما يوفّر **66.7%–71.9%** من عمليات الانتباه $O(L^2)$ واستعادة `159 → 0 [UNK]`).
 
 ---
 

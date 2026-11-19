@@ -281,8 +281,8 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
     def test_route_document_multi_clause_and_attention_flops(self):
         doc = (
             "تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة.\n"
-            "والله السيرفر الحين صار يجنن واستجابته سريعة شويتين.\n"
-            "السيرفررررر بطييييء جداااااا 😡 #هندسة_البرمجيات"
+            "أداء الخادم الحين صار ممتاز واستجابة واجهة الـ API سريعة، بس التخزين المؤقت يبيله تحديث.\n"
+            "استجابة الخادم بطيييئة مرررة ومافيه أي اتصال في المنظومة 😡 #انقطاع_الخدمة"
         )
         doc_res = self.router_offline.route_document(doc)
         self.assertEqual(doc_res.segment_count, 3)
@@ -465,7 +465,7 @@ class TestMisarHTTPServer(unittest.TestCase):
             f"{self.base}/api/route",
             data=json.dumps(
                 {
-                    "text": "السيرفررررر بطييييء 😡👎 والـ API ممتاز 😍",
+                    "text": "استجابة الخادم بطيييئة 😡👎 وأداء الـ API ممتاز 😍",
                     "emoji_mode": "sentiment",
                     "auto_heal": True,
                 },
@@ -485,7 +485,7 @@ class TestMisarHTTPServer(unittest.TestCase):
             self.assertIn("attention_savings_pct", data)
 
     def test_v21_document_mode_and_attention_savings(self):
-        doc = "البرمجة منهج علمي دقيق.\nالسيرفررررر بطييييء مررررة!!"
+        doc = "البرمجة منهج علمي دقيق.\nاستجابة الخادم بطيييئة مرررة!!"
         for endpoint, extra in (("/api/document", {}), ("/api/route", {"document_mode": True})):
             body = {"text": doc, **extra}
             req = urllib.request.Request(

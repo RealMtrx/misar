@@ -174,15 +174,18 @@ def collapse_elongations(text: str, tokenizer: Optional[TokenizerProtocol] = Non
         word = match.group(0)
         if not REPEATED_CHARS_REGEX.search(word):
             return word
-        cand_single = REPEATED_CHARS_REGEX.sub(r"\1", word)
+        punct_match = re.search(r"([.,!؟؛،]+)$", word)
+        trailing_punct = punct_match.group(1) if punct_match else ""
+        clean_word = word[:-len(trailing_punct)] if trailing_punct else word
+        cand_single = REPEATED_CHARS_REGEX.sub(r"\1", clean_word)
         if not has_vocab:
-            return cand_single
+            return cand_single + trailing_punct
         if tokenizer.has_token(cand_single):
-            return cand_single
-        cand_double = REPEATED_CHARS_REGEX.sub(r"\1\1", word)
+            return cand_single + trailing_punct
+        cand_double = REPEATED_CHARS_REGEX.sub(r"\1\1", clean_word)
         if tokenizer.has_token(cand_double):
-            return cand_double
-        return cand_single
+            return cand_double + trailing_punct
+        return cand_single + trailing_punct
 
     return re.sub(r"\S+", _fix_word, t)
 
