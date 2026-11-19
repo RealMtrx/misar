@@ -22,10 +22,10 @@ BENCHMARK_CORPUS: List[Dict[str, str]] = [
     {"domain": "Saudi Dev", "text": "والله السيرفر الحين صار يجنن واستجابته في API سريعة شويتين بس الكاش يبيله تضبيط"},
     {"domain": "Saudi Dev", "text": "المكتبة مو معقدة أبداً وما أبي أبدل البنية كلها الحين تكفى شوف التوثيق"},
     {"domain": "Saudi Dev", "text": "التشغيل على السيرفر مرره زبط وسرعة API زادت عشان كذا أنصح فيه"},
-    {"domain": "Egyptian Dev", "text": "الكود مش معقد أبداً بس السيرفر كان محتاج شوية تظبيط في Backend وعلشان كدا أضفنا Cache"},
-    {"domain": "Egyptian Dev", "text": "مفيش أي استجابة من Endpoint دلوقتي وعلشان كدا عاوزين تحديث سريع لحزمة SDK"},
+    {"domain": "Gulf Dev", "text": "ياخي المكتبة هاذي حقت المعالجة زينة بالحيل وابغى أربط Backend مع Cache دحين"},
+    {"domain": "Levantine Dev", "text": "هاد الكود كتير نظيف وماكو مشاكل في Endpoint وبدنا نحدث حزمة SDK بسرعة"},
     {"domain": "Levantine/Maghrebi", "text": "النظام كتير سلس وهيك نشر API شغال مزيان بزاف بدون مشاكل في الإنتاج"},
-    {"domain": "Noisy Tech Social", "text": "السيرفررررر بطييييء جداااااا ومفيش استجابة في API خالصصصصص 😡😡👎 #هندسة_البرمجيات"},
+    {"domain": "Noisy Tech Social", "text": "السيرفررررر بطييييء مررررة ومافيه استجابة في API أبدددداً 😡😡👎 #هندسة_البرمجيات"},
     {"domain": "Noisy Tech Social", "text": "الإصدارررر الجديييييد من النموذج سرييييع وممتاااااز 😍🔥🚀 #ذكاء_اصطناعي https://github.com/RealMtrx/misar"},
     {"domain": "Noisy Tech Social", "text": "والللله الكود مو معقد والأخطاء متكررررة في السيرفر!!!! 👎👎 @devops #تطوير_البرمجيات"},
 ]

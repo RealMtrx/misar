@@ -1,14 +1,14 @@
 {
   "tokenizer": "aubmindlab/bert-base-arabertv02 (WordPiece)",
   "corpus_size": 15,
-  "total_raw_tokens": 472,
+  "total_raw_tokens": 466,
   "total_legacy_tokens": 338,
-  "total_misar_tokens": 251,
+  "total_misar_tokens": 249,
   "total_unk_raw": 156,
   "total_unk_misar": 0,
-  "token_reduction_vs_raw_pct": 46.82,
-  "token_reduction_vs_legacy_pct": 25.74,
-  "avg_latency_ms": 0.2286,
+  "token_reduction_vs_raw_pct": 46.57,
+  "token_reduction_vs_legacy_pct": 26.33,
+  "avg_latency_ms": 0.2228,
   "rows": [
     {
       "idx": 1,
@@ -20,7 +20,7 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.3062
+      "latency_ms": 0.3048
     },
     {
       "idx": 2,
@@ -32,7 +32,7 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.202
+      "latency_ms": 0.1754
     },
     {
       "idx": 3,
@@ -44,7 +44,7 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1709
+      "latency_ms": 0.1564
     },
     {
       "idx": 4,
@@ -56,7 +56,7 @@
       "unk_raw": 51,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.46,
-      "latency_ms": 0.3064
+      "latency_ms": 0.2862
     },
     {
       "idx": 5,
@@ -68,7 +68,7 @@
       "unk_raw": 49,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 80.33,
-      "latency_ms": 0.2899
+      "latency_ms": 0.2668
     },
     {
       "idx": 6,
@@ -80,7 +80,7 @@
       "unk_raw": 47,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 78.33,
-      "latency_ms": 0.2776
+      "latency_ms": 0.2419
     },
     {
       "idx": 7,
@@ -92,7 +92,7 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 4.35,
-      "latency_ms": 0.2809
+      "latency_ms": 0.2952
     },
     {
       "idx": 8,
@@ -104,7 +104,7 @@
       "unk_raw": 1,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 6.67,
-      "latency_ms": 0.1847
+      "latency_ms": 0.189
     },
     {
       "idx": 9,
@@ -116,31 +116,31 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 5.88,
-      "latency_ms": 0.163
+      "latency_ms": 0.1691
     },
     {
       "idx": 10,
-      "domain": "Egyptian Dev",
+      "domain": "Gulf Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 26,
-      "legacy_tokens": 26,
-      "misar_tokens": 24,
-      "unk_raw": 1,
+      "raw_tokens": 24,
+      "legacy_tokens": 27,
+      "misar_tokens": 23,
+      "unk_raw": 0,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 7.69,
-      "latency_ms": 0.2053
+      "reduction_vs_raw_pct": 4.17,
+      "latency_ms": 0.1862
     },
     {
       "idx": 11,
-      "domain": "Egyptian Dev",
+      "domain": "Levantine Dev",
       "route": "DIALECT_PRESERVE",
-      "raw_tokens": 25,
-      "legacy_tokens": 26,
-      "misar_tokens": 24,
+      "raw_tokens": 23,
+      "legacy_tokens": 25,
+      "misar_tokens": 23,
       "unk_raw": 0,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 4.0,
-      "latency_ms": 0.1781
+      "reduction_vs_raw_pct": 0.0,
+      "latency_ms": 0.1812
     },
     {
       "idx": 12,
@@ -152,19 +152,19 @@
       "unk_raw": 0,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 0.0,
-      "latency_ms": 0.1764
+      "latency_ms": 0.1786
     },
     {
       "idx": 13,
       "domain": "Noisy Tech Social",
       "route": "NOISY_SOCIAL",
-      "raw_tokens": 30,
+      "raw_tokens": 28,
       "legacy_tokens": 18,
       "misar_tokens": 14,
-      "unk_raw": 1,
+      "unk_raw": 2,
       "unk_misar": 0,
-      "reduction_vs_raw_pct": 53.33,
-      "latency_ms": 0.2957
+      "reduction_vs_raw_pct": 50.0,
+      "latency_ms": 0.3052
     },
     {
       "idx": 14,
@@ -176,7 +176,7 @@
       "unk_raw": 5,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 79.17,
-      "latency_ms": 0.1797
+      "latency_ms": 0.1855
     },
     {
       "idx": 15,
@@ -188,7 +188,7 @@
       "unk_raw": 1,
       "unk_misar": 0,
       "reduction_vs_raw_pct": 53.85,
-      "latency_ms": 0.2124
+      "latency_ms": 0.2198
     }
   ]
 }

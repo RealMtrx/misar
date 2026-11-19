@@ -46,10 +46,11 @@ class TestLinguisticProfiler(unittest.TestCase):
         self.assertLess(p.code_switching_ratio, 0.7)
 
     def test_protected_negation_flag(self):
-        p = self.profiler.analyze("الكود مو معقد أبداً والأداء مش بطيء")
+        p = self.profiler.analyze("الكود مو معقد أبداً والسيرفر مب بطيء وماكو أخطاء")
         self.assertTrue(p.has_protected_negation)
         self.assertIn("مو", p.detected_markers)
-        self.assertIn("مش", p.detected_markers)
+        self.assertIn("مب", p.detected_markers)
+        self.assertIn("ماكو", p.detected_markers)
 
 
 class TestMisarRoutingAndPipelines(unittest.TestCase):
@@ -95,22 +96,24 @@ class TestMisarRoutingAndPipelines(unittest.TestCase):
         self.assertIn("أبي", res.processed_text)
         self.assertTrue(res.profile.has_protected_negation)
 
-    def test_egyptian_dialect_normalization(self):
-        text = "المكتبة مش معقدة خالص وعلشان كدا عاوزين تحديث في API"
+    def test_gulf_and_levantine_dialect_normalization(self):
+        text = "المكتبة هاذي كتير مرتبة وشويتين زحمة بس ماكو تعقيد في API"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "DIALECT_PRESERVE")
-        self.assertIn("مش", res.processed_text)
-        self.assertIn("عشان", res.processed_text)
-        self.assertIn("كده", res.processed_text)
+        self.assertIn("هذه", res.processed_text)
+        self.assertIn("كثير", res.processed_text)
+        self.assertIn("شوية", res.processed_text)
+        self.assertIn("ماكو", res.processed_text)
 
     def test_hybrid_noisy_social_plus_dialect(self):
-        text = "السيرفررررر بطييييء جداااااا ومفيش استجابة علشان كدا 😡😡 #هندسة_البرمجيات https://example.com"
+        text = "السيرفررررر بطييييء مررررة ومافيه استجابة شويتين 😡😡 #هندسة_البرمجيات https://example.com"
         res = self.router_offline.route(text)
         self.assertEqual(res.route_name, "NOISY_SOCIAL")
         self.assertIn("السيرفر", res.processed_text)
         self.assertIn("بطيء", res.processed_text)
-        self.assertIn("مفيش", res.processed_text)
-        self.assertIn("عشان", res.processed_text)
+        self.assertIn("مرة", res.processed_text)
+        self.assertIn("مافيه", res.processed_text)
+        self.assertIn("شوية", res.processed_text)
         self.assertIn("هندسة البرمجيات", res.processed_text)
         self.assertNotIn("#", res.processed_text)
         self.assertNotIn("https://", res.processed_text)
@@ -204,7 +207,7 @@ class TestRealAraBERTv2WordPiece(unittest.TestCase):
     def test_real_arabert_vocab_reduces_noisy_and_diacritized_tokens(self):
         if not self.available:
             self.skipTest("AraBERTv2 vocab unavailable offline")
-        noisy = "السيرفررررر بطييييء جداااااا ومفيش استجابة في API خالصصصصص 😡😡👎 #هندسة_البرمجيات"
+        noisy = "السيرفررررر بطييييء مررررة ومافيه استجابة في API أبدددداً 😡😡👎 #هندسة_البرمجيات"
         res_noisy = self.router.route(noisy)
         self.assertLess(res_noisy.processed_token_count, res_noisy.raw_token_count)
         self.assertGreater(res_noisy.token_reduction_pct, 40.0)

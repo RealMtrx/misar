@@ -9,8 +9,8 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-1e40af.svg)](https://www.python.org/downloads/)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero%20mandatory-15803d.svg)](#installation)
 [![License: MIT](https://img.shields.io/badge/License-MIT-0f2942.svg)](LICENSE)
-[![Latency](https://img.shields.io/badge/CPU%20latency-0.23%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
-[![Token Reduction](https://img.shields.io/badge/tokens%20saved--46.82%25-16a34a.svg)](#empirical-benchmarks)
+[![Latency](https://img.shields.io/badge/CPU%20latency-0.22%20ms%2Ftext-0369a1.svg)](#empirical-benchmarks)
+[![Token Reduction](https://img.shields.io/badge/tokens%20saved--46.57%25-16a34a.svg)](#empirical-benchmarks)
 
 [Architecture](#architecture) • [Benchmarks](#empirical-benchmarks) • [Installation](#installation) • [Quick Start](#quick-start) • [CLI & Workbench](#cli--web-workbench) • [Citation](#citation) • [النسخة العربية](#-نظرة-عامة-بالعربية)
 
@@ -27,7 +27,7 @@
 Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneous Arabic text (**Modern Standard Arabic**, **classical diacritized prose**, **Gulf/Egyptian/Levantine/Maghrebi dialects**, and **noisy social media**) through a single static preprocessing pipeline actively degrades both accuracy and inference economics:
 
 1. **Legacy Normalization Damages Modern Transformers:** Classical regex pipelines blindly collapse `ة → ه` and `أ/إ/آ → ا`. However, modern Transformer vocabularies such as **AraBERTv2** (`64k` WordPiece) and **CAMeLBERT** explicitly preserve Hamzas and Taa Marbuta—meaning legacy normalization shatters known whole words (e.g., `الحوسبة` as `1` token splits into `الحو` + `##سبه` as `2` tokens).
-2. **Dialectal Sentiment & Negation Erasure:** Over-aggressive cleaning distorts critical colloquial negation and sentiment markers (`مو`, `مش`, `مفيش`, `ماكو`), reversing downstream classification polarity.
+2. **Dialectal Sentiment & Negation Erasure:** Over-aggressive cleaning distorts critical colloquial negation and sentiment markers (`مو`, `مب`, `مافيه`, `ماكو`), reversing downstream classification polarity.
 3. **Diacritic, Tatweel & Elongation Token Explosion:** Unstripped harakat (`تشكيل`), kashida (`ـ`), and character stretches (`بطييييء`, `السيرفررررر`) trigger OOV `[UNK]` blindness or inflate subword token counts—multiplying Transformer $O(L^2)$ self-attention cost and API billing.
 
 **Misar (`مِسار`)** solves all three challenges **without retraining any model (`Zero Parameter Update`)** by acting as an ultra-lightweight, zero-dependency, linear-time $O(n)$ routing gateway directly in front of your Transformer or LLM pipeline.
@@ -44,7 +44,7 @@ flowchart LR
     B -->|"High Noise / Tatweel / Stretches ≥ 3"| C["NOISY_SOCIAL (+ Hybrid Dialect)<br/>Gemination-Safe Collapse + Tag Unpacking"]
     B -->|"Dialect Markers / Protected Negations"| D["DIALECT_PRESERVE<br/>Negation Protection + Vocab-Aligned Cleanup"]
     B -->|"Clean MSA / Classical Diacritized"| E["FAST_MSA<br/>Strip Harakat · Preserve أ/إ/آ, ة, ى"]
-    C --> F["AraBERTv2 / CAMeLBERT / ALLaM / LLMs<br/>(-46.82% Tokens · 0 [UNK])"]
+    C --> F["AraBERTv2 / CAMeLBERT / ALLaM / LLMs<br/>(-46.57% Tokens · 0 [UNK])"]
     D --> F
     E --> F
 ```
@@ -59,11 +59,11 @@ Measured reproducibly via `python benchmarks/run_benchmark.py` against the authe
 | :--- | :---: | :---: | :---: | :---: | :---: |
 | **MSA Engineering & Code-Switch** | 3 | 57 | 79 *(+38.6% fragmentation)* | **57** | Preserves `100%` orthography (`-27.85%` vs Legacy) |
 | **Classical Diacritized (Heritage)** | 3 | 186 *(147 OOV `[UNK]`)* | 48 | **39** | **`-79.03%`** tokens & **`100%`** word recovery (`0 [UNK]`) |
-| **Gulf / Egyptian / Levantine / Maghrebi Dev** | 6 | 125 | 131 | **119** | **`-4.80%`** tokens (`-9.16%` vs Legacy) + negations intact |
-| **Noisy Tech Social & Code-Switching** | 3 | 104 | 80 | **36** | **`-65.38%`** tokens + gemination preserved |
-| **Full Corpus Summary** | **15** | **472** | **338** | **251** | **`-46.82%` vs Raw · `-25.74%` vs Legacy · `0.229 ms/text`** |
+| **Saudi / Gulf / Levantine / Maghrebi Dev** | 6 | 121 | 131 | **117** | **`-3.31%`** tokens (`-10.69%` vs Legacy) + negations intact |
+| **Noisy Tech Social & Code-Switching** | 3 | 102 | 80 | **36** | **`-64.71%`** tokens + gemination preserved |
+| **Full Corpus Summary** | **15** | **466** | **338** | **249** | **`-46.57%` vs Raw · `-26.33%` vs Legacy · `0.223 ms/text`** |
 
-> **Key Scientific Proof:** On Standard Arabic technical prose (`MSA Tech / Engineering`), blind legacy normalization inflated token count from **57 → 79** due to `ة → ه` subword splitting, while Misar maintained **57** intact vocabulary tokens (`TFR ≈ 1.0`). Across all 15 multi-domain inputs, Misar saved **46.82%** of total tokens vs. raw text and **25.74%** vs. legacy normalization (recovering **156 → 0 `[UNK]`** tokens) with **0.229 ms** mean latency on pure CPU.
+> **Key Scientific Proof:** On Standard Arabic technical prose (`MSA Tech / Engineering`), blind legacy normalization inflated token count from **57 → 79** due to `ة → ه` subword splitting, while Misar maintained **57** intact vocabulary tokens (`TFR ≈ 1.0`). Across all 15 multi-domain inputs, Misar saved **46.57%** of total tokens vs. raw text and **26.33%** vs. legacy normalization (recovering **156 → 0 `[UNK]`** tokens) with **0.223 ms** mean latency on pure CPU.
 
 ---
 
@@ -99,12 +99,12 @@ from misar import MisarRouter
 
 router = MisarRouter()  # Uses real AraBERTv2 64k WordPiece vocabulary
 
-result = router.route("السيرفررررر بطييييء جداااااا ومفيش استجابة في API خالصصصصص 😡😡👎 #هندسة_البرمجيات")
+result = router.route("السيرفررررر بطييييء مررررة ومافيه استجابة في API أبدددداً 😡😡👎 #هندسة_البرمجيات")
 
 print("Route:     ", result.route_name)          # NOISY_SOCIAL
-print("Processed: ", result.processed_text)      # السيرفر بطيء جدا ومفيش استجابة في API خالص هندسة البرمجيات
-print("Tokens:    ", result.raw_token_count, "->", result.processed_token_count)  # 30 -> 14
-print("Reduction: ", f"-{result.token_reduction_pct:.1f}%")                       # -53.3%
+print("Processed: ", result.processed_text)      # السيرفر بطيء مرة ومافيه استجابة في API أبدا هندسة البرمجيات
+print("Tokens:    ", result.raw_token_count, "->", result.processed_token_count)  # 28 -> 14
+print("Reduction: ", f"-{result.token_reduction_pct:.1f}%")                       # -50.0%
 print("Latency:   ", f"{result.latency_ms:.3f} ms")
 ```
 
@@ -114,8 +114,8 @@ print("Latency:   ", f"{result.latency_ms:.3f} ms")
 from misar import MisarRouter, preprocess
 
 # One-line module helper
-clean = preprocess("الســــلام علــــيكم ومفيش مشكلة #تطوير_البرمجيات")
-# -> "السلام عليكم ومفيش مشكلة تطوير البرمجيات"
+clean = preprocess("الســــلام علــــيكم ومافيه مشكلة #تطوير_البرمجيات")
+# -> "السلام عليكم ومافيه مشكلة تطوير البرمجيات"
 
 # Fast batch routing for production ETL pipelines
 router = MisarRouter()
@@ -229,10 +229,10 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.23 مللي ثانية** للنص) قبل نماذج المحولات اللغوية العربية مثل `AraBERTv2` و `CAMeLBERT` والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar`)** هي مكتبة وموجّه بايثون مفتوح المصدر وخفيف الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّم ليعمل كطبقة بوابة ذكية في زمن خطي $O(n)$ (**~0.22 مللي ثانية** للنص) قبل نماذج المحولات اللغوية العربية مثل `AraBERTv2` و `CAMeLBERT` والنماذج التوليدية (`ALLaM` و `LLMs`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
-* **توجيه ثلاثي المسارات:** يفحص النص في تمريرة واحدة ويختار بين مسار الفصحى الحافظ للإملاء (`FAST_MSA`)، أو مسار حفظ اللهجة وأدوات النفي (`DIALECT_PRESERVE`) لحماية كلمات مثل `مو، مش، مفيش`، أو مسار تنقية ضجيج شبكات التواصل (`NOISY_SOCIAL`) الذي يضغط المدود والتطويل مع الحفاظ على الكلمات المشددة (`والللله ← والله`).
-* **توفير التوكنات وتكاليف الـ APIs:** أظهرت التجارب المرجعية الموثقة على معجم `AraBERTv2` خفض إجمالي التوكنات بنسبة **46.82%** مقارنة بالنص الخام و**25.74%** مقارنة بمناهج التطبيع القديمة، مع استعادة **100%** من الكلمات المتأثرة بالتشكيل والكشيدة (`156 → 0 [UNK]`).
+* **توجيه ثلاثي المسارات:** يفحص النص في تمريرة واحدة ويختار بين مسار الفصحى الحافظ للإملاء (`FAST_MSA`)، أو مسار حفظ اللهجة وأدوات النفي (`DIALECT_PRESERVE`) لحماية كلمات مثل `مو، مب، مافيه، ماكو`، أو مسار تنقية ضجيج شبكات التواصل (`NOISY_SOCIAL`) الذي يضغط المدود والتطويل مع الحفاظ على الكلمات المشددة (`والللله ← والله`).
+* **توفير التوكنات وتكاليف الـ APIs:** أظهرت التجارب المرجعية الموثقة على معجم `AraBERTv2` خفض إجمالي التوكنات بنسبة **46.57%** مقارنة بالنص الخام و**26.33%** مقارنة بمناهج التطبيع القديمة، مع استعادة **100%** من الكلمات المتأثرة بالتشكيل والكشيدة (`156 → 0 [UNK]`).
 
 ---
 
