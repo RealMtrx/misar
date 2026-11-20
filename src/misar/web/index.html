@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v2.1.0) — موجه المعالجة العربية التكيفية</title>
+  <title>مِسار (Misar v2.5.0) — موجه المعالجة العربية التكيفية</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -447,7 +447,61 @@
       flex-wrap: wrap;
     }
 
-    .pane-head h3 { margin: 0; font-size: 0.92rem; color: var(--navy); }
+    .pane-head h3 {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--navy);
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      direction: rtl;
+    }
+
+    .pane-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--navy-light);
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .compare-pane.legacy .pane-num {
+      background: #ea580c;
+    }
+
+    .compare-pane.after .pane-num {
+      background: #16a34a;
+    }
+
+    .pane-sub-badge {
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 5px;
+      background: #f1f5f9;
+      color: var(--text-muted);
+      direction: rtl;
+      unicode-bidi: isolate;
+      display: inline-block;
+    }
+
+    .compare-pane.legacy .pane-sub-badge {
+      background: #ffedd5;
+      color: #9a3412;
+      border: 1px solid #fed7aa;
+    }
+
+    .compare-pane.after .pane-sub-badge {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
 
     .token-badge {
       font-size: 0.76rem;
@@ -780,7 +834,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.4.1</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v2.5.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -947,7 +1001,11 @@
       <div class="compare-grid">
         <div class="compare-pane">
           <div class="pane-head">
-            <h3>1. النص الأصلي (Raw)</h3>
+            <h3>
+              <span class="pane-num">1</span>
+              <span>النص الأصلي</span>
+              <span class="pane-sub-badge ltr">Raw</span>
+            </h3>
             <span class="token-badge ltr" id="rawTokensCount">0 Tokens · TFR 0.00</span>
           </div>
           <div class="text-display" id="rawTextDisplay">—</div>
@@ -957,7 +1015,11 @@
 
         <div class="compare-pane legacy">
           <div class="pane-head">
-            <h3>2. التطبيع التقليدي (ة→ه / أ→ا)</h3>
+            <h3>
+              <span class="pane-num">2</span>
+              <span>التطبيع التقليدي</span>
+              <span class="pane-sub-badge" dir="rtl"><bdi>(ة ← هـ / أ ← ا)</bdi></span>
+            </h3>
             <span class="token-badge ltr" id="legacyTokensCount">0 Tokens · TFR 0.00</span>
           </div>
           <div class="text-display" id="legacyTextDisplay">—</div>
@@ -967,7 +1029,11 @@
 
         <div class="compare-pane after">
           <div class="pane-head">
-            <h3>3. مِسار التكيفي (Misar v2.1)</h3>
+            <h3>
+              <span class="pane-num">3</span>
+              <span>مِسار التكيفي</span>
+              <span class="pane-sub-badge ltr">Misar v2.5</span>
+            </h3>
             <span class="token-badge ltr" id="procTokensCount">0 Tokens · TFR 0.00</span>
           </div>
           <div class="text-display" id="procTextDisplay">—</div>
@@ -1050,7 +1116,7 @@
     </section>
 
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.4.1 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v2.5.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
