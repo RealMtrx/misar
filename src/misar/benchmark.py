@@ -7,7 +7,7 @@ Compares Raw Input vs. Legacy Destructive Normalization vs. Misar Adaptive Route
 import json
 import time
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from . import __version__
 from .router import MisarRouter
