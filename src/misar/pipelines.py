@@ -120,33 +120,11 @@ def process_emojis(text: str, emoji_mode: str = "strip") -> str:
 
 def normalize_arabizi(text: str) -> str:
     """Opt-in Franco-Arabic transliteration guarded against software/protocol tokens."""
-    def _replace_tok(match: re.Match) -> str:
-        tok = match.group(1)
-        if ARABIZI_TECH_PROTECT_REGEX.match(tok):
-            return tok
-        low = tok.lower()
-        if low in ARABIZI_LEXICON:
-            return ARABIZI_LEXICON[low]
-        if not re.search(r"[2356789]", tok) or not re.search(r"[A-Za-z]{2,}", tok):
-            return tok
-        out = []
-        i = 0
-        while i < len(low):
-            pair = low[i : i + 2]
-            if pair in ("sh", "kh", "gh", "th", "dh"):
-                digraph = {"sh": "ش", "kh": "خ", "gh": "غ", "th": "ث", "dh": "ذ"}[pair]
-                out.append(digraph)
-                i += 2
-                continue
-            ch = low[i]
-            if ch in ARABIZI_CHAR_MAP:
-                mapped = ARABIZI_CHAR_MAP[ch]
-                if not out or out[-1] != mapped:
-                    out.append(mapped)
-            i += 1
-        return "".join(out)
-
-    return ARABIZI_CANDIDATE_REGEX.sub(_replace_tok, text)
+    try:
+        from .arabizi import decode_arabizi
+        return decode_arabizi(text)
+    except Exception:
+        return text
 
 
 def strip_markup_noise(text: str) -> str:

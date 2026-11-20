@@ -295,6 +295,51 @@ def cmd_audit(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_proxy(args: argparse.Namespace) -> int:
+    from .proxy import run_proxy
+    run_proxy(host=args.host, port=args.port, upstream_url=args.upstream)
+    return 0
+
+
+def cmd_paper(args: argparse.Namespace) -> int:
+    from .paper import generate_academic_paper, generate_markdown_summary
+    if args.format == "markdown":
+        content = generate_markdown_summary(args.output)
+        fmt_name = "Markdown Research Dossier"
+    else:
+        content = generate_academic_paper(args.output)
+        fmt_name = "IEEE/ACL LaTeX Research Preprint"
+
+    if args.output:
+        print(f"Generated {fmt_name} saved to: {args.output}")
+    else:
+        print(content)
+    return 0
+
+
+def cmd_arabizi(args: argparse.Namespace) -> int:
+    from .arabizi import decode_arabizi
+    result = decode_arabizi(args.text)
+    if args.json:
+        print(json.dumps({"original": args.text, "decoded_arabic": result}, ensure_ascii=False, indent=2))
+    else:
+        print(result)
+    return 0
+
+
+def cmd_augment(args: argparse.Namespace) -> int:
+    from .augment import generate_stress_suite
+    suite = generate_stress_suite(args.text)
+    if args.json:
+        print(json.dumps(suite, ensure_ascii=False, indent=2))
+    else:
+        print("Misar Synthetic Stress-Testing Suite:")
+        print("=" * 80)
+        for name, text in suite.items():
+            print(f"• [{name}]:\n  {text}\n")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -399,6 +444,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_audit.add_argument("--model", default="arabertv02", choices=model_choices)
     p_audit.add_argument("--json", action="store_true", help="Output summary in JSON format")
     p_audit.set_defaults(func=cmd_audit)
+
+    p_proxy = sub.add_parser("proxy", help="Start transparent OpenAI-compatible reverse proxy gateway")
+    p_proxy.add_argument("--host", default="0.0.0.0", help="Host address to bind (default: 0.0.0.0)")
+    p_proxy.add_argument("--port", type=int, default=8080, help="Port to listen on (default: 8080)")
+    p_proxy.add_argument("--upstream", "-u", default=None, help="Upstream LLM base URL (e.g., http://localhost:11434/v1)")
+    p_proxy.set_defaults(func=cmd_proxy)
+
+    p_paper = sub.add_parser("paper", help="Generate publication-ready academic LaTeX paper preprint or research summary")
+    p_paper.add_argument("--output", "-o", default="", help="Path to save output paper file (.tex or .md)")
+    p_paper.add_argument("--format", choices=["latex", "markdown"], default="latex", help="Output format (default: latex)")
+    p_paper.set_defaults(func=cmd_paper)
+
+    p_arabizi = sub.add_parser("arabizi", help="Transliterate Franco-Arabic / Arabizi youth chat into canonical Arabic")
+    p_arabizi.add_argument("text", help="Arabizi text to transliterate (e.g. 'mar7aba keefak 7abibi')")
+    p_arabizi.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_arabizi.set_defaults(func=cmd_arabizi)
+
+    p_augment = sub.add_parser("augment", help="Generate synthetic typographical, diacritical, and dialect perturbations")
+    p_augment.add_argument("text", help="Arabic seed text to augment")
+    p_augment.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_augment.set_defaults(func=cmd_augment)
 
     return parser
 

@@ -3,14 +3,28 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.6.0"
+__version__ = "2.7.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
+from .arabizi import (
+    ArabiziDecoder,
+    decode_arabizi,
+    is_arabizi_text,
+    is_arabizi_token,
+)
 from .audit import (
     AuditResult,
     audit_dataset_file,
     audit_texts,
     generate_html_report,
+)
+from .augment import (
+    evaluate_augmentation_recovery,
+    generate_stress_suite,
+    inject_arabizi_noise,
+    inject_diacritics_noise,
+    inject_orthographic_noise,
+    inject_tatweel_noise,
 )
 from .classifier import (
     DialectClassification,
@@ -45,12 +59,21 @@ from .lexicon import (
     light_stem,
     lookup_word,
 )
+from .paper import (
+    generate_academic_paper,
+    generate_markdown_summary,
+)
 from .parallel import (
     process_dataset_file,
     route_parallel,
 )
 from .pipelines import DialectPreservePipeline, MSALightPipeline, NoisySocialPipeline
 from .profiler import LinguisticProfile, LinguisticProfiler, compute_shannon_entropy
+from .proxy import (
+    ProxyTelemetry,
+    create_proxy_server,
+    run_proxy,
+)
 from .rag import (
     ArabicDiscourseChunker,
     MisarArabicSplitter,
@@ -133,4 +156,19 @@ __all__ = [
     "MisarOllamaAdapter",
     "prepare_ollama_prompt",
     "misar_vllm_pre_hook",
+    "decode_arabizi",
+    "is_arabizi_text",
+    "is_arabizi_token",
+    "ArabiziDecoder",
+    "create_proxy_server",
+    "run_proxy",
+    "ProxyTelemetry",
+    "inject_orthographic_noise",
+    "inject_tatweel_noise",
+    "inject_diacritics_noise",
+    "inject_arabizi_noise",
+    "generate_stress_suite",
+    "evaluate_augmentation_recovery",
+    "generate_academic_paper",
+    "generate_markdown_summary",
 ]

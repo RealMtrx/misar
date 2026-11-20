@@ -2,6 +2,28 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.7.0] — 2026-11-20
+
+### Added & Improved
+- **Transparent OpenAI-Compatible Reverse Proxy Gateway (`misar.proxy` & CLI `misar proxy`):**
+  - Drop-in reverse proxy server compatible with `/v1/chat/completions`, `/v1/completions`, `/v1/models`, and `/health`.
+  - Seamlessly intercepts prompts, blocks adversarial prompt injections with HTTP 400 (`misar_security_violation`), masks Saudi PII (National ID, IBAN, Phone), and collapses redundant tokens.
+  - Injects live telemetry headers (`X-Misar-Processed`, `X-Misar-Tokens-Saved`, `X-Misar-Attention-Saved-Pct`, `X-Misar-PII-Masked`, `X-Misar-Latency-Ms`).
+  - Supports zero-config standalone mock evaluation mode or transparent forwarding to any upstream LLM (Ollama, vLLM, OpenAI).
+- **Arabizi (Franco-Arabic / عربيزي) Decoupler & Transliteration Engine (`misar.arabizi` & CLI `misar arabizi`):**
+  - High-precision dictionary and phonetic transliterator converting Arabizi youth chat numerals (`3=ع`, `7=ح`, `5=خ`, `2=ء`, `6=ط`, `8=ق`, `9=ص`) into canonical Arabic script.
+  - Integrated into `MisarRouter(arabizi_mode=True)` pipeline while strictly safeguarding technical terms (`API`, `Python`, `Docker`, `base64`, `utf8`, `http2`).
+- **Synthetic Data Augmentation & Stress-Testing Engine (`misar.augment` & CLI `misar augment`):**
+  - Synthesizes realistic typographical noise (hamza, taa marbuta/haa, yaa/alif maqsura confusions), tatweel/kashida stretching, and random tashkeel (harakat).
+  - Evaluates and quantifies LLM token inflation and Misar recovery efficiency.
+- **Automated Academic Paper & LaTeX Preprint Generator (`misar.paper` & CLI `misar paper`):**
+  - Compiles full IEEE/ACL publication-ready LaTeX research preprint (`misar paper --format latex`) with formal mathematical equations, multi-model benchmark tables, and BibTeX citations.
+  - Generates Markdown research dossier (`misar paper --format markdown`).
+- **Reference Example & Test Coverage:**
+  - Added `examples/08_transparent_proxy_and_arabizi.py`.
+  - Added `tests/test_arabizi.py`, `tests/test_proxy.py`, `tests/test_augment.py`, and `tests/test_paper.py`.
+  - Scaled automated test suite to **105 comprehensive unit tests** passing with 100% success rate.
+
 ## [2.6.0] — 2026-11-20
 
 ### Added & Improved
