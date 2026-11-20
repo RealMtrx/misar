@@ -8,7 +8,7 @@ and diacritic-tolerant scoring with zero external dependencies.
 import math
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple, Union
 
 from .lexicon import extract_root
 from .pipelines import (
@@ -180,7 +180,7 @@ class BM25SearchEngine:
 
     def add_documents(
         self,
-        documents: Sequence[str] | Sequence[Dict[str, Any]],
+        documents: Union[Sequence[str], Sequence[Dict[str, Any]]],
     ) -> None:
         """Add multiple documents in batch."""
         for idx, item in enumerate(documents):
@@ -271,7 +271,7 @@ class BM25SearchEngine:
 
 def search_arabic(
     query: str,
-    documents: Sequence[str] | Sequence[Dict[str, Any]],
+    documents: Union[Sequence[str], Sequence[Dict[str, Any]]],
     top_k: int = 5,
     use_roots: bool = True,
 ) -> List[SearchResult]:
