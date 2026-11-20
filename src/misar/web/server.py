@@ -242,6 +242,12 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "sentence_explainer",
                             "enterprise_audit",
                             "domain_lexicons_fintech_gov_health",
+                            "arabic_bm25_search",
+                            "dialect_sentiment_analyzer",
+                            "arabizi_decoupler",
+                            "synthetic_augmentation",
+                            "academic_preprint_generator",
+                            "openai_proxy_gateway",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -283,6 +289,26 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                         },
                     },
                 )
+                return
+
+            if route_path == "/api/paper":
+                query_params = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
+                fmt = query_params.get("format", ["latex"])[0].lower()
+                from ..paper import generate_academic_paper, generate_markdown_summary
+                if fmt == "markdown":
+                    body = generate_markdown_summary().encode("utf-8")
+                    filename = "misar_research_dossier.md"
+                else:
+                    body = generate_academic_paper().encode("utf-8")
+                    filename = "misar_academic_preprint.tex"
+
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+                self.send_header("Content-Length", str(len(body)))
+                self._send_security_headers()
+                self.end_headers()
+                self._safe_write(body)
                 return
 
             self._send_json(404, {"error": "Not found"})
@@ -515,6 +541,81 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     })
                 except Exception as exc:
                     self._send_json(500, {"error": f"Audit error: {str(exc)}"})
+                return
+
+            if route_path == "/api/arabizi":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..arabizi import decode_arabizi
+                arabic = decode_arabizi(text)
+                self._send_json(200, {
+                    "original": text,
+                    "arabic": arabic,
+                    "length": len(arabic),
+                })
+                return
+
+            if route_path == "/api/sentiment":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..sentiment import analyze_sentiment
+                res = analyze_sentiment(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/search":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                query = payload.get("query", "")
+                docs = payload.get("documents", [])
+                top_k = int(payload.get("top_k", 5))
+                if not isinstance(query, str) or not isinstance(docs, list):
+                    self._send_json(400, {"error": "'query' must be a string and 'documents' must be a list of strings"})
+                    return
+                from ..search import search_arabic
+                results = [r.to_dict() for r in search_arabic(query, docs, top_k=top_k)]
+                self._send_json(200, {
+                    "query": query,
+                    "total_documents": len(docs),
+                    "results": results,
+                })
+                return
+
+            if route_path == "/api/augment":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..augment import generate_stress_suite
+                suite = generate_stress_suite(text)
+                self._send_json(200, suite)
+                return
+
+            if route_path == "/api/benchmark":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str) or not text.strip():
+                    self._send_json(400, {"error": "'text' field must be a non-empty string"})
+                    return
+                from ..benchmark import benchmark_text
+                res = benchmark_text(text, offline=True)
+                self._send_json(200, res)
                 return
 
             self._send_json(404, {"error": "Not found"})

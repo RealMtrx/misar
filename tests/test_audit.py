@@ -102,7 +102,7 @@ class TestMisarAuditEngine(unittest.TestCase):
 
         self.assertIn("<!DOCTYPE html>", html)
         self.assertIn("Executive Audit Test", html)
-        self.assertIn("Misar v2.7.0", html)
+        self.assertIn("Misar v2.8.0", html)
         self.assertIn("USD", html)
         self.assertIn("ignore_instructions_ar", html)
         self.assertIn("saudi_gulf", html)

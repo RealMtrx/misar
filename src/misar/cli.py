@@ -92,6 +92,25 @@ def cmd_serve(args: argparse.Namespace) -> int:
 
 
 def cmd_bench(args: argparse.Namespace) -> int:
+    if getattr(args, "text", None):
+        from .benchmark import benchmark_text
+        res = benchmark_text(args.text, offline=args.offline)
+        if args.json:
+            print(json.dumps(res, ensure_ascii=False, indent=2))
+            return 0
+        print(f"Misar Multi-Model Benchmark for text: '{args.text}'")
+        print("=" * 96)
+        print(f"{'Model':<20} | {'Raw':>4} | {'Proc':>4} | {'Saved':>5} | {'Reduction %':>11} | {'Attn Savings %':>14} | {'Latency':>8}")
+        print("-" * 96)
+        for r in res["results"]:
+            if "reduction_pct" in r:
+                print(f"{r['model_key']:<20} | {r['raw_tokens']:>4} | {r['processed_tokens']:>4} | {r['saved_tokens']:>5} | {r['reduction_pct']:>10.1f}% | {r['attention_savings_pct']:>13.1f}% | {r['latency_ms']:>6.2f}ms")
+            else:
+                print(f"{r['model_key']:<20} | ERROR: {r.get('error', 'Unknown')}")
+        print("=" * 96)
+        print(f"Average Token Reduction: {res['avg_token_reduction_pct']}% | Quadratic Attention FLOPs Saved: {res['avg_attention_savings_pct']}%")
+        return 0
+
     save_path = Path(args.save_report) if args.save_report else None
     run_benchmark(model_key=args.model, offline=args.offline, save_report_path=save_path)
     return 0
@@ -340,6 +359,64 @@ def cmd_augment(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_search(args: argparse.Namespace) -> int:
+    from .search import BM25SearchEngine
+    engine = BM25SearchEngine(use_roots=not args.no_roots)
+    if args.file:
+        file_path = Path(args.file)
+        if not file_path.exists():
+            print(f"Error: File not found: {args.file}", file=sys.stderr)
+            return 1
+        with open(file_path, "r", encoding="utf-8", errors="replace") as f:
+            for idx, line in enumerate(f, 1):
+                clean = line.strip()
+                if clean:
+                    engine.add_document(f"line_{idx}", clean)
+    elif args.docs:
+        for idx, doc in enumerate(args.docs, 1):
+            engine.add_document(f"doc_{idx}", doc)
+    else:
+        print("Error: Provide documents via --docs or --file", file=sys.stderr)
+        return 1
+
+    results = engine.search(args.query, top_k=args.top_k)
+    if args.json:
+        print(json.dumps([r.to_dict() for r in results], ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Misar Arabic BM25 Search Results for: '{args.query}' (Total Indexed: {engine.total_docs})")
+    print("=" * 84)
+    if not results:
+        print("No matching documents found.")
+    for r in results:
+        print(f"#{r.rank} [{r.doc_id}] Score: {r.score:.4f} | Matched: {', '.join(r.matched_terms)}")
+        print(f"  Snippet: {r.snippet}")
+        print("-" * 84)
+    return 0
+
+
+def cmd_sentiment(args: argparse.Namespace) -> int:
+    from .sentiment import analyze_sentiment
+    res = analyze_sentiment(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+
+    print(f"Misar Arabic Sentiment & Emotion Analyzer v{__version__}")
+    print("=" * 70)
+    print(f"Text       : {args.text}")
+    print(f"Sentiment  : {res.label} (Score: {res.score:+.3f}, Confidence: {res.confidence * 100:.0f}%)")
+    print(f"Emotion    : {res.emotion}")
+    if res.positive_tokens:
+        print(f"Positive   : {', '.join(res.positive_tokens)}")
+    if res.negative_tokens:
+        print(f"Negative   : {', '.join(res.negative_tokens)}")
+    if res.negations_detected:
+        print(f"Negations  : {', '.join(res.negations_detected)}")
+    print("=" * 70)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -375,8 +452,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_serve.add_argument("--offline", action="store_true")
     p_serve.set_defaults(func=cmd_serve)
 
-    p_bench = sub.add_parser("bench", help="Run reproducible 15-sample benchmark")
+    p_bench = sub.add_parser("bench", help="Run reproducible WordPiece fragmentation & latency benchmark")
     p_bench.add_argument("--model", default="arabertv02", choices=model_choices)
+    p_bench.add_argument("--text", default="", help="Custom Arabic text to benchmark across all 7 models")
+    p_bench.add_argument("--json", action="store_true", help="Output benchmark in structured JSON")
     p_bench.add_argument("--offline", action="store_true")
     p_bench.add_argument("--save-report", default="", help="Optional JSON output path")
     p_bench.set_defaults(func=cmd_bench)
@@ -465,6 +544,20 @@ def build_parser() -> argparse.ArgumentParser:
     p_augment.add_argument("text", help="Arabic seed text to augment")
     p_augment.add_argument("--json", action="store_true", help="Output structured JSON")
     p_augment.set_defaults(func=cmd_augment)
+
+    p_search = sub.add_parser("search", help="Perform in-memory BM25 semantic search across Arabic documents")
+    p_search.add_argument("--query", "-q", required=True, help="Arabic query to search for")
+    p_search.add_argument("--docs", "-d", nargs="+", help="List of Arabic document strings to search")
+    p_search.add_argument("--file", "-f", help="Text file containing one document per line")
+    p_search.add_argument("--top-k", "-k", type=int, default=5, help="Number of top results (default: 5)")
+    p_search.add_argument("--no-roots", action="store_true", help="Disable morphological root matching")
+    p_search.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_search.set_defaults(func=cmd_search)
+
+    p_sentiment = sub.add_parser("sentiment", help="Analyze Arabic sentiment, dialectal negations, and emotion")
+    p_sentiment.add_argument("text", help="Arabic text to analyze for sentiment")
+    p_sentiment.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_sentiment.set_defaults(func=cmd_sentiment)
 
     return parser
 

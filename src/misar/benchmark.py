@@ -11,7 +11,7 @@ from typing import Dict, List, Optional
 
 from . import __version__
 from .router import MisarRouter
-from .tokenizer import load_default_tokenizer
+from .tokenizer import PRETRAINED_MODEL_CONFIGS, load_default_tokenizer
 
 BENCHMARK_CORPUS: List[Dict[str, str]] = [
     {"domain": "MSA Tech", "text": "تعتمد الحوسبة السحابية الحديثة على هندسة النماذج اللغوية الضخمة لتحسين كفاءة المعالجة وتقليل زمن الاستدلال"},
@@ -136,3 +136,66 @@ def run_benchmark(
         save_report_path.write_text(json.dumps(summary, ensure_ascii=False, indent=2), encoding="utf-8")
         print(f"Saved report -> {save_report_path}")
     return summary
+
+
+def benchmark_text(
+    text: str,
+    model_keys: Optional[List[str]] = None,
+    offline: bool = True,
+) -> Dict[str, Any]:
+    """
+    Benchmarks a single Arabic text across multiple state-of-the-art Arabic tokenizers.
+    Calculates exact token reduction, attention FLOPs savings, and processing throughput.
+    """
+    keys = model_keys or list(PRETRAINED_MODEL_CONFIGS.keys())
+    results: List[Dict[str, Any]] = []
+
+    for k in keys:
+        try:
+            tok = load_default_tokenizer(model_key=k, allow_download=not offline)
+            router = MisarRouter(tokenizer=tok, model_key=k, auto_heal=True)
+            t0 = time.perf_counter()
+            comp = router.compare_baselines(text)
+            lat_ms = (time.perf_counter() - t0) * 1000.0
+
+            res_m = comp["misar"]
+            raw_tokens = res_m["raw_token_count"]
+            proc_tokens = res_m["processed_token_count"]
+            saved_tokens = max(0, raw_tokens - proc_tokens)
+            red_pct = round(res_m["token_reduction_pct"], 2)
+
+            # Quadratic self-attention FLOPs reduction: 1.0 - (proc / raw)^2
+            attn_savings_pct = 0.0
+            if raw_tokens > 0:
+                attn_savings_pct = round((1.0 - (proc_tokens / raw_tokens) ** 2) * 100.0, 2)
+
+            results.append({
+                "model_key": k,
+                "display_name": PRETRAINED_MODEL_CONFIGS.get(k, {}).get("display_name", k),
+                "raw_tokens": raw_tokens,
+                "processed_tokens": proc_tokens,
+                "saved_tokens": saved_tokens,
+                "reduction_pct": red_pct,
+                "attention_savings_pct": attn_savings_pct,
+                "auto_healed": res_m["auto_healed_count"],
+                "clitics_fixed": res_m["clitic_fixed_count"],
+                "latency_ms": round(lat_ms, 3),
+            })
+        except Exception as exc:
+            results.append({
+                "model_key": k,
+                "display_name": k,
+                "error": str(exc),
+            })
+
+    valid = [r for r in results if "reduction_pct" in r]
+    avg_reduction = sum(r["reduction_pct"] for r in valid) / max(1, len(valid))
+    avg_attn_savings = sum(r["attention_savings_pct"] for r in valid) / max(1, len(valid))
+
+    return {
+        "text": text,
+        "models_benchmarked": len(results),
+        "avg_token_reduction_pct": round(avg_reduction, 2),
+        "avg_attention_savings_pct": round(avg_attn_savings, 2),
+        "results": results,
+    }

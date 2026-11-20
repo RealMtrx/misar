@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v2.5.0) — موجه المعالجة العربية التكيفية</title>
+  <title>مِسار (Misar v2.8.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -881,7 +881,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.5.0</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v2.8.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -1203,8 +1203,119 @@
       <div id="auditResultWrap" style="margin-top: 14px;"></div>
     </section>
 
+    <!-- Section 9: Arabizi Decoupler -->
+    <section class="card" id="sectionArabizi">
+      <div class="section-head">
+        <h2 class="section-title">9. فك لغة العَرَبيزي والفرانكو والترجمة الفورية (Arabizi / Franco-Arabic Decoupler)</h2>
+        <span class="section-hint">تحويل لغة الشات والشباب والأرقام الصوتية (3=ع، 7=ح، 5=خ، 2=ء) إلى عربية معيارية مع حماية المصطلحات البرمجية تلقائياً</span>
+      </div>
+
+      <div class="presets-row" id="arabiziPresetsRow">
+        <button type="button" class="preset-btn active" data-arabizi="salam 3alaykom ya 7abibi kef el 7al">تحية فرانكو (Salam 3alaykom)</button>
+        <button type="button" class="preset-btn" data-arabizi="mar7aba keefak 7abibi 3amel eh el youm">سؤال عن الحال (Mar7aba keefak)</button>
+        <button type="button" class="preset-btn" data-arabizi="el code da feeh bug fel base64 w lazim n3adel el API">محادثة تقنية وهجينة (Code + base64 + API)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="arabiziInput" rows="2" placeholder="اكتب نصاً بالعربيزي / الفرانكو (مثال: salam 3alaykom ya 7abibi)...">salam 3alaykom ya 7abibi kef el 7al</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="decodeArabiziBtn">فك وتطبيع لغة العربيزي</button>
+        </div>
+      </div>
+
+      <div id="arabiziResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 10: Sentiment Analyzer -->
+    <section class="card" id="sectionSentiment">
+      <div class="section-head">
+        <h2 class="section-title">10. محلل المشاعر واللهجات الذكي وصون النفي (Arabic Sentiment & Negation Analyzer)</h2>
+        <span class="section-hint">تحليل دقيق لقطبية المشاعر (إيجابي، سلبي، محايد) مع فهم فوري لأدوات النفي اللهجية (ما قصرت، مو حلو، مش بطال، ولا غلطة)</span>
+      </div>
+
+      <div class="presets-row" id="sentimentPresetsRow">
+        <button type="button" class="preset-btn active" data-sentiment="الخدمة ممتازة وسريعة جداً وبيض الله وجهكم 😍🔥">ثناء ورضا وحماس (Positive)</button>
+        <button type="button" class="preset-btn" data-sentiment="التطبيق مو حلو ويعلق مرررة وخايس أبدددداً 😡👎">نقد ونفي سلبي حاد (Negative)</button>
+        <button type="button" class="preset-btn" data-sentiment="ما قصرتوا ولا غلطة في الشغل يعطيكم العافية">ثناء مركب بأدوات نفي (Praise with Negation)</button>
+        <button type="button" class="preset-btn" data-sentiment="مش بطال شغال تمام وبنعتمد النظام إن شاء الله">انطباع معتدل (Mild Positive)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="sentimentInput" rows="2" placeholder="اكتب نصاً عربياً لتحليل مشاعره ودلالات النفي فيه...">الخدمة ممتازة وسريعة جداً وبيض الله وجهكم 😍🔥</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="analyzeSentimentBtn">تحليل المشاعر والنفي اللغوي</button>
+        </div>
+      </div>
+
+      <div id="sentimentResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 11: BM25 Semantic Search -->
+    <section class="card" id="sectionSearch">
+      <div class="section-head">
+        <h2 class="section-title">11. محرك البحث الدلالي العربي المدمج (Arabic Okapi BM25 Search Engine)</h2>
+        <span class="section-hint">استرجاع دلالي فوري للمستندات العربية بالاعتماد على الجذور الصرفية ومطابقة المعنى دون أي مكتبات خارجية (Zero-Dependency)</span>
+      </div>
+
+      <div class="input-wrap">
+        <label style="font-weight: 600; color: var(--navy); display: block; margin-bottom: 6px;">استعلام البحث (Search Query):</label>
+        <input type="text" id="searchQueryInput" class="lexicon-input" value="معالجة اللغة الطبيعية والذكاء الاصطناعي" style="margin-bottom: 12px;" />
+
+        <label style="font-weight: 600; color: var(--navy); display: block; margin-bottom: 6px;">المستندات المفهرسة (Document Corpus):</label>
+        <textarea id="searchDocsInput" rows="4" placeholder="اكتب المستندات (مستند في كل سطر)...">تعتمد الحوسبة السحابية الحديثة على هندسة مراكز البيانات الضخمة
+ابتكار محرك مِسار لمعالجة وتوجيه نصوص اللغة العربية والذكاء الاصطناعي
+تأمين الواجهات البرمجية وحجب الهجمات وحماية البيانات الحساسة للمستخدمين
+استرجاع المستندات وأنظمة RAG الذكية في قواعد البيانات السحابية</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runSearchBtn">تنفيذ البحث الدلالي (BM25)</button>
+        </div>
+      </div>
+
+      <div id="searchResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 12: Robustness Augmenter -->
+    <section class="card" id="sectionAugment">
+      <div class="section-head">
+        <h2 class="section-title">12. فحص المتانة وتوليد الضوضاء الاصطناعية (Robustness & Data Augmentation)</h2>
+        <span class="section-hint">توليد أخطاء إملائية واقعية، تمديد بالكشيدة، تشكيل عشوائي، وتشويش عربيزي لاختبار مرونة نماذج الذكاء الاصطناعي</span>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="augmentInput" rows="2" placeholder="اكتب نصاً لتوليد متغيرات الضوضاء الاصطناعية له...">أداء الخادم الحين ممتاز واستجابة واجهة البرمجة سريعة جداً</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runAugmentBtn">توليد حزمة الضوضاء والمتانة</button>
+        </div>
+      </div>
+
+      <div id="augmentResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 13: Academic Paper Download -->
+    <section class="card" id="sectionPaper">
+      <div class="section-head">
+        <h2 class="section-title">13. الورقة العلمية الأكاديمية والتحكيم (Academic Research Preprint)</h2>
+        <span class="section-hint">تصدير ورقة بحثية متكاملة بصيغة IEEE / ACL LaTeX ومذكرات البحث العلمي الرسمية لتقديمها للجان تحكيم الأولمبياد الوطني</span>
+      </div>
+
+      <div style="background: var(--bg-subtle); padding: 18px; border-radius: var(--radius); border: 1px solid var(--border-soft);">
+        <h3 style="margin-top: 0; color: var(--navy);">ورقة بحثية: مِسار (Misar) — موجه المعالجة التكيفية وبوابة الذكاء الاصطناعي السيادية</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.7;">
+          تتضمن الورقة المنهجية الرياضية، وخوارزميات التوجيه التكيفي O(n)، ومقارنة استهلاك الرموز عبر 7 نماذج لغوية، ونتائج اختبارات المتانة والأمان، وجداول خفض التكلفة المالية بنسبة تصل إلى 65%.
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-top: 14px;">
+          <a href="/api/paper?format=latex" download="misar_academic_preprint.tex" class="btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            📄 تحميل الورقة العلمية (IEEE/ACL LaTeX .tex)
+          </a>
+          <a href="/api/paper?format=markdown" download="misar_research_dossier.md" class="btn-secondary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+            📑 تحميل ملف البحث الكامل (Markdown .md)
+          </a>
+        </div>
+      </div>
+    </section>
+
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.7.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v2.8.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -2507,7 +2618,198 @@
         auditArea.value = AUDIT_DATASETS.fintech.join("\n");
         executeAudit();
       }
+
+      // Arabizi Decoupler UI (Section 9)
+      const arabiziBtn = document.getElementById("decodeArabiziBtn");
+      const arabiziIn = document.getElementById("arabiziInput");
+      if (arabiziBtn && arabiziIn) {
+        arabiziBtn.addEventListener("click", executeArabizi);
+        document.querySelectorAll("#arabiziPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#arabiziPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            arabiziIn.value = b.getAttribute("data-arabizi");
+            executeArabizi();
+          });
+        });
+        executeArabizi();
+      }
+
+      // Sentiment Analyzer UI (Section 10)
+      const sentBtn = document.getElementById("analyzeSentimentBtn");
+      const sentIn = document.getElementById("sentimentInput");
+      if (sentBtn && sentIn) {
+        sentBtn.addEventListener("click", executeSentiment);
+        document.querySelectorAll("#sentimentPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#sentimentPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            sentIn.value = b.getAttribute("data-sentiment");
+            executeSentiment();
+          });
+        });
+        executeSentiment();
+      }
+
+      // Search UI (Section 11)
+      const searchBtn = document.getElementById("runSearchBtn");
+      if (searchBtn) {
+        searchBtn.addEventListener("click", executeSearch);
+        executeSearch();
+      }
+
+      // Augment UI (Section 12)
+      const augBtn = document.getElementById("runAugmentBtn");
+      if (augBtn) {
+        augBtn.addEventListener("click", executeAugment);
+        executeAugment();
+      }
     });
+
+    // --- Arabizi Decoupler UI ---
+    async function executeArabizi() {
+      const input = document.getElementById("arabiziInput").value.trim();
+      const wrap = document.getElementById("arabiziResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ فك وترجمة لغة العربيزي...</div>";
+      try {
+        const res = await fetch("/api/arabizi", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--msa-accent); font-weight: 700;">${data.arabic}</span>
+              <span class="route-pill pill-FAST_MSA">عربية معيارية مطبّعة</span>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 8px;">
+              <strong>النص الأصلي (فرانكو):</strong> <span class="ltr">${data.original}</span>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.85rem; color: var(--text-soft);">
+              ✓ تم استبدال الأرقام الصوتية (3=ع، 7=ح، 5=خ، 2=ء) مع حماية المعرفات البرمجية والأكواد التقنية.
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في الاتصال بالسيرفر: ${err}</div>`;
+      }
+    }
+
+    // --- Sentiment Analyzer UI ---
+    async function executeSentiment() {
+      const input = document.getElementById("sentimentInput").value.trim();
+      const wrap = document.getElementById("sentimentResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ تحليل المشاعر والنفي اللغوي...</div>";
+      try {
+        const res = await fetch("/api/sentiment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        const scoreColor = data.score > 0 ? "var(--msa-accent)" : (data.score < 0 ? "var(--noisy-accent)" : "var(--navy)");
+        const pillClass = data.score > 0 ? "pill-FAST_MSA" : (data.score < 0 ? "pill-NOISY_SOCIAL" : "pill-DIALECT_PRESERVE");
+        
+        let negHtml = "";
+        if (data.negations_detected && data.negations_detected.length > 0) {
+          negHtml = `<div style="margin-top: 6px;"><strong>أدوات النفي المرصودة:</strong> ${data.negations_detected.map(n => `<span class="marker-chip">${n}</span>`).join(" ")}</div>`;
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: ${scoreColor}; font-weight: 700;">${data.label} (${data.score > 0 ? "+" : ""}${data.score})</span>
+              <span class="route-pill ${pillClass}">${data.emotion}</span>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.9rem;">
+              <strong>درجة الثقة:</strong> ${(data.confidence * 100).toFixed(0)}%
+            </div>
+            ${negHtml}
+            <div style="margin-top: 8px; display: flex; gap: 8px; flex-wrap: wrap;">
+              ${data.positive_tokens.length ? `<div><strong>كلمات إيجابية:</strong> ${data.positive_tokens.map(t => `<span class="tok-chip clean">${t}</span>`).join(" ")}</div>` : ""}
+              ${data.negative_tokens.length ? `<div><strong>كلمات سلبية/منفية:</strong> ${data.negative_tokens.map(t => `<span class="tok-chip unk">${t}</span>`).join(" ")}</div>` : ""}
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في تحليل المشاعر: ${err}</div>`;
+      }
+    }
+
+    // --- Arabic BM25 Search UI ---
+    async function executeSearch() {
+      const q = document.getElementById("searchQueryInput").value.trim();
+      const docsRaw = document.getElementById("searchDocsInput").value.split("\n").map(d => d.trim()).filter(Boolean);
+      const wrap = document.getElementById("searchResultWrap");
+      if (!q || !docsRaw.length) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ مطابقة الجذور واسترجاع النتائج بمعيار Okapi BM25...</div>";
+      try {
+        const res = await fetch("/api/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: q, documents: docsRaw, top_k: 5 })
+        });
+        const data = await res.json();
+        if (!data.results || !data.results.length) {
+          wrap.innerHTML = "<div class='section-hint'>لم يتم العثور على مستندات مطابقة للاستعلام.</div>";
+          return;
+        }
+        let html = `<div style="font-size: 0.88rem; margin-bottom: 10px; color: var(--navy); font-weight: 600;">تم استرجاع ${data.results.length} نتائج مرتبة حسب الأهمية:</div>`;
+        data.results.forEach(r => {
+          html += `
+            <div class="lexicon-card-result" style="margin-top: 8px; padding: 12px 16px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: var(--navy);">#${r.rank} [معرف: ${r.doc_id}]</strong>
+                <span class="route-pill pill-FAST_MSA">درجة التطابق BM25: ${r.score}</span>
+              </div>
+              <p style="margin: 6px 0; font-size: 0.95rem; color: var(--text-main);">${r.snippet}</p>
+              <div style="font-size: 0.8rem; color: var(--text-soft);">
+                <strong>المصطلحات والجذور المطابقة:</strong> ${r.matched_terms.map(m => `<span class="marker-chip">${m}</span>`).join(" ")}
+              </div>
+            </div>
+          `;
+        });
+        wrap.innerHTML = html;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في البحث: ${err}</div>`;
+      }
+    }
+
+    // --- Robustness Augmentation UI ---
+    async function executeAugment() {
+      const input = document.getElementById("augmentInput").value.trim();
+      const wrap = document.getElementById("augmentResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ توليد حزمة المتانة الاصطناعية...</div>";
+      try {
+        const res = await fetch("/api/augment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        let html = `<div style="display: grid; grid-template-columns: 1fr; gap: 10px;">`;
+        for (const [k, v] of Object.entries(data)) {
+          html += `
+            <div class="lexicon-card-result" style="margin-top: 4px; padding: 10px 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <strong style="color: var(--navy); font-size: 0.85rem;">${k}</strong>
+                <span class="route-pill pill-DIALECT_PRESERVE">متغير اصطناعي</span>
+              </div>
+              <div style="font-size: 0.95rem; color: var(--text-main); font-family: var(--font-ar);">${v}</div>
+            </div>
+          `;
+        }
+        html += `</div>`;
+        wrap.innerHTML = html;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في التوليد: ${err}</div>`;
+      }
+    }
   </script>
 </body>
 </html>

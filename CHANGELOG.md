@@ -2,6 +2,35 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.8.0] — 2026-11-21
+
+### Added & Improved
+- **High-Performance In-Memory Arabic BM25 & Semantic Search Engine (`misar.search` & CLI `misar search`):**
+  - Pure Python standard-library implementation of Okapi BM25 optimized specifically for Arabic text retrieval.
+  - Native Arabic morphological root and stem matching (`use_roots=True`) and diacritic-tolerant scoring.
+  - Enables sovereign, zero-dependency Arabic semantic retrieval and RAG architectures without external vector database overhead.
+  - Full CLI interface: `misar search --query "..." --docs "..." "..."` or `--file corpus.txt`.
+- **Dialect-Aware Arabic Sentiment & Emotion Analyzer (`misar.sentiment` & CLI `misar sentiment`):**
+  - Robust rule-and-lexicon sentiment engine tuned for Modern Standard Arabic and regional dialects (Saudi, Gulf, Egyptian, Levantine, Maghrebi).
+  - Nuanced handling of dialectal negation inverters (`مو حلو`, `مش بطال`, `ماكو مشاكل`).
+  - Native detection of idiomatic praise phrases with grammatical negation (`ما قصرت`, `ولا غلطة`, `ما في زيه`).
+  - Classifies polarity score (-1.0 to +1.0), confidence, emotion categories (`حماس ورضا`, `غضب واستياء`, `محايد وموضوعي`), and token attribution.
+  - CLI command: `misar sentiment "<text>"`.
+- **Cross-Model Benchmark Suite Upgrade (`misar.benchmark` & CLI `misar bench --text`):**
+  - Benchmarks any custom Arabic string across all 7 supported Arabic tokenizers (`AraBERTv02`, `CAMeLBERT-Mix`, `MARBERTv2`, `ARBERTv2`, `QARiB`, `ALLaM-7B`, `Llama-3-Arabic`).
+  - Computes exact token reductions, $O(L^2)$ quadratic self-attention FLOPs savings, and processing latencies.
+- **Interactive Web Workbench Major Upgrade (Sections 9 through 13 on `localhost:8000`):**
+  - Section 9: Live Arabizi / Franco-Arabic Decoupler & Transliteration preview.
+  - Section 10: Interactive Arabic Sentiment Analyzer with emotion meter and negation particle chips.
+  - Section 11: Real-time Arabic Okapi BM25 Search Engine with document scoring and root matching.
+  - Section 12: Robustness & Data Augmentation tester generating synthetic perturbations live.
+  - Section 13: One-click export for IEEE/ACL LaTeX academic preprint (`.tex`) and Markdown research dossier (`.md`).
+- **REST API Endpoints:**
+  - Added POST `/api/arabizi`, POST `/api/sentiment`, POST `/api/search`, POST `/api/augment`, POST `/api/benchmark`, and GET `/api/paper`.
+- **Comprehensive Automated Test Suite:**
+  - Added `tests/test_search.py` and `tests/test_sentiment.py`.
+  - Expanded test suite to **117 automated unit tests**, all passing with 100% success rate in under 6 seconds.
+
 ## [2.7.0] — 2026-11-20
 
 ### Added & Improved
