@@ -248,6 +248,9 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "synthetic_augmentation",
                             "academic_preprint_generator",
                             "openai_proxy_gateway",
+                            "grammar_spell_corrector",
+                            "named_entity_recognition",
+                            "dialect_to_msa_translator",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -616,6 +619,46 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                 from ..benchmark import benchmark_text
                 res = benchmark_text(text, offline=True)
                 self._send_json(200, res)
+                return
+
+            if route_path == "/api/correct":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..correct import correct_arabic_text
+                res = correct_arabic_text(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/ner":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                mask = bool(payload.get("mask", False))
+                from ..ner import extract_entities
+                res = extract_entities(text, mask_entities=mask)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/translate":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..translate import translate_to_msa
+                res = translate_to_msa(text)
+                self._send_json(200, res.to_dict())
                 return
 
             self._send_json(404, {"error": "Not found"})

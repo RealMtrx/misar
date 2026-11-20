@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v2.8.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
+  <title>مِسار (Misar v2.9.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -881,7 +881,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.8.0</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v2.9.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -1314,8 +1314,81 @@
       </div>
     </section>
 
+    <!-- Section 14: Grammar & Spell Corrector -->
+    <section class="card" id="sectionCorrect">
+      <div class="section-head">
+        <h2 class="section-title">14. التدقيق الإملائي وتصحيح الهمزات والتاء المربوطة (Arabic Spell & Grammar Corrector)</h2>
+        <span class="section-hint">تصحيح فوري لأخطاء الهمزات (مسئول ⬅ مسؤول، شئ ⬅ شيء)، وهمزات الوصل والقطع (أبتكار ⬅ ابتكار)، وحفظ ضمائر الهاء (بيته، قلمه)</span>
+      </div>
+
+      <div class="presets-row" id="correctPresetsRow">
+        <button type="button" class="preset-btn active" data-correct="إنشاء الله سنناقش مسئولية كل موظف في أبتكار حلول جديدة">أخطاء همزات شائعة (مسئولية + أبتكار)</button>
+        <button type="button" class="preset-btn" data-correct="قامت المنظمه بتطوير منظومه جديده بالتعاون مع مديره في عمله">تاء مربوطة مع حفظ الضمير (منظمه ⬅ منظمة مع حفظ عمله)</button>
+        <button type="button" class="preset-btn" data-correct="لاكن هاكذا كان ذالك التقرير بطيئ جدا">أخطاء كتابية شائعة (لاكن، هاكذا، بطيئ)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="correctInput" rows="2" placeholder="اكتب نصاً لفحصه وتصحيحه إملائياً ولغوياً...">إنشاء الله سنناقش مسئولية كل موظف في أبتكار حلول جديدة</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runCorrectBtn">فحص وتصحيح النص</button>
+        </div>
+      </div>
+
+      <div id="correctResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 15: Named Entity Recognition -->
+    <section class="card" id="sectionNER">
+      <div class="section-head">
+        <h2 class="section-title">15. استخراج وتصنيف الكيانات المسماة (Arabic Named Entity Recognition - NER)</h2>
+        <span class="section-hint">استخراج وتصنيف الأشخاص (PER)، المؤسسات والوزارات (ORG)، المناطق والمدن (LOC)، والتواريخ والمبالغ المالية (MONEY)</span>
+      </div>
+
+      <div class="presets-row" id="nerPresetsRow">
+        <button type="button" class="preset-btn active" data-ner="التقى المهندس منير الذيب بمسؤولي موهبة وسدايا في مدينة أبها بمنطقة عسير لبحث دعم الذكاء الاصطناعي بمبلغ 500000 ريال عام 2027 م">عينة متكاملة (أشخاص + جهات + عسير وأبها + مبالغ)</button>
+        <button type="button" class="preset-btn" data-ner="وقعت شركة أرامكو السعودية ومصرف الراجحي اتفاقية تمويل في الرياض بحضور معالي الدكتور محمد">عينة قطاع أعمال وبنوك (أرامكو + الراجحي + الرياض)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="nerInput" rows="2" placeholder="اكتب نصاً لاستخراج الكيانات وتصنيفها منه...">التقى المهندس منير الذيب بمسؤولي موهبة وسدايا في مدينة أبها بمنطقة عسير لبحث دعم الذكاء الاصطناعي بمبلغ 500000 ريال عام 2027 م</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runNERBtn">استخراج وتصنيف الكيانات</button>
+          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: var(--navy); margin-right: 12px;">
+            <input type="checkbox" id="nerMaskToggle" />
+            <span>حجب الكيانات الحساسة ([PER_محجوب]، [ORG_محجوب]، [LOC_محجوب])</span>
+          </label>
+        </div>
+      </div>
+
+      <div id="nerResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 16: Dialect-to-MSA Translator -->
+    <section class="card" id="sectionTranslate">
+      <div class="section-head">
+        <h2 class="section-title">16. المترجم من اللهجات إلى الفصحى المعيارية (Dialect-to-MSA Parallel Translator)</h2>
+        <span class="section-hint">تحويل فوري للتعبيرات العامية الدارجة (سعودية، خليجية، مصرية، شامية، مغاربية) إلى العربية الفصحى المعيارية لتدريب النماذج وتسهيل الفهم</span>
+      </div>
+
+      <div class="presets-row" id="translatePresetsRow">
+        <button type="button" class="preset-btn active" data-translate="وش تبغى تسوي الحين يا خوي؟ ترا السيرفر يبيله تحديث">لهجة سعودية وخليجية (وش تبغى + الحين + يبيله)</button>
+        <button type="button" class="preset-btn" data-translate="عايز ايه دلوقتي يا باشا؟ التطبيق مش عاجبني خالص">لهجة مصرية (عايز ايه + دلوقتي + مش عاجبني)</button>
+        <button type="button" class="preset-btn" data-translate="شو بدك هلأ؟ هاد النظام كتير منيح وشغال مزبوط">لهجة شامية (شو بدك + هلأ + هاد + كتير منيح)</button>
+        <button type="button" class="preset-btn" data-translate="واش كاين دابا؟ الخدمة ديالكم مزيانة بزاف">لهجة مغاربية (واش كاين + دابا + ديالكم + مزيانة بزاف)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="translateInput" rows="2" placeholder="اكتب جملة عامية لترجمتها إلى الفصحى المعيارية...">وش تبغى تسوي الحين يا خوي؟ ترا السيرفر يبيله تحديث</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runTranslateBtn">ترجمة إلى الفصحى المعيارية (MSA)</button>
+        </div>
+      </div>
+
+      <div id="translateResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.8.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v2.9.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -2664,6 +2737,56 @@
         augBtn.addEventListener("click", executeAugment);
         executeAugment();
       }
+
+      // Correct UI (Section 14)
+      const correctBtn = document.getElementById("runCorrectBtn");
+      const correctIn = document.getElementById("correctInput");
+      if (correctBtn && correctIn) {
+        correctBtn.addEventListener("click", executeCorrect);
+        document.querySelectorAll("#correctPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#correctPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            correctIn.value = b.getAttribute("data-correct");
+            executeCorrect();
+          });
+        });
+        executeCorrect();
+      }
+
+      // NER UI (Section 15)
+      const nerBtn = document.getElementById("runNERBtn");
+      const nerIn = document.getElementById("nerInput");
+      const nerMask = document.getElementById("nerMaskToggle");
+      if (nerBtn && nerIn) {
+        nerBtn.addEventListener("click", executeNER);
+        if (nerMask) nerMask.addEventListener("change", executeNER);
+        document.querySelectorAll("#nerPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#nerPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            nerIn.value = b.getAttribute("data-ner");
+            executeNER();
+          });
+        });
+        executeNER();
+      }
+
+      // Translate UI (Section 16)
+      const transBtn = document.getElementById("runTranslateBtn");
+      const transIn = document.getElementById("translateInput");
+      if (transBtn && transIn) {
+        transBtn.addEventListener("click", executeTranslate);
+        document.querySelectorAll("#translatePresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#translatePresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            transIn.value = b.getAttribute("data-translate");
+            executeTranslate();
+          });
+        });
+        executeTranslate();
+      }
     });
 
     // --- Arabizi Decoupler UI ---
@@ -2808,6 +2931,138 @@
         wrap.innerHTML = html;
       } catch (err) {
         wrap.innerHTML = `<div class="guard-tag">خطأ في التوليد: ${err}</div>`;
+      }
+    }
+
+    // --- Grammar & Spell Correction UI ---
+    async function executeCorrect() {
+      const input = document.getElementById("correctInput").value.trim();
+      const wrap = document.getElementById("correctResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ فحص وتصحيح النص...</div>";
+      try {
+        const res = await fetch("/api/correct", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        let changesHtml = "";
+        if (data.changes && data.changes.length > 0) {
+          changesHtml = `
+            <div style="margin-top: 10px; font-size: 0.88rem;">
+              <strong>التعديلات المطبقة (${data.changes_count}):</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                ${data.changes.map(c => `<span class="marker-chip">[${c.rule}] ${c.original} ⬅ ${c.corrected}</span>`).join(" ")}
+              </div>
+            </div>
+          `;
+        } else {
+          changesHtml = `<div style="margin-top: 8px; font-size: 0.85rem; color: var(--msa-accent);">✓ النص سليم إملائياً ولا يحتاج إلى تصحيحات.</div>`;
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--msa-accent); font-weight: 700;">${data.corrected_text}</span>
+              <span class="route-pill pill-FAST_MSA">نص مصحح مدقق</span>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 6px;">
+              <strong>النص الأصلي:</strong> ${data.original_text}
+            </div>
+            ${changesHtml}
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في التصحيح: ${err}</div>`;
+      }
+    }
+
+    // --- Named Entity Recognition (NER) UI ---
+    async function executeNER() {
+      const input = document.getElementById("nerInput").value.trim();
+      const mask = document.getElementById("nerMaskToggle").checked;
+      const wrap = document.getElementById("nerResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ استخراج وتصنيف الكيانات المسماة...</div>";
+      try {
+        const res = await fetch("/api/ner", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input, mask: mask })
+        });
+        const data = await res.json();
+        let entitiesHtml = "";
+        if (data.entities && data.entities.length > 0) {
+          entitiesHtml = `
+            <div style="margin-top: 10px; font-size: 0.88rem;">
+              <strong>الكيانات المرصودة (${data.entities_count}):</strong>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                ${data.entities.map(e => {
+                  let pill = "pill-FAST_MSA";
+                  if (e.category === "PER") pill = "pill-DIALECT_PRESERVE";
+                  if (e.category === "ORG") pill = "pill-FAST_MSA";
+                  if (e.category === "LOC") pill = "pill-NOISY_SOCIAL";
+                  return `<span class="route-pill ${pill}">${e.category}: ${e.text}</span>`;
+                }).join(" ")}
+              </div>
+            </div>
+          `;
+        }
+
+        let maskedHtml = "";
+        if (mask) {
+          maskedHtml = `
+            <div style="margin-top: 8px; font-size: 0.9rem; color: var(--navy); background: #f0fdf4; padding: 8px 12px; border-radius: 6px;">
+              <strong>النص المحجوب أمنياً:</strong> ${data.masked_text}
+            </div>
+          `;
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--navy); font-weight: 700;">تم رصد ${data.entities_count} كيان في النص</span>
+              <span class="route-pill pill-FAST_MSA">تصنيف آلي للكيانات</span>
+            </div>
+            ${maskedHtml}
+            ${entitiesHtml}
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في استخراج الكيانات: ${err}</div>`;
+      }
+    }
+
+    // --- Dialect-to-MSA Translator UI ---
+    async function executeTranslate() {
+      const input = document.getElementById("translateInput").value.trim();
+      const wrap = document.getElementById("translateResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ الترجمة إلى الفصحى المعيارية...</div>";
+      try {
+        const res = await fetch("/api/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--msa-accent); font-weight: 700;">${data.msa_text}</span>
+              <span class="route-pill pill-FAST_MSA">فصحى معيارية (MSA)</span>
+            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted); margin-top: 6px;">
+              <strong>اللهجة الأصلية المرصودة:</strong> <span class="marker-chip">${data.detected_dialect.toUpperCase()}</span>
+            </div>
+            <div style="margin-top: 6px; font-size: 0.85rem; color: var(--text-soft);">
+              ✓ تم استبدال ${data.rules_applied_count} تعبيرات عامية دارجة بصيغ فصيحة متوافقة مع قواميس النماذج اللغوية.
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في الترجمة: ${err}</div>`;
       }
     }
   </script>

@@ -2,6 +2,37 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.9.0] — 2026-11-21
+
+### Added & Improved
+- **Context-Aware Arabic Grammar & Spell Correction Engine (`misar.correct` & CLI `misar correct`):**
+  - High-precision orthographic normalization and lexical error correction with zero external dependencies.
+  - Precise Hamza resolution on Waw, Nabara, Line, and Yaa (`مسئول` -> `مسؤول`، `شئ` -> `شيء`، `دفئ` -> `دفء`).
+  - Alef Wasla vs Qat' grammatical disambiguation for Form VII, VIII, and X infinitives (`أبتكار` -> `ابتكار`، `إستخدام` -> `استخدام`، `إقتصاد` -> `اقتصاد`).
+  - Taa Marbuta vs Haa disambiguation while safeguarding attached possessive and grammatical pronoun clitics (`بيته`، `قلمه`، `مديره`، `عمله`).
+  - Comprehensive composite phrase corrections (`إنشاء الله` -> `إن شاء الله`، `هاكذا` -> `هكذا`، `ذالك` -> `ذلك`).
+  - Full CLI command: `misar correct "<text>"`.
+- **Sovereign Arabic Named Entity Recognition & Privacy Masking (`misar.ner` & CLI `misar ner`):**
+  - Gazetteer and contextual pattern extraction for sovereign entities, ministries, universities, and commercial enterprises (`سدايا`، `موهبة`، `أرامكو`، `STC`، `الراجحي`).
+  - Saudi geographical regions, governorates, and major Arab cities (`عسير`، `أبها`، `الرياض`، `جدة`، `مكة`).
+  - Arabic composite titles and personal names (`المهندس منير الذيب`، `الدكتور خالد`).
+  - High-accuracy regex extraction for temporal expressions (Hijri and Gregorian dates) and monetary currency values (`ريال`، `SAR`، `دولار`).
+  - Sovereign privacy entity masking mode (`--mask`) transforming raw prompts into anonymized representations (`[ORG_محجوب]`، `[LOC_محجوب]`) for secure LLM pipelines.
+  - Full CLI command: `misar ner "<text>" [--mask]`.
+- **Dialect-to-MSA Parallel Translation Engine (`misar.translate` & CLI `misar translate`):**
+  - Rule-based canonical translation mapping colloquial dialect phrases into Modern Standard Arabic (الفصحى المعيارية).
+  - Multi-dialect coverage: Saudi / Gulf (`وش تبغى تسوي` -> `ماذا تريد أن تفعل`، `يبيله` -> `يحتاج إلى`)، Egyptian (`عايز ايه دلوقتي` -> `ماذا تريد الآن`، `مش بطيء` -> `ليس بطيئاً`)، Levantine (`شو بدك هلأ` -> `ماذا تريد الآن`، `كتير منيح` -> `جيد جداً`)، and Maghrebi (`واش كاين دابا` -> `ماذا يوجد الآن`، `مزيان بزاف` -> `جيد جداً`).
+  - Automatic dialect identification and rule telemetry reporting.
+  - Full CLI command: `misar translate "<text>"`.
+- **Web Workbench Major Expansion (Sections 14, 15, and 16 on `localhost:8000`):**
+  - Section 14: Interactive Arabic Spell Corrector with visual diff inspection and change log tracking.
+  - Section 15: Arabic Named Entity Recognition (NER) with entity tag chips and one-click sovereign privacy masking preview.
+  - Section 16: Dialect-to-MSA Parallel Translation Workbench with dialect badge indicator and live comparison view.
+  - New REST API Endpoints: POST `/api/correct`, POST `/api/ner`, POST `/api/translate`.
+- **Expanded Automated Test Suite:**
+  - Added `tests/test_correct.py`, `tests/test_ner.py`, and `tests/test_translate.py`.
+  - Expanded test coverage to **131 automated unit tests**, all passing with 100% success rate in under 7 seconds.
+
 ## [2.8.0] — 2026-11-21
 
 ### Added & Improved

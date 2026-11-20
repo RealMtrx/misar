@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "misar"
-version = "2.8.0"
-description = "Misar (مِسار): Adaptive context-aware Arabic NLP preprocessing router, semantic search, and sovereign AI gateway."
+version = "2.9.0"
+description = "Misar (مِسار): Adaptive context-aware Arabic NLP preprocessing router, semantic search, spell correction, NER, and sovereign AI gateway."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -24,6 +24,9 @@ keywords = [
     "semantic-search",
     "bm25",
     "sentiment-analysis",
+    "spell-checking",
+    "named-entity-recognition",
+    "dialect-translation",
     "datasets",
     "token-optimization",
     "llm",

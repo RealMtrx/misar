@@ -3,7 +3,7 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.8.0"
+__version__ = "2.9.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
 from .arabizi import (
@@ -33,6 +33,11 @@ from .classifier import (
     canonicalize,
     classify_dialect,
 )
+from .correct import (
+    CorrectionChange,
+    CorrectionResult,
+    correct_arabic_text,
+)
 from .evaluation import evaluate_system, run_evaluation
 from .guard import (
     ArabicPromptGuard,
@@ -59,6 +64,11 @@ from .lexicon import (
     get_lexicon,
     light_stem,
     lookup_word,
+)
+from .ner import (
+    EntitySpan,
+    NERResult,
+    extract_entities,
 )
 from .paper import (
     generate_academic_paper,
@@ -98,6 +108,10 @@ from .search import (
 from .sentiment import (
     SentimentResult,
     analyze_sentiment,
+)
+from .translate import (
+    TranslationResult,
+    translate_to_msa,
 )
 from .tokenizer import (
     PRETRAINED_MODEL_CONFIGS,
@@ -187,4 +201,12 @@ __all__ = [
     "SentimentResult",
     "analyze_sentiment",
     "benchmark_text",
+    "CorrectionChange",
+    "CorrectionResult",
+    "correct_arabic_text",
+    "EntitySpan",
+    "NERResult",
+    "extract_entities",
+    "TranslationResult",
+    "translate_to_msa",
 ]

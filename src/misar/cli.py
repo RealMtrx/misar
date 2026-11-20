@@ -417,6 +417,57 @@ def cmd_sentiment(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_correct(args: argparse.Namespace) -> int:
+    from .correct import correct_arabic_text
+    res = correct_arabic_text(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Grammar & Spell Correction v{__version__}")
+    print("=" * 70)
+    print(f"Original  : {res.original_text}")
+    print(f"Corrected : {res.corrected_text}")
+    print(f"Changes   : {res.changes_count} corrections applied (Confidence: {res.confidence * 100:.0f}%)")
+    for c in res.changes:
+        print(f"  • [{c.rule}] '{c.original}' -> '{c.corrected}'")
+    print("=" * 70)
+    return 0
+
+
+def cmd_ner(args: argparse.Namespace) -> int:
+    from .ner import extract_entities
+    res = extract_entities(args.text, mask_entities=args.mask)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Named Entity Recognition (NER) v{__version__}")
+    print("=" * 70)
+    print(f"Input    : {res.original_text}")
+    if args.mask:
+        print(f"Masked   : {res.masked_text}")
+    print(f"Entities : {res.entities_count} detected")
+    for e in res.entities:
+        print(f"  • [{e.category}] '{e.text}' (chars {e.start_char}:{e.end_char})")
+    print("=" * 70)
+    return 0
+
+
+def cmd_translate(args: argparse.Namespace) -> int:
+    from .translate import translate_to_msa
+    res = translate_to_msa(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Dialect-to-MSA Parallel Translation v{__version__}")
+    print("=" * 70)
+    print(f"Dialect   : {res.detected_dialect.upper()}")
+    print(f"Original  : {res.original_text}")
+    print(f"MSA       : {res.msa_text}")
+    print(f"Replaced  : {res.rules_applied_count} colloquial expressions")
+    print("=" * 70)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -558,6 +609,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_sentiment.add_argument("text", help="Arabic text to analyze for sentiment")
     p_sentiment.add_argument("--json", action="store_true", help="Output structured JSON")
     p_sentiment.set_defaults(func=cmd_sentiment)
+
+    p_correct = sub.add_parser("correct", help="Perform context-aware Arabic spelling, hamza, and grammar correction")
+    p_correct.add_argument("text", help="Arabic text to correct")
+    p_correct.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_correct.set_defaults(func=cmd_correct)
+
+    p_ner = sub.add_parser("ner", help="Extract and classify Arabic Named Entities (PER, ORG, LOC, DATE, MONEY)")
+    p_ner.add_argument("text", help="Arabic text to extract entities from")
+    p_ner.add_argument("--mask", action="store_true", help="Return anonymized masked text")
+    p_ner.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_ner.set_defaults(func=cmd_ner)
+
+    p_translate = sub.add_parser("translate", help="Translate colloquial dialect sentences into canonical Modern Standard Arabic (MSA)")
+    p_translate.add_argument("text", help="Dialect text to translate into MSA")
+    p_translate.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_translate.set_defaults(func=cmd_translate)
 
     return parser
 

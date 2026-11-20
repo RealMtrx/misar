@@ -299,7 +299,16 @@ misar route "أعلنت منصة المطورين عن ترقية واجهة ا�
 misar bench
 misar eval --all-models
 
-# Launch the interactive RTL Web Workbench & hardened REST API on http://127.0.0.1:8050
+# Context-Aware Arabic Grammar & Spell Corrector
+misar correct "كل مسئول عن شئ معين في هذا العمل أبتكار أساليب عبر إستخدام النماذج"
+
+# Sovereign Arabic Named Entity Recognition (NER) & Privacy Masking
+misar ner "زار وفد من سدايا وموهبة مدينة أبها في منطقة عسير" --mask
+
+# Dialect-to-MSA Parallel Translation Engine
+misar translate "وش تبغى تسوي الحين يا خوي؟ ترا التطبيق يبيله تحديث"
+
+# Launch the interactive RTL Web Workbench & hardened REST API on http://127.0.0.1:8000
 misar serve
 ```
 
@@ -318,6 +327,9 @@ misar serve
 | `POST` | `/api/chunk` | Body `{"text": "...", "max_tokens": 256}` → Discourse RAG chunks with negation binding |
 | `POST` | `/api/guard` | Body `{"text": "...", "mask_pii": true}` → Prompt sanitizer, PII redaction & risk score |
 | `POST` | `/api/batch` | Body `{"texts": ["...", "..."]}` → Batch routes up to 500 strings (`1 MiB` payload limit) |
+| `POST` | `/api/correct` | Body `{"text": "..."}` → Context-aware grammar and spell correction report |
+| `POST` | `/api/ner` | Body `{"text": "...", "mask": true}` → Sovereign entity extraction & privacy masking |
+| `POST` | `/api/translate` | Body `{"text": "..."}` → Dialect-to-MSA parallel translation report |
 
 ---
 
@@ -388,7 +400,7 @@ misar/
 python -m unittest discover -s tests -v
 ```
 
-All **117 automated tests** verify profiler mathematics, BM25 in-memory semantic search and root matching, dialect-aware sentiment analysis and contextual negations, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Enterprise ROI & security audit, FastAPI ASGI middleware, LlamaIndex node parsing, LiteLLM pre-hooks, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
+All **131 automated tests** verify profiler mathematics, context-aware grammar and spell correction (Hamza resolution, Wasla/Qat', Taa Marbuta pronoun protection), sovereign Named Entity Recognition (PER, ORG, LOC, DATE, MONEY) and privacy masking, Dialect-to-MSA parallel translation, BM25 in-memory semantic search and root matching, dialect-aware sentiment analysis and contextual negations, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Enterprise ROI & security audit, FastAPI ASGI middleware, LlamaIndex node parsing, LiteLLM pre-hooks, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
 
 ---
 
@@ -401,7 +413,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
   author       = {Muneer Jarab Matrak Al-Theeb},
   title        = {Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router for Transformer Language Models},
   year         = {2026},
-  version      = {2.8.0},
+  version      = {2.9.0},
   url          = {https://github.com/RealMtrx/misar},
   license      = {MIT}
 }
@@ -411,8 +423,11 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v2.8.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v2.9.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
+* **محرك التصحيح اللغوي والإملائي العربي السياقي (`misar.correct` & `misar correct`):** محرك نحوي وإملائي دقيق لتصحيح مواضع الهمزات (مسؤول، شيء، دفء، شاطئ)، التمييز الصرفي بين ألف الوصل والقطع (ابتكار، استخدام، اقتصاد)، وحماية تاء التأنيث والضمائر المتصلة (بيته، قلمه، مديره، عمله) وتصحيح العبارات المركبة دون أي مكتبات خارجية.
+* **محرك استخراج الكيانات المسماة وحجب الخصوصية السيادي (`misar.ner` & `misar ner`):** استخراج وتصنيف الكيانات السيادية والجهات الحكومية والشركات (سدايا، موهبة، أرامكو، STC، الراجحي)، المناطق والمدن السعودية (عسير، أبها، الرياض، جدة)، أسماء الشخصيات والألقاب، والتواريخ والقيم المالية مع وضع حجب الخصوصية المجهولة لحماية بيانات المستخدم في نماذج LLM.
+* **محرك الترجمة الموازية من اللهجات إلى الفصحى المعيارية (`misar.translate` & `misar translate`):** تحويل النصوص والعبارات من اللهجات السعودية والخليجية والمصرية والشامية والمغاربية إلى الفصحى المعيارية بدقة عالية وبلا زمن تأخير.
 * **محرك البحث الدلالي العربي بمعيار BM25 (`misar.search` & `misar search`):** محرك بحث واسترجاع دلالي عالي الأداء يعتمد خوارزمية Okapi BM25 مع مطابقة الجذور الصرفية (`use_roots=True`) والتطبيع التكيفي الفوري، لتأسيس أنظمة RAG عربية سيادية دون الحاجة لأي مكتبات قواعد بيانات خارجية.
 * **محلل المشاعر واللهجات وصون النفي (`misar.sentiment` & `misar sentiment`):** محرك تحليلي يفهم دلالات المشاعر في اللهجات العربية (سعودية، خليجية، مصرية، شامية، مغاربية) مع معالجة ذكية لأدوات النفي اللهجية (`مو حلو` كسلبي، و`ما قصرت` و`ولا غلطة` كثناء إيجابي فائق).
 * **بوابة الوكيل الشفافة المتوافقة مع OpenAI (`misar proxy`):** خادم وسيط شفاف (Reverse Proxy) يتكامل مع أي تطبيق يستخدم مكتبة OpenAI الرسمية أو لانغ تشين بتعديل `base_url="http://localhost:8080/v1"` فقط، لحجب الهويات والآيبان، وإسقاط هجمات الحقن، وتخفيض التوكنات، وحقن مقاييس الأداء بالـ Headers تلقائياً.
