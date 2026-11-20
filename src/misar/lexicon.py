@@ -184,8 +184,8 @@ def extract_root(word: str) -> str:
         return f"{stem[0]}-{stem[1]}-{stem[2]}-{stem[3]}"
 
     if len(stem) >= 5:
-        # e.g., استفعال (استكشاف -> ك-ش-ف)
-        if stem.startswith("است") and len(stem) >= 6:
+        # e.g., استفعال / مستفعل (استكشاف -> ك-ش-ف, مستوصف -> و-ص-ف)
+        if (stem.startswith("است") or stem.startswith("مست")) and len(stem) >= 6:
             r = stem[3:]
             if len(r) == 4 and r[2] == "ا":
                 return f"{r[0]}-{r[1]}-{r[3]}"

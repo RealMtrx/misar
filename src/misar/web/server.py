@@ -240,6 +240,8 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "arabic_lexicon",
                             "morphological_root_extractor",
                             "sentence_explainer",
+                            "enterprise_audit",
+                            "domain_lexicons_fintech_gov_health",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -470,6 +472,49 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     self._send_json(200, explanation.to_dict())
                 except Exception as exc:
                     self._send_json(500, {"error": f"Lexicon explain error: {str(exc)}"})
+                return
+
+            if route_path == "/api/audit":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                texts = payload.get("texts")
+                if not isinstance(texts, list):
+                    raw_content = payload.get("content")
+                    if isinstance(raw_content, str):
+                        texts = [line.strip() for line in raw_content.splitlines() if line.strip()]
+                    else:
+                        self._send_json(400, {"error": "'texts' must be a list of strings or 'content' must be provided"})
+                        return
+
+                if not texts:
+                    self._send_json(400, {"error": "At least one text record is required"})
+                    return
+
+                if len(texts) > MAX_BATCH_SIZE:
+                    texts = texts[:MAX_BATCH_SIZE]
+
+                cost_per_1k = float(payload.get("cost_per_1k_tokens", 0.015))
+                currency = str(payload.get("currency", "SAR")).upper()
+                model_key = str(payload.get("model_key", router.model_key))
+
+                try:
+                    from ..audit import audit_texts, generate_html_report
+                    active_router = _resolve_router(model_key, router.auto_heal, router.emoji_mode, router.arabizi_mode)
+                    result = audit_texts(
+                        texts=texts,
+                        cost_per_1k_tokens=cost_per_1k,
+                        currency=currency,
+                        model_key=model_key,
+                        router=active_router,
+                    )
+                    html_report = generate_html_report(result, title=f"تقرير تدقيق مِسار التنفيذي ({len(texts)} عينة)")
+                    self._send_json(200, {
+                        "audit": result.to_dict(),
+                        "html_report": html_report,
+                    })
+                except Exception as exc:
+                    self._send_json(500, {"error": f"Audit error: {str(exc)}"})
                 return
 
             self._send_json(404, {"error": "Not found"})

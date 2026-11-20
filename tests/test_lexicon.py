@@ -96,7 +96,7 @@ class TestArabicLexiconAndMorphology(unittest.TestCase):
         expl = router.explain_text("دلوقتي كل حاجة تمام")
         self.assertGreaterEqual(expl.dialect_tokens_count, 1)
 
-        self.assertEqual(misar.__version__, "2.5.0")
+        self.assertEqual(misar.__version__, "2.6.0")
         self.assertTrue(callable(misar.lookup_word))
         self.assertTrue(callable(misar.explain_text))
         self.assertTrue(callable(misar.extract_root))

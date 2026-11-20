@@ -12,10 +12,13 @@ from .levantine import LEVANTINE_ENTRIES
 from .maghrebi import MAGHREBI_ENTRIES
 from .iraqi_yemeni import IRAQI_YEMENI_ENTRIES
 from .msa_roots import MSA_ROOT_ENTRIES
+from .fintech import FINTECH_ENTRIES
+from .govtech import GOVTECH_ENTRIES
+from .healthtech import HEALTHTECH_ENTRIES
 
 
 def load_all_curated_entries() -> List[LexicalEntry]:
-    """Aggregate and return all verified multi-dialect entries."""
+    """Aggregate and return all verified multi-dialect and domain entries."""
     entries: List[LexicalEntry] = []
     entries.extend(SAUDI_GULF_ENTRIES)
     entries.extend(EGYPTIAN_ENTRIES)
@@ -23,4 +26,7 @@ def load_all_curated_entries() -> List[LexicalEntry]:
     entries.extend(MAGHREBI_ENTRIES)
     entries.extend(IRAQI_YEMENI_ENTRIES)
     entries.extend(MSA_ROOT_ENTRIES)
+    entries.extend(FINTECH_ENTRIES)
+    entries.extend(GOVTECH_ENTRIES)
+    entries.extend(HEALTHTECH_ENTRIES)
     return entries

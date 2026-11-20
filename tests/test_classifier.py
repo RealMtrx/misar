@@ -81,7 +81,7 @@ class TestArabicDialectAndRegisterClassifier(unittest.TestCase):
         canon = router.canonicalize("عايز ايه دلوقتي؟")
         self.assertEqual(canon, "أريد ما الآن؟")
 
-        self.assertEqual(misar.__version__, "2.5.0")
+        self.assertEqual(misar.__version__, "2.6.0")
         self.assertTrue(callable(misar.classify))
         self.assertTrue(callable(misar.canonicalize))
         self.assertTrue(callable(misar.route_parallel))

@@ -50,6 +50,18 @@ PRETRAINED_MODEL_CONFIGS: Dict[str, Dict[str, Any]] = {
         "do_lower_case": False,
         "display_name": "QARiB (64k Tweets/Dialect)",
     },
+    "allam-7b": {
+        "repo": "sdaia/allam-7b-instruct",
+        "vocab_url": "https://huggingface.co/sdaia/allam-7b-instruct/resolve/main/vocab.txt",
+        "do_lower_case": False,
+        "display_name": "ALLaM-7B (SDAIA Sovereign Arabic LLM)",
+    },
+    "llama3-arabic": {
+        "repo": "meta-llama/Meta-Llama-3-8B-Instruct",
+        "vocab_url": "https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct/resolve/main/vocab.txt",
+        "do_lower_case": False,
+        "display_name": "Llama-3-Arabic (128k Multi-Lingual)",
+    },
 }
 
 PRETRAINED_VOCAB_URLS: Dict[str, Tuple[str, str]] = {

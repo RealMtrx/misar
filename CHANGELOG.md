@@ -2,6 +2,35 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [2.6.0] — 2026-11-20
+
+### Added & Improved
+- **Sovereign Arabic AI Gateway & Local Model Support:**
+  - Added native tokenizer configs and token optimization profiles for **SDAIA ALLaM 7B (`allam-7b`)** and **LLaMA-3 Arabic (`llama3-arabic`)**.
+  - `MisarOllamaAdapter`: Drop-in adapter for local Ollama instances running sovereign models, providing prompt sanitization, privacy PII masking, dialect query canonicalization, and adversarial prompt injection blocking.
+  - `prepare_ollama_prompt()`: High-level functional helper for single-line Ollama prompt preprocessing.
+  - `misar_vllm_pre_hook()`: High-throughput inference middleware for vLLM and OpenAI-compatible local servers, sanitizing prompt and chat messages payloads while neutralizing threats.
+- **Specialized Industry Domain Lexicons (`misar.lexicon_data`):**
+  - Added FinTech & Banking vocabulary (`fintech.py`): 20+ Saudi financial terms (`آيبان`, `سمة`, `سداد`, `مدى`, `مرابحة`, `تورق`, `استقطاع`, `تمويل_شخصي`).
+  - Added GovTech & Citizen Platforms vocabulary (`govtech.py`): 18+ public platform terms (`أبشر`, `ناجز`, `توكلنا`, `صحتي`, `بلدي`, `قوى`, `مدد`, `اعتماد`, `إحكام`).
+  - Added HealthTech & Clinical vocabulary (`healthtech.py`): 15+ symptoms and clinical terms (`سخونة`, `كحة`, `دوخة`, `مستوصف`, `إسعاف`, `تطعيم`, `روشتة`).
+  - Scaled total curated vocabulary entries from 155 to **208+ entries** across 9 regional and domain submodules.
+  - Enhanced morphological root extractor `extract_root()` with support for `مستفعل` patterns (e.g. `مستوصف` -> `و-ص-ف`).
+- **Interactive Web Dataset Auditor & ROI Calculator (Workbench Section 8 & API `/api/audit`):**
+  - Added executive web auditor UI in the local dashboard with drag-and-drop file ingestion (CSV, JSONL, TXT).
+  - Preset domain batches: FinTech, GovTech, HealthTech, and Security/PII.
+  - Real-time KPI cards for Token Reduction %, Estimated Financial Savings (SAR/USD), Attention FLOPs Savings %, Masked PII Count, and Risk Telemetry.
+  - One-click standalone executive HTML report download from the web interface.
+  - Added `/api/audit` REST endpoint to `misar.web.server` with batch safety limits.
+- **Cloud & Container Production Deployment:**
+  - Added production multi-stage `Dockerfile` (Python 3.11-slim, non-root security user, built-in healthcheck).
+  - Added `docker-compose.yml` for instant zero-config sovereign gateway deployment on port 8000.
+  - Added `.dockerignore` for minimal image footprints.
+- **Test Suites & Reference Examples:**
+  - Added `tests/test_domain_lexicons.py` and `tests/test_local_models.py`.
+  - Added `examples/07_sovereign_ai_gateway_and_allam.py`.
+  - Scaled automated test suite to **89 comprehensive unit tests** passing with 100% success rate.
+
 ## [2.5.0] — 2026-11-20
 
 ### Added & Improved

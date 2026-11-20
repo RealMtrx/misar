@@ -3,7 +3,7 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.5.0"
+__version__ = "2.6.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
 from .audit import (
@@ -28,8 +28,11 @@ from .guard import (
 )
 from .integrations import (
     MisarNodeParser,
+    MisarOllamaAdapter,
     MisarSecurityMiddleware,
     misar_litellm_pre_hook,
+    misar_vllm_pre_hook,
+    prepare_ollama_prompt,
 )
 from .lexicon import (
     ArabicLexicon,
@@ -127,4 +130,7 @@ __all__ = [
     "MisarSecurityMiddleware",
     "MisarNodeParser",
     "misar_litellm_pre_hook",
+    "MisarOllamaAdapter",
+    "prepare_ollama_prompt",
+    "misar_vllm_pre_hook",
 ]
