@@ -251,6 +251,8 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "grammar_spell_corrector",
                             "named_entity_recognition",
                             "dialect_to_msa_translator",
+                            "unified_process_pipeline",
+                            "in_memory_lru_cache",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -658,6 +660,32 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     return
                 from ..translate import translate_to_msa
                 res = translate_to_msa(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/process":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = str(payload.get("text", payload.get("input", "")))
+                correct = bool(payload.get("correct", False))
+                mask_pii = bool(payload.get("mask_pii", False))
+                mask_ner = bool(payload.get("mask_ner", False))
+                translate_msa = bool(payload.get("translate_msa", False))
+                detect_sentiment = bool(payload.get("detect_sentiment", False))
+                arabizi = bool(payload.get("arabizi", False))
+                doc_mode = bool(payload.get("document_mode", False))
+                res = router.process(
+                    text,
+                    correct=correct,
+                    mask_pii=mask_pii,
+                    mask_ner=mask_ner,
+                    translate_msa=translate_msa,
+                    detect_sentiment=detect_sentiment,
+                    arabizi=arabizi,
+                    document_mode=doc_mode,
+                    return_telemetry=True,
+                )
                 self._send_json(200, res.to_dict())
                 return
 

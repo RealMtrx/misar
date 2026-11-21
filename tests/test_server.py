@@ -225,6 +225,28 @@ class TestMisarHTTPServer(unittest.TestCase):
             self.assertGreaterEqual(data_e["dialect_tokens_count"], 3)
             self.assertIn("tokens", data_e)
 
+    def test_unified_process_endpoint(self) -> None:
+        body = {
+            "text": "كل مسئول في سدايا وش يبغى يسوي بهويتي 1000000008؟",
+            "correct": True,
+            "mask_ner": True,
+            "mask_pii": True,
+            "translate_msa": True,
+        }
+        req = urllib.request.Request(
+            f"{self.base}/api/process",
+            data=json.dumps(body, ensure_ascii=False).encode("utf-8"),
+            headers={"Content-Type": "application/json; charset=utf-8"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            self.assertEqual(resp.status, 200)
+            data = json.loads(resp.read().decode("utf-8"))
+            self.assertIn("مسؤول", data["processed_text"])
+            self.assertIn("[ORG_محجوب]", data["processed_text"])
+            self.assertIn("[رقم_هوية_محجوب]", data["processed_text"])
+            self.assertGreater(data["tokens_raw"], 0)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

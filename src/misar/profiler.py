@@ -82,13 +82,23 @@ def compute_shannon_entropy(text: str) -> float:
 
 
 class LinguisticProfiler:
-    """Extracts structural and sociolinguistic features of Arabic text in O(n) time."""
+    """Extracts structural and sociolinguistic features of Arabic text in O(n) time with O(1) LRU caching."""
+
+    def __init__(self, cache_size: int = 1024):
+        self.cache_size = cache_size
+        self._cache: Dict[str, LinguisticProfile] = {}
+
+    def clear_cache(self) -> None:
+        self._cache.clear()
 
     def analyze(self, text: str) -> LinguisticProfile:
-        trimmed = normalize_unicode_safety(text.strip())
+        if text in self._cache:
+            return self._cache[text]
+
+        trimmed = normalize_unicode_safety(text.strip()) if text else ""
         total_chars = len(trimmed)
         if total_chars == 0:
-            return LinguisticProfile(
+            empty_profile = LinguisticProfile(
                 total_chars=0,
                 arabic_chars=0,
                 latin_chars=0,
@@ -99,6 +109,9 @@ class LinguisticProfiler:
                 shannon_entropy=0.0,
                 code_switching_ratio=0.0,
             )
+            if self.cache_size > 0 and len(self._cache) < self.cache_size:
+                self._cache[text] = empty_profile
+            return empty_profile
 
         arabic_chars = len(ARABIC_CHAR_REGEX.findall(trimmed))
         latin_chars = len(LATIN_CHAR_REGEX.findall(trimmed))
@@ -157,7 +170,7 @@ class LinguisticProfiler:
 
         shannon_entropy = compute_shannon_entropy(trimmed)
 
-        return LinguisticProfile(
+        profile = LinguisticProfile(
             total_chars=total_chars,
             arabic_chars=arabic_chars,
             latin_chars=latin_chars,
@@ -173,3 +186,10 @@ class LinguisticProfiler:
             repeated_char_runs=repeated_char_runs,
             social_artifact_count=hashtags + urls_mentions,
         )
+
+        if self.cache_size > 0:
+            if len(self._cache) >= self.cache_size:
+                del self._cache[next(iter(self._cache))]
+            self._cache[text] = profile
+
+        return profile

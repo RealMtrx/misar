@@ -216,17 +216,15 @@ def correct_arabic_text(
                 changes.append(CorrectionChange(original=w, corrected=clitic + new_stem, rule="alef_wasla_form_viii"))
                 continue
 
-        # 3. Final Taa Marbuta vs Haa (مدرسه -> مدرسة)
-        if correct_taa_marbuta and stem.endswith("ه") and len(stem) >= 4:
+        # 3. Final Taa Marbuta vs Haa (مدرسه -> مدرسة، برمجه -> برمجة)
+        if correct_taa_marbuta and stem.endswith("ه") and len(stem) >= 3:
             # Skip if explicitly protected final Haa
             if stem not in PROTECTED_FINAL_HAA and w not in PROTECTED_FINAL_HAA:
-                # Common noun patterns: مَفْعَلة (منظمة)، فاعِلة (جامعة)، فَعِيلة (طريقة، منصة)
-                if stem.startswith(("م", "ت", "ج", "ط", "ق", "ح", "ن", "ص", "س", "ش")):
-                    new_stem = stem[:-1] + "ة"
-                    corrected_full = clitic + new_stem
-                    changes.append(CorrectionChange(original=w, corrected=corrected_full, rule="taa_marbuta_noun"))
-                    corrected_tokens.append(corrected_full)
-                    continue
+                new_stem = stem[:-1] + "ة"
+                corrected_full = clitic + new_stem
+                changes.append(CorrectionChange(original=w, corrected=corrected_full, rule="taa_marbuta_noun"))
+                corrected_tokens.append(corrected_full)
+                continue
 
         corrected_tokens.append(w)
 

@@ -113,6 +113,26 @@ class SentimentResult:
         return asdict(self)
 
 
+def _lookup_sentiment(word: str) -> Optional[Tuple[str, float]]:
+    """Helper to lookup sentiment considering definite article 'ال' and feminine 'ة/ه'."""
+    if word in POSITIVE_WORDS:
+        return ("pos", POSITIVE_WORDS[word])
+    if word in NEGATIVE_WORDS:
+        return ("neg", NEGATIVE_WORDS[word])
+    w_clean = word[2:] if word.startswith("ال") and len(word) > 3 else word
+    if w_clean in POSITIVE_WORDS:
+        return ("pos", POSITIVE_WORDS[w_clean])
+    if w_clean in NEGATIVE_WORDS:
+        return ("neg", NEGATIVE_WORDS[w_clean])
+    if w_clean.endswith(("ة", "ه")) and len(w_clean) > 3:
+        w_base = w_clean[:-1]
+        if w_base in POSITIVE_WORDS:
+            return ("pos", POSITIVE_WORDS[w_base])
+        if w_base in NEGATIVE_WORDS:
+            return ("neg", NEGATIVE_WORDS[w_base])
+    return None
+
+
 def analyze_sentiment(text: str) -> SentimentResult:
     """
     Performs fast, accurate rule-and-lexicon sentiment analysis on Arabic text.
@@ -168,22 +188,23 @@ def analyze_sentiment(text: str) -> SentimentResult:
         # Lookahead for Negation: e.g. "مو حلو", "مش بطيء", "ماكو مشاكل"
         if w in NEGATION_PARTICLES and i + 1 < n:
             next_w = words[i + 1].strip()
-            # If next word is positive -> invert to negative
-            if next_w in POSITIVE_WORDS:
-                val = -0.85 * POSITIVE_WORDS[next_w]
-                total_score += val
-                matched_neg.append(f"{w} {next_w}")
-                matched_negations.append(w)
-                i += 2
-                continue
-            # If next word is negative -> invert to positive/mild relief
-            elif next_w in NEGATIVE_WORDS:
-                val = 0.75 * abs(NEGATIVE_WORDS[next_w])
-                total_score += val
-                matched_pos.append(f"{w} {next_w}")
-                matched_negations.append(w)
-                i += 2
-                continue
+            lookup_next = _lookup_sentiment(next_w)
+            if lookup_next is not None:
+                pol, score_val = lookup_next
+                if pol == "pos":
+                    val = -0.85 * score_val
+                    total_score += val
+                    matched_neg.append(f"{w} {next_w}")
+                    matched_negations.append(w)
+                    i += 2
+                    continue
+                elif pol == "neg":
+                    val = 0.75 * abs(score_val)
+                    total_score += val
+                    matched_pos.append(f"{w} {next_w}")
+                    matched_negations.append(w)
+                    i += 2
+                    continue
 
         # Normal single word scoring
         current_multiplier = 1.0
@@ -193,14 +214,15 @@ def analyze_sentiment(text: str) -> SentimentResult:
         elif i > 0 and words[i - 1].strip() in DIMINISHERS:
             current_multiplier = DIMINISHERS[words[i - 1].strip()]
 
-        if w in POSITIVE_WORDS:
-            val = POSITIVE_WORDS[w] * current_multiplier
+        lookup_curr = _lookup_sentiment(w)
+        if lookup_curr is not None:
+            pol, score_val = lookup_curr
+            val = score_val * current_multiplier
             total_score += val
-            matched_pos.append(w)
-        elif w in NEGATIVE_WORDS:
-            val = NEGATIVE_WORDS[w] * current_multiplier
-            total_score += val
-            matched_neg.append(w)
+            if pol == "pos":
+                matched_pos.append(w)
+            else:
+                matched_neg.append(w)
 
         i += 1
 

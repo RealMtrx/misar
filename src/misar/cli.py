@@ -66,6 +66,24 @@ def cmd_route(args: argparse.Namespace) -> int:
         print(f"Gain      : vs Raw {res_m['token_reduction_pct']:+.1f}% | vs Legacy {comp['vs_legacy_reduction_pct']:+.1f}% | AutoHeal={res_m['auto_healed_count']} | Clitics={res_m['clitic_fixed_count']}")
         return 0
 
+    if getattr(args, "correct", False) or getattr(args, "mask_pii", False) or getattr(args, "mask_ner", False) or getattr(args, "translate_msa", False):
+        res_u = router.process(
+            args.text,
+            correct=getattr(args, "correct", False),
+            mask_pii=getattr(args, "mask_pii", False),
+            mask_ner=getattr(args, "mask_ner", False),
+            translate_msa=getattr(args, "translate_msa", False),
+            return_telemetry=True,
+        )
+        if args.json:
+            print(json.dumps(res_u.to_dict(), ensure_ascii=False, indent=2))
+        else:
+            print(f"Unified Route : {res_u.route_name} - {res_u.route_display_ar}")
+            print(f"Output        : {res_u.processed_text}")
+            print(f"Telemetry     : Corrections={res_u.corrections_count} | PII Risks={len(res_u.pii_risks)} | Entities={res_u.entities_count} | Dialect={res_u.detected_dialect}")
+            print(f"Tokens        : {res_u.tokens_raw} -> {res_u.tokens_processed} ({res_u.token_reduction_pct:+.1f}%) | Latency: {res_u.latency_ms:.3f} ms")
+        return 0
+
     res = router.route(args.text)
     if args.json:
         print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
@@ -490,6 +508,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_route.add_argument("--model", default="arabertv02", choices=model_choices)
     p_route.add_argument("--emoji-mode", default="strip", choices=list(SUPPORTED_EMOJI_MODES))
     p_route.add_argument("--arabizi", action="store_true", help="Enable opt-in Arabizi transliteration")
+    p_route.add_argument("--correct", action="store_true", help="Apply context-aware grammar and spell correction")
+    p_route.add_argument("--mask-pii", action="store_true", help="Redact Saudi National ID, IBAN, and Phone numbers")
+    p_route.add_argument("--mask-ner", action="store_true", help="Redact Named Entities (PER, ORG, LOC)")
+    p_route.add_argument("--translate-msa", action="store_true", help="Translate colloquial dialect phrases into Modern Standard Arabic")
     p_route.add_argument("--no-auto-heal", action="store_true", help="Disable vocab-verified Auto-Heal")
     p_route.add_argument("--offline", action="store_true")
     p_route.set_defaults(func=cmd_route)

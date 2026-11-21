@@ -6,7 +6,7 @@ MisarRouter: Adaptive Context-Aware Arabic NLP Preprocessing Router.
 import re
 import time
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Iterable, List, Optional
+from typing import Any, Callable, Dict, Iterable, List, Optional, Union
 
 from .pipelines import (
     SUPPORTED_EMOJI_MODES,
@@ -110,6 +110,47 @@ class DocumentRoutingResult:
         }
 
 
+@dataclass
+class UnifiedProcessResult:
+    """Consolidated telemetry and output for the unified Misar processing engine."""
+    original_text: str
+    processed_text: str
+    route_name: str
+    route_display_ar: str
+    corrections_count: int
+    pii_risks: List[str]
+    entities_count: int
+    detected_dialect: str
+    sentiment_score: Optional[float]
+    latency_ms: float
+    tokens_raw: int
+    tokens_processed: int
+    tokens_saved: int
+    token_reduction_pct: float
+    attention_savings_pct: float
+    cache_hit: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "original_text": self.original_text,
+            "processed_text": self.processed_text,
+            "route_name": self.route_name,
+            "route_display_ar": self.route_display_ar,
+            "corrections_count": self.corrections_count,
+            "pii_risks": list(self.pii_risks),
+            "entities_count": self.entities_count,
+            "detected_dialect": self.detected_dialect,
+            "sentiment_score": self.sentiment_score,
+            "latency_ms": round(self.latency_ms, 4),
+            "tokens_raw": self.tokens_raw,
+            "tokens_processed": self.tokens_processed,
+            "tokens_saved": self.tokens_saved,
+            "token_reduction_pct": round(self.token_reduction_pct, 2),
+            "attention_savings_pct": round(self.attention_savings_pct, 2),
+            "cache_hit": self.cache_hit,
+        }
+
+
 SENTENCE_BOUNDARY_REGEX = re.compile(r"(?<=[.؟!])\s+(?=[^\s])")
 
 
@@ -132,6 +173,7 @@ class MisarRouter:
         auto_heal: bool = True,
         emoji_mode: str = "strip",
         arabizi_mode: bool = False,
+        cache_size: int = 2048,
     ):
         if emoji_mode not in SUPPORTED_EMOJI_MODES:
             raise ValueError(f"Unsupported emoji_mode '{emoji_mode}'. Choose from {SUPPORTED_EMOJI_MODES}.")
@@ -152,7 +194,11 @@ class MisarRouter:
         self.auto_heal = auto_heal
         self.emoji_mode = emoji_mode
         self.arabizi_mode = arabizi_mode
-        self.profiler = LinguisticProfiler()
+        self.cache_size = cache_size
+        self._cache: Dict[str, RoutingResult] = {}
+        self._cache_hits = 0
+        self._cache_misses = 0
+        self.profiler = LinguisticProfiler(cache_size=cache_size)
         self.msa_pipeline = MSALightPipeline(
             preserve_orthography=preserve_orthography,
             emoji_mode=emoji_mode,
@@ -247,19 +293,87 @@ class MisarRouter:
 
     def preprocess(self, text: str) -> str:
         """Fast drop-in preprocessing returning only the cleaned routed string."""
-        if not text or not text.strip():
+        if not text or not str(text).strip():
             return ""
-        profile = self.profiler.analyze(text)
-        _, _, _, processed, _, _ = self._select_and_process(text, profile)
-        return processed
+        return self.route(text).processed_text
 
-    def route(self, text: str) -> RoutingResult:
+    def cache_info(self) -> Dict[str, Any]:
+        """Returns statistics for the internal O(1) routing cache."""
+        return {
+            "hits": self._cache_hits,
+            "misses": self._cache_misses,
+            "size": len(self._cache),
+            "maxsize": self.cache_size,
+        }
+
+    def clear_cache(self) -> None:
+        """Clears both router and linguistic profiler caches."""
+        self._cache.clear()
+        self._cache_hits = 0
+        self._cache_misses = 0
+        self.profiler.clear_cache()
+
+    def route(self, text: str, use_cache: bool = True) -> RoutingResult:
+        if not text or not str(text).strip():
+            return RoutingResult(
+                original_text="" if text is None else str(text),
+                processed_text="",
+                route_name="FAST_MSA",
+                route_display_ar="مسار الفصحى المباشر فائق السرعة",
+                decision_reason="نص فارغ أو يتكون من مسافات فقط",
+                profile=self.profiler.analyze(""),
+                latency_ms=0.001,
+                tokenizer_backend=self.tokenizer.backend_name,
+                is_real_tokenizer=self.tokenizer.is_real_vocab,
+                raw_tokens=[],
+                processed_tokens=[],
+                raw_token_count=0,
+                processed_token_count=0,
+                unk_count_raw=0,
+                unk_count_processed=0,
+                tfr_raw=0.0,
+                tfr_processed=0.0,
+                token_reduction_pct=0.0,
+                auto_healed_count=0,
+                clitic_fixed_count=0,
+                attention_savings_pct=0.0,
+            )
+
+        str_text = str(text)
+        if use_cache and str_text in self._cache:
+            self._cache_hits += 1
+            c = self._cache[str_text]
+            return RoutingResult(
+                original_text=c.original_text,
+                processed_text=c.processed_text,
+                route_name=c.route_name,
+                route_display_ar=c.route_display_ar,
+                decision_reason=c.decision_reason,
+                profile=c.profile,
+                latency_ms=0.001,
+                tokenizer_backend=c.tokenizer_backend,
+                is_real_tokenizer=c.is_real_tokenizer,
+                raw_tokens=list(c.raw_tokens),
+                processed_tokens=list(c.processed_tokens),
+                raw_token_count=c.raw_token_count,
+                processed_token_count=c.processed_token_count,
+                unk_count_raw=c.unk_count_raw,
+                unk_count_processed=c.unk_count_processed,
+                tfr_raw=c.tfr_raw,
+                tfr_processed=c.tfr_processed,
+                token_reduction_pct=c.token_reduction_pct,
+                auto_healed_count=c.auto_healed_count,
+                clitic_fixed_count=c.clitic_fixed_count,
+                attention_savings_pct=c.attention_savings_pct,
+            )
+
+        self._cache_misses += 1
         t0 = time.perf_counter()
-        profile = self.profiler.analyze(text)
-        route_name, route_display, reason, processed, healed, clitic_fixed = self._select_and_process(text, profile)
+        profile = self.profiler.analyze(str_text)
+        route_name, route_display, reason, processed, healed, clitic_fixed = self._select_and_process(str_text, profile)
         elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
-        raw_tokens = self.tokenizer.tokenize(text)
+        raw_tokens = self.tokenizer.tokenize(str_text)
         proc_tokens = self.tokenizer.tokenize(processed)
         raw_count = len(raw_tokens)
         proc_count = len(proc_tokens)
@@ -279,8 +393,8 @@ class MisarRouter:
         reduction_pct = ((raw_count - proc_count) / raw_count * 100.0) if raw_count > 0 else 0.0
         attn_pct = ((1.0 - (proc_count / raw_count) ** 2) * 100.0) if raw_count > 0 else 0.0
 
-        return RoutingResult(
-            original_text=text,
+        result = RoutingResult(
+            original_text=str_text,
             processed_text=processed,
             route_name=route_name,
             route_display_ar=route_display,
@@ -302,6 +416,13 @@ class MisarRouter:
             clitic_fixed_count=clitic_fixed,
             attention_savings_pct=attn_pct,
         )
+
+        if use_cache and self.cache_size > 0:
+            if len(self._cache) >= self.cache_size:
+                del self._cache[next(iter(self._cache))]
+            self._cache[str_text] = result
+
+        return result
 
     def route_document(self, document: str) -> DocumentRoutingResult:
         """
@@ -504,6 +625,172 @@ class MisarRouter:
         from .lexicon import explain_text
         return explain_text(text)
 
+    def correct(self, text: str) -> Any:
+        """Context-Aware Arabic Grammar & Spell Correction."""
+        from .correct import correct_arabic_text
+        return correct_arabic_text(text)
+
+    def extract_ner(self, text: str, mask: bool = False) -> Any:
+        """Sovereign Arabic Named Entity Recognition & Privacy Masking."""
+        from .ner import extract_entities
+        return extract_entities(text, mask_entities=mask)
+
+    def translate(self, text: str) -> Any:
+        """Dialect-to-MSA Parallel Translation."""
+        from .translate import translate_to_msa
+        return translate_to_msa(text)
+
+    def search(
+        self,
+        query: str,
+        documents: Union[List[str], List[Dict[str, Any]]],
+        top_k: int = 5,
+        use_roots: bool = True,
+    ) -> Any:
+        """In-memory Okapi BM25 Arabic semantic search."""
+        from .search import search_arabic
+        return search_arabic(query, documents, top_k=top_k, use_roots=use_roots)
+
+    def sentiment(self, text: str) -> Any:
+        """Dialect-Aware Arabic Sentiment & Emotion Analysis."""
+        from .sentiment import analyze_sentiment
+        return analyze_sentiment(text)
+
+    def process(
+        self,
+        text: Any,
+        correct: bool = False,
+        mask_pii: bool = False,
+        mask_ner: bool = False,
+        translate_msa: bool = False,
+        detect_sentiment: bool = False,
+        arabizi: bool = False,
+        document_mode: bool = False,
+        return_telemetry: bool = False,
+    ) -> Any:
+        """
+        Master unified processing entrypoint for Misar.
+        Orchestrates profiling, routing, spell correction, PII guard, NER masking,
+        and dialect translation in a single pass with zero-crash guarantees.
+        """
+        raw_text = "" if text is None else str(text)
+        if not raw_text.strip():
+            if return_telemetry:
+                return UnifiedProcessResult(
+                    original_text=raw_text,
+                    processed_text="",
+                    route_name="FAST_MSA",
+                    route_display_ar="مسار الفصحى المباشر فائق السرعة",
+                    corrections_count=0,
+                    pii_risks=[],
+                    entities_count=0,
+                    detected_dialect="msa",
+                    sentiment_score=None,
+                    latency_ms=0.001,
+                    tokens_raw=0,
+                    tokens_processed=0,
+                    tokens_saved=0,
+                    token_reduction_pct=0.0,
+                    attention_savings_pct=0.0,
+                    cache_hit=False,
+                )
+            return ""
+
+        t0 = time.perf_counter()
+        current = raw_text
+
+        # 1. Arabizi Transliteration (if requested or enabled)
+        if arabizi or self.arabizi_mode:
+            from .arabizi import decode_arabizi
+            current = decode_arabizi(current)
+
+        # 2. Dynamic Routing & Core Normalization
+        if document_mode:
+            doc_res = self.route_document(current)
+            current = doc_res.processed_text
+            route_name = "DOCUMENT_MODE"
+            route_display = "مسار المستندات متعدد الجمل والفقرات"
+        else:
+            route_res = self.route(current)
+            current = route_res.processed_text
+            route_name = route_res.route_name
+            route_display = route_res.route_display_ar
+
+        # 3. Context-Aware Grammar & Spell Correction
+        corrections_count = 0
+        if correct:
+            from .correct import correct_arabic_text
+            corr = correct_arabic_text(current)
+            current = corr.corrected_text
+            corrections_count = corr.changes_count
+
+        # 4. Dialect-to-MSA Parallel Translation
+        detected_dialect = "msa"
+        if translate_msa:
+            from .translate import translate_to_msa
+            trans = translate_to_msa(current)
+            current = trans.msa_text
+            detected_dialect = trans.detected_dialect
+        else:
+            try:
+                from .classifier import classify_dialect
+                detected_dialect = classify_dialect(current).primary_dialect
+            except Exception:
+                detected_dialect = "msa"
+
+        # 5. Named Entity Recognition & Privacy Masking
+        entities_count = 0
+        if mask_ner:
+            from .ner import extract_entities
+            ner_res = extract_entities(current, mask_entities=True)
+            current = ner_res.masked_text
+            entities_count = ner_res.entities_count
+
+        # 6. Enterprise Prompt Guard & PII Redaction
+        pii_risks: List[str] = []
+        if mask_pii:
+            from .guard import ArabicPromptGuard
+            guard = ArabicPromptGuard(mask_pii=True, detect_injection=True)
+            g_res = guard.sanitize(current)
+            current = g_res.sanitized_text
+            pii_risks = g_res.detected_risks
+
+        # 7. Sentiment & Emotion Analysis
+        sentiment_score = None
+        if detect_sentiment:
+            from .sentiment import analyze_sentiment
+            sent = analyze_sentiment(current)
+            sentiment_score = sent.score
+
+        if not return_telemetry:
+            return current
+
+        elapsed_ms = (time.perf_counter() - t0) * 1000.0
+        tok_raw = len(self.tokenizer.tokenize(raw_text))
+        tok_proc = len(self.tokenizer.tokenize(current))
+        saved = max(0, tok_raw - tok_proc)
+        red_pct = ((tok_raw - tok_proc) / tok_raw * 100.0) if tok_raw > 0 else 0.0
+        attn_pct = ((1.0 - (tok_proc / tok_raw) ** 2) * 100.0) if tok_raw > 0 else 0.0
+
+        return UnifiedProcessResult(
+            original_text=raw_text,
+            processed_text=current,
+            route_name=route_name,
+            route_display_ar=route_display,
+            corrections_count=corrections_count,
+            pii_risks=pii_risks,
+            entities_count=entities_count,
+            detected_dialect=detected_dialect,
+            sentiment_score=sentiment_score,
+            latency_ms=elapsed_ms,
+            tokens_raw=tok_raw,
+            tokens_processed=tok_proc,
+            tokens_saved=saved,
+            token_reduction_pct=red_pct,
+            attention_savings_pct=attn_pct,
+            cache_hit=False,
+        )
+
 
 _DEFAULT_ROUTER: Optional[MisarRouter] = None
 
@@ -579,3 +866,38 @@ def route_parallel(
         model_key=model_key,
         allow_vocab_download=allow_vocab_download,
     )
+
+
+def process(
+    text: Any,
+    correct: bool = False,
+    mask_pii: bool = False,
+    mask_ner: bool = False,
+    translate_msa: bool = False,
+    detect_sentiment: bool = False,
+    arabizi: bool = False,
+    document_mode: bool = False,
+    return_telemetry: bool = False,
+) -> Any:
+    """Master unified processing entrypoint calling the default MisarRouter instance."""
+    return _get_default_router().process(
+        text=text,
+        correct=correct,
+        mask_pii=mask_pii,
+        mask_ner=mask_ner,
+        translate_msa=translate_msa,
+        detect_sentiment=detect_sentiment,
+        arabizi=arabizi,
+        document_mode=document_mode,
+        return_telemetry=return_telemetry,
+    )
+
+
+def clear_cache() -> None:
+    """Clears both router and linguistic profiler caches."""
+    _get_default_router().clear_cache()
+
+
+def get_cache_stats() -> Dict[str, Any]:
+    """Returns telemetry on internal router and profiler caching."""
+    return _get_default_router().cache_info()

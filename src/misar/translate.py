@@ -15,6 +15,13 @@ DIALECT_TO_MSA_PHRASES: List[Tuple[str, str, str]] = [
     # Saudi & Gulf
     (r"\bوش تبغى تسوي\b", "ماذا تريد أن تفعل", "saudi_gulf"),
     (r"\bوش تبي تسوي\b", "ماذا تريد أن تفعل", "saudi_gulf"),
+    (r"\bوش يبغى يسوي\b", "ماذا يريد أن يفعل", "saudi_gulf"),
+    (r"\bوش يبي يسوي\b", "ماذا يريد أن يفعل", "saudi_gulf"),
+    (r"\bوش يبغى تسوي\b", "ماذا يريد أن يفعل", "saudi_gulf"),
+    (r"\bوش يبي تسوي\b", "ماذا يريد أن يفعل", "saudi_gulf"),
+    (r"\bوش يبغى\b", "ماذا يريد", "saudi_gulf"),
+    (r"\bوش يبي\b", "ماذا يريد", "saudi_gulf"),
+    (r"\bوش يبون\b", "ماذا يريدون", "saudi_gulf"),
     (r"\bوش تبي\b", "ماذا تريد", "saudi_gulf"),
     (r"\bوش تبغى\b", "ماذا تريد", "saudi_gulf"),
     (r"\bوش تبون\b", "ماذا تريدون", "saudi_gulf"),
