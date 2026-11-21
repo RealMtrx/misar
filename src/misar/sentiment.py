@@ -10,7 +10,7 @@ Features:
 
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 # Positive Lexicon: Classical MSA + Modern Dialects (Saudi, Gulf, Egyptian, Levantine, Maghrebi)
 POSITIVE_WORDS: Dict[str, float] = {
