@@ -486,6 +486,58 @@ def cmd_translate(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_diacritize(args: argparse.Namespace) -> int:
+    from .diacritize import diacritize_text
+    res = diacritize_text(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Diacritizer & Tashkeel Recovery v{__version__}")
+    print("=" * 70)
+    print(f"Original    : {res.original_text}")
+    print(f"Diacritized : {res.diacritized_text}")
+    print(f"Marks Added : {res.vowels_added_count} mark(s) | Density: {res.diacritic_density:.2f}")
+    print(f"Confidence  : {res.confidence * 100:.0f}%")
+    print("=" * 70)
+    return 0
+
+
+def cmd_summarize(args: argparse.Namespace) -> int:
+    from .summarize import summarize_text
+    res = summarize_text(args.text, num_sentences=args.sentences, max_ratio=args.ratio)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Text Summarizer & Keyphrase Extractor v{__version__}")
+    print("=" * 70)
+    print(f"Summary:\n{res.summary_text}")
+    print("-" * 70)
+    print(f"Compression : {res.compression_ratio * 100:.1f}% ({res.summary_sentence_count}/{res.original_sentence_count} sentences)")
+    if res.keyphrases:
+        print(f"Keyphrases  : {', '.join(k.phrase for k in res.keyphrases)}")
+    print(f"Latency     : {res.latency_ms:.2f} ms")
+    print("=" * 70)
+    return 0
+
+
+def cmd_readability(args: argparse.Namespace) -> int:
+    from .readability import analyze_readability
+    res = analyze_readability(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Readability & Linguistic Complexity Engine v{__version__}")
+    print("=" * 70)
+    print(f"Osman Index      : {res.osman_index:.2f} ({res.reading_ease_category})")
+    print(f"Stage            : {res.educational_stage_ar} ({res.educational_stage})")
+    print(f"Stats            : {res.word_count} words | {res.sentence_count} sentences | {res.avg_word_length:.1f} chars/word")
+    print(f"Syllables / Word : {res.estimated_syllables_per_word:.2f}")
+    print(f"Lexical Richness : TTR {res.type_token_ratio:.2f} | Hapax {res.hapax_legomena_ratio:.2f}")
+    print(f"Reading Time     : {res.reading_time_seconds:.1f} sec (~{res.reading_time_seconds/60:.1f} min)")
+    print("=" * 70)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -647,6 +699,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_translate.add_argument("text", help="Dialect text to translate into MSA")
     p_translate.add_argument("--json", action="store_true", help="Output structured JSON")
     p_translate.set_defaults(func=cmd_translate)
+
+    p_diacritize = sub.add_parser("diacritize", help="Automatic Arabic diacritization and tashkeel restoration")
+    p_diacritize.add_argument("text", help="Arabic text to diacritize")
+    p_diacritize.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_diacritize.set_defaults(func=cmd_diacritize)
+
+    p_summarize = sub.add_parser("summarize", help="Extractive Arabic text summarization and keyphrase extraction")
+    p_summarize.add_argument("text", help="Arabic text or document to summarize")
+    p_summarize.add_argument("--sentences", "-s", type=int, default=3, help="Target number of summary sentences")
+    p_summarize.add_argument("--ratio", "-r", type=float, default=0.4, help="Maximum compression ratio")
+    p_summarize.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_summarize.set_defaults(func=cmd_summarize)
+
+    p_readability = sub.add_parser("readability", help="Calculate Osman Readability Index and linguistic complexity")
+    p_readability.add_argument("text", help="Arabic text to analyze for readability")
+    p_readability.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_readability.set_defaults(func=cmd_readability)
 
     return parser
 

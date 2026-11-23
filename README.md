@@ -35,9 +35,9 @@ Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneou
 
 **Misar (`مِسار`)** solves these bottlenecks **without retraining any model (`Zero Parameter Update`)** by acting as an ultra-lightweight, zero-dependency, linear-time $O(n)$ routing gateway directly in front of **AraBERTv2, MARBERTv2, CAMeLBERT-Mix, ARBERTv2, QARiB**, or generative LLMs.
 
-### How Misar v2.1 Compares to Existing Arabic Preprocessors
+### How Misar v3.0 Compares to Existing Arabic Preprocessors
 
-| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v2.1 (`مِسار`)** |
+| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v3.0 (`مِسار`)** |
 | :--- | :---: | :---: | :---: | :---: |
 | **Dynamic $O(n)$ + Clause-Aware Routing** | Static pipeline | Static pipeline | Manual utilities | **Per-text & Multi-Clause `route_document()`** |
 | **Zero Mandatory Dependencies** | Requires `pyarabic` / extras | Light deps | Heavy ML / data packs | **100% Pure Python Stdlib** |
@@ -413,7 +413,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
   author       = {Muneer Jarab Matrak Al-Theeb},
   title        = {Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router for Transformer Language Models},
   year         = {2026},
-  version      = {2.9.0},
+  version      = {3.0.0},
   url          = {https://github.com/RealMtrx/misar},
   license      = {MIT}
 }
@@ -423,8 +423,11 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v2.9.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v3.0.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
+* **محرك التشكيل واستعادة الحركات العربي (`misar.diacritize` & `misar diacritize`):** استعادة تلقائية للحركات الإعرابية والصرفية والشّدّة والتنوين وفق الأوزان الصرفية العربية والأدوات النحوية، مع صون المصطلحات الإنجليزية والأرقام والرموز.
+* **محرك التلخيص العربي واستخراج المفاهيم والكلمات المفتاحية (`misar.summarize` & `misar summarize`):** تلخيص استخلاصي فائق السرعة عبر خوارزمية TextRank المصممة لخصائص الخطاب العربي ومطابقة الجذور المعجمية واستخراج المصطلحات والمفاهيم البارزة.
+* **محرك قياس المقروئية ومؤشر عثمان العربي (`misar.readability` & `misar readability`):** حساب مؤشر عثمان للمقروئية (OSMAN) وتصنيف الصعوبة اللغوية وملاءمة النصوص للمراحل التعليمية (ابتدائي، متوسط، ثانوي، جامعي، تخصصي) مع تقدير زمن القراءة والغنى المعجمي.
 * **محرك التصحيح اللغوي والإملائي العربي السياقي (`misar.correct` & `misar correct`):** محرك نحوي وإملائي دقيق لتصحيح مواضع الهمزات (مسؤول، شيء، دفء، شاطئ)، التمييز الصرفي بين ألف الوصل والقطع (ابتكار، استخدام، اقتصاد)، وحماية تاء التأنيث والضمائر المتصلة (بيته، قلمه، مديره، عمله) وتصحيح العبارات المركبة دون أي مكتبات خارجية.
 * **محرك استخراج الكيانات المسماة وحجب الخصوصية السيادي (`misar.ner` & `misar ner`):** استخراج وتصنيف الكيانات السيادية والجهات الحكومية والشركات (سدايا، موهبة، أرامكو، STC، الراجحي)، المناطق والمدن السعودية (عسير، أبها، الرياض، جدة)، أسماء الشخصيات والألقاب، والتواريخ والقيم المالية مع وضع حجب الخصوصية المجهولة لحماية بيانات المستخدم في نماذج LLM.
 * **محرك الترجمة الموازية من اللهجات إلى الفصحى المعيارية (`misar.translate` & `misar translate`):** تحويل النصوص والعبارات من اللهجات السعودية والخليجية والمصرية والشامية والمغاربية إلى الفصحى المعيارية بدقة عالية وبلا زمن تأخير.

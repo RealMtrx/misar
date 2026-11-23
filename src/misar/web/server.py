@@ -253,6 +253,9 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "dialect_to_msa_translator",
                             "unified_process_pipeline",
                             "in_memory_lru_cache",
+                            "arabic_diacritizer",
+                            "arabic_summarizer",
+                            "arabic_readability_engine",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -673,6 +676,7 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                 mask_ner = bool(payload.get("mask_ner", False))
                 translate_msa = bool(payload.get("translate_msa", False))
                 detect_sentiment = bool(payload.get("detect_sentiment", False))
+                diacritize = bool(payload.get("diacritize", False))
                 arabizi = bool(payload.get("arabizi", False))
                 doc_mode = bool(payload.get("document_mode", False))
                 res = router.process(
@@ -682,10 +686,52 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     mask_ner=mask_ner,
                     translate_msa=translate_msa,
                     detect_sentiment=detect_sentiment,
+                    diacritize=diacritize,
                     arabizi=arabizi,
                     document_mode=doc_mode,
                     return_telemetry=True,
                 )
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/diacritize":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..diacritize import diacritize_text
+                res = diacritize_text(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/summarize":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                num_sentences = int(payload.get("num_sentences", payload.get("sentences", 3)))
+                max_ratio = float(payload.get("max_ratio", payload.get("ratio", 0.4)))
+                from ..summarize import summarize_text
+                res = summarize_text(text, num_sentences=num_sentences, max_ratio=max_ratio)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/readability":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..readability import analyze_readability
+                res = analyze_readability(text)
                 self._send_json(200, res.to_dict())
                 return
 

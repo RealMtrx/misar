@@ -160,7 +160,7 @@ Furthermore, on dialectal sentiment benchmarks containing negations (\textarabic
 
 \section{Sovereign Enterprise Architecture \& Security}
 
-In version 2.9.0, Misar extends beyond an internal library to a comprehensive \textbf{Sovereign AI Gateway, Search, and Correction Platform}:
+In version 3.0.0, Misar extends beyond an internal library to a comprehensive \textbf{Sovereign AI Gateway, Search, Tashkeel Diacritization, Summarization, and Readability Platform}:
 \begin{enumerate}
     \item \textbf{Saudi PII Redaction Guard:} Real-time regex engines validating Saudi National IDs (Luhn / Mod-10 checksum) and Saudi IBANs (ISO 7064 Mod-97 checksum), replacing sensitive data with canonical tokens (\textarabic{[رقم\_هوية\_محجوب]}, \textarabic{[آيبان\_محجوب]}).
     \item \textbf{Adversarial Unicode Neutralization:} Stripping zero-width joiners/non-joiners, Tatweel evasion sequences, and bidirectional override characters (\texttt{U+202E}) used to evade safety filters.

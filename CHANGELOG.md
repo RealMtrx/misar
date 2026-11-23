@@ -2,6 +2,50 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [3.0.0] — 2026-11-23
+
+### The Major Generational Release — Sovereign Arabic NLP Trinity
+
+#### 1. Arabic Diacritization & Tashkeel Recovery Engine (`misar.diacritize` & CLI `misar diacritize`)
+- Zero-dependency, pure Python standard-library engine restoring accurate Arabic short vowels (Fatha, Damma, Kasra, Sukun, Shaddah, and Tanween).
+- Morphological template recognition covering major Arabic measures (تفعيل، مفعلة، استفعال، افتعال، فاعل، مفعول، فعيل، تفعل).
+- Canonical grammatical particle and preposition recovery (`في` -> `فِي`، `من` -> `مِنْ`، `إلى` -> `إِلَى`، `على` -> `عَلَى`، `مع` -> `مَعَ`، `حتى` -> `حَتَّى`، `ثم` -> `ثُمَّ`، `لكن` -> `لَكِنَّ`).
+- Recursive clitic prefix/suffix decomposition (`وـ`, `فـ`, `بـ`, `لـ`, `كـ`, `الـ`).
+- Full preservation of pre-existing diacritics, Latin terms, technical tokens, numbers, and emojis.
+- Top-level export `diacritize_text`, `diacritize_word`, `DiacritizationResult`, and `router.process(..., diacritize=True)`.
+- CLI command: `misar diacritize "<text>" [--json]`.
+
+#### 2. Arabic Text Summarization & Keyphrase Extraction Engine (`misar.summarize` & CLI `misar summarize`)
+- Extractive TextRank / LexRank graph centrality algorithm specifically tuned for Arabic discourse structures.
+- Morphological root and stem matching for lexical overlap without vector database or PyTorch overhead.
+- Discourse connectors and structural position priors (lead sentence thesis, conclusion, and sovereign entity salience boosts).
+- Salient Arabic multi-word keyphrase and concept extraction with stopword filtering.
+- Compression ratio reporting, sentence extraction indices, and sub-millisecond execution.
+- Top-level export `summarize_text`, `extract_keyphrases`, `SummarizationResult`, `KeyphraseSpan`.
+- CLI command: `misar summarize "<text>" [--sentences 3] [--ratio 0.5] [--json]`.
+
+#### 3. Arabic Readability & Linguistic Complexity Metric Engine (`misar.readability` & CLI `misar readability`)
+- Full implementation of the academic OSMAN Readability Metric (Open Source Metric for Measuring Arabic Narratives) adapted for Arabic prose:
+  $$\text{OSMAN} = 206.835 - (1.015 \times \text{ASL}) - (84.6 \times \text{ASW})$$
+- Fine-grained educational stage mapping (ابتدائي، متوسط، ثانوي، جامعي، تخصصي أكاديمي).
+- Syllabic mora and phonetic vowel estimator for Arabic words.
+- Lexical diversity indicators: Type-Token Ratio (TTR) and Hapax Legomena frequency.
+- Arabic reading time estimator calibrated for standard Arabic reading velocity (160 words/min).
+- Top-level export `analyze_readability`, `ReadabilityResult`.
+- CLI command: `misar readability "<text>" [--json]`.
+
+#### 4. Web Workbench v3.0 & Sovereign AI Gateway Expansion
+- New Section 17: Interactive Arabic Tashkeel & Diacritization Engine with visual vowel density and confidence metrics.
+- New Section 18: Extractive Summarizer & Keyphrase Extractor with sentence count selectors and keyphrase concept chips.
+- New Section 19: Arabic Readability & Osman Metric Meter with educational stage indicators and reading time estimators.
+- New REST API Endpoints: POST `/api/diacritize`, POST `/api/summarize`, POST `/api/readability`.
+- Unified Pipeline upgrade: `diacritize=True` support in POST `/api/process` and `MisarRouter.process()`.
+
+#### 5. Engineering Reliability & Empirical Testing
+- Expanded test suite from 138 to **154 comprehensive automated unit tests** across 15 test files with 100% pass rate.
+- Added `tests/test_diacritize.py`, `tests/test_summarize.py`, `tests/test_readability.py`.
+- Verified 100% compatibility across Python 3.9, 3.10, 3.11, 3.12, 3.13, and 3.14.
+
 ## [2.9.0] — 2026-11-21
 
 ### Added & Improved

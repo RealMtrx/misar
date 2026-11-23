@@ -656,6 +656,26 @@ class MisarRouter:
         from .sentiment import analyze_sentiment
         return analyze_sentiment(text)
 
+    def diacritize(self, text: str) -> Any:
+        """Automatic Arabic Diacritization & Tashkeel Recovery."""
+        from .diacritize import diacritize_text
+        return diacritize_text(text)
+
+    def summarize(self, text: str, num_sentences: int = 3, max_ratio: float = 0.4) -> Any:
+        """Extractive Arabic Text Summarization & Keyphrase Extraction."""
+        from .summarize import summarize_text
+        return summarize_text(text, num_sentences=num_sentences, max_ratio=max_ratio)
+
+    def extract_keyphrases(self, text: str, top_k: int = 5) -> Any:
+        """Extract salient Arabic keyphrases and concepts."""
+        from .summarize import extract_keyphrases
+        return extract_keyphrases(text, top_k=top_k)
+
+    def readability(self, text: str) -> Any:
+        """Arabic Readability & Linguistic Complexity Analysis (Osman Index)."""
+        from .readability import analyze_readability
+        return analyze_readability(text)
+
     def process(
         self,
         text: Any,
@@ -664,6 +684,7 @@ class MisarRouter:
         mask_ner: bool = False,
         translate_msa: bool = False,
         detect_sentiment: bool = False,
+        diacritize: bool = False,
         arabizi: bool = False,
         document_mode: bool = False,
         return_telemetry: bool = False,
@@ -761,6 +782,11 @@ class MisarRouter:
             from .sentiment import analyze_sentiment
             sent = analyze_sentiment(current)
             sentiment_score = sent.score
+
+        # 8. Arabic Diacritization / Tashkeel Recovery
+        if diacritize:
+            from .diacritize import diacritize_text
+            current = diacritize_text(current).diacritized_text
 
         if not return_telemetry:
             return current
@@ -875,6 +901,7 @@ def process(
     mask_ner: bool = False,
     translate_msa: bool = False,
     detect_sentiment: bool = False,
+    diacritize: bool = False,
     arabizi: bool = False,
     document_mode: bool = False,
     return_telemetry: bool = False,
@@ -887,10 +914,31 @@ def process(
         mask_ner=mask_ner,
         translate_msa=translate_msa,
         detect_sentiment=detect_sentiment,
+        diacritize=diacritize,
         arabizi=arabizi,
         document_mode=document_mode,
         return_telemetry=return_telemetry,
     )
+
+
+def diacritize_text(text: str) -> Any:
+    """Automatic Arabic Diacritization & Tashkeel Recovery."""
+    return _get_default_router().diacritize(text)
+
+
+def summarize_text(text: str, num_sentences: int = 3, max_ratio: float = 0.4) -> Any:
+    """Extractive Arabic Text Summarization & Keyphrase Extraction."""
+    return _get_default_router().summarize(text, num_sentences=num_sentences, max_ratio=max_ratio)
+
+
+def extract_keyphrases(text: str, top_k: int = 5) -> Any:
+    """Extract salient Arabic keyphrases and concepts."""
+    return _get_default_router().extract_keyphrases(text, top_k=top_k)
+
+
+def analyze_readability(text: str) -> Any:
+    """Arabic Readability & Linguistic Complexity Analysis (Osman Index)."""
+    return _get_default_router().readability(text)
 
 
 def clear_cache() -> None:

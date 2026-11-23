@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v2.9.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
+  <title>مِسار (Misar v3.0.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -881,7 +881,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v2.9.0</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v3.0.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -1387,8 +1387,83 @@
       <div id="translateResultWrap" style="margin-top: 14px;"></div>
     </section>
 
+    <!-- Section 17: Tashkeel & Diacritizer Engine -->
+    <section class="card" id="sectionDiacritize">
+      <div class="section-head">
+        <h2 class="section-title">17. محرك التشكيل واستعادة الحركات (Arabic Tashkeel & Diacritization Engine)</h2>
+        <span class="section-hint">استعادة ذكية للحركات الإعرابية والصرفية وحروف العطف والجر والتنوين والشّدّة مع صون الكلمات الإنجليزية والرموز التعبيرية</span>
+      </div>
+
+      <div class="presets-row" id="diacritizePresetsRow">
+        <button type="button" class="preset-btn active" data-diacritize="تعتمد الحوسبة السحابية على مراكز البيانات الضخمة لتشغيل نماذج الذكاء الاصطناعي">فصحى تقنية (حوسبة سحابية وذكاء اصطناعي)</button>
+        <button type="button" class="preset-btn" data-diacritize="وضع الخوارزمي اسس الجبر والحساب ليبني منها العلماء مناهج البرمجة الحديثة">نص علمي تراثي (الخوارزمي والجبر)</button>
+        <button type="button" class="preset-btn" data-diacritize="ان العلم نور يضيء دروب الحياة ولن نتردد في طلب المعرفة">أدوات نحوية وحروف (إن، لن، في)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="diacritizeInput" rows="2" placeholder="اكتب نصاً عربياً لاستعادة التشكيل والحركات...">تعتمد الحوسبة السحابية على مراكز البيانات الضخمة لتشغيل نماذج الذكاء الاصطناعي</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runDiacritizeBtn">تشكيل النص العربي (Diacritize)</button>
+        </div>
+      </div>
+
+      <div id="diacritizeResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 18: Extractive Summarizer & Keyphrase Extractor -->
+    <section class="card" id="sectionSummarize">
+      <div class="section-head">
+        <h2 class="section-title">18. محرك التلخيص واستخراج الكلمات المفتاحية (Text Summarizer & Keyphrase Extractor)</h2>
+        <span class="section-hint">تلخيص استخلاصي فائق السرعة عبر خوارزمية TextRank المصممة للخطاب العربي مع استخراج المصطلحات والمفاهيم البارزة</span>
+      </div>
+
+      <div class="presets-row" id="summarizePresetsRow">
+        <button type="button" class="preset-btn active" data-summarize="أعلنت المملكة العربية السعودية عن استثمارات كبرى في البنية التحتية للحوسبة السحابية ومراكز البيانات المتقدمة. تهدف هذه المبادرات إلى تمكين الشركات التقنية والناشئة من تسريع الابتكار في تطبيقات الذكاء الاصطناعي وتوطين التقنيات السيادية. وتعتبر هذه الخطوة ركيزة أساسية ضمن مستهدفات رؤية 2030 لتحويل المملكة إلى مركز إقليمي وعالمي للبيانات. ومن المتوقع أن تسهم هذه الاستثمارات في خلق آلاف الوظائف التقنية النوعية.">تقرير استثمارات الذكاء الاصطناعي ورؤية 2030</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="summarizeInput" rows="4" placeholder="اكتب أو الصق مقالاً أو نصاً مطولاً لتلخيصه...">أعلنت المملكة العربية السعودية عن استثمارات كبرى في البنية التحتية للحوسبة السحابية ومراكز البيانات المتقدمة. تهدف هذه المبادرات إلى تمكين الشركات التقنية والناشئة من تسريع الابتكار في تطبيقات الذكاء الاصطناعي وتوطين التقنيات السيادية. وتعتبر هذه الخطوة ركيزة أساسية ضمن مستهدفات رؤية 2030 لتحويل المملكة إلى مركز إقليمي وعالمي للبيانات. ومن المتوقع أن تسهم هذه الاستثمارات في خلق آلاف الوظائف التقنية النوعية.</textarea>
+        <div class="actions-row" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+          <label style="font-size: 0.85rem; font-weight: 600;">عدد جمل الملخص:
+            <select id="summarizeSentencesSelect" style="padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border);">
+              <option value="1">جملة واحدة</option>
+              <option value="2" selected>جملتان (2)</option>
+              <option value="3">3 جمل</option>
+              <option value="4">4 جمل</option>
+            </select>
+          </label>
+          <button type="button" class="btn-primary" id="runSummarizeBtn">تلخيص النص واستخراج المفاهيم</button>
+        </div>
+      </div>
+
+      <div id="summarizeResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 19: Arabic Readability & Osman Metric Meter -->
+    <section class="card" id="sectionReadability">
+      <div class="section-head">
+        <h2 class="section-title">19. مقياس مقروئية النصوص ومؤشر عثمان العربي (Osman Readability & Complexity Metric)</h2>
+        <span class="section-hint">قياس الصعوبة اللغوية وملاءمة النصوص للمراحل التعليمية (ابتدائي، متوسط، ثانوي، جامعي، تخصصي) مع حساب زمن القراءة التقديري والغنى المعجمي</span>
+      </div>
+
+      <div class="presets-row" id="readabilityPresetsRow">
+        <button type="button" class="preset-btn active" data-readability="تقتضي معالجة اللغات الطبيعية استيعاب المحددات الصرفية والبنى النحوية التوليدية لضمان سلامة النمذجة الرياضية للمتجهات الدلالية في الفضاءات الهندسية متعددة الأبعاد.">نص أكاديمي / تخصصي (معالجة لغات طبيعية)</button>
+        <button type="button" class="preset-btn" data-readability="الماء هو شريان الحياة الأساسي لكافة الكائنات الحية على كوكب الأرض، ويجب علينا المحافظة عليه وترشيد استهلاكه يومياً في المنازل والمدارس والحدائق العامة.">نص تعليمي للمرحلة المتوسطة (ترشيد المياه)</button>
+        <button type="button" class="preset-btn" data-readability="ذهب أحمد إلى المدرسة في الصباح الباكر وهو يشعر بالسعادة والنشاط، والتقى بمعلمه وزملائه في ساحة المدرسة الجميلة.">نص للمرحلة الابتدائية (قصة قصيرة)</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="readabilityInput" rows="3" placeholder="اكتب أو الصق نصاً لحساب مؤشر عثمان للمقروئية وقياس التعقيد اللغوي...">تقتضي معالجة اللغات الطبيعية استيعاب المحددات الصرفية والبنى النحوية التوليدية لضمان سلامة النمذجة الرياضية للمتجهات الدلالية في الفضاءات الهندسية متعددة الأبعاد.</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runReadabilityBtn">حساب مؤشر المقروئية والتعقيد (Readability)</button>
+        </div>
+      </div>
+
+      <div id="readabilityResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
     <footer class="page-footer ltr">
-      Misar (مِسار) v2.9.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v3.0.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -2787,6 +2862,54 @@
         });
         executeTranslate();
       }
+
+      // Diacritize UI (Section 17)
+      const diacBtn = document.getElementById("runDiacritizeBtn");
+      const diacIn = document.getElementById("diacritizeInput");
+      if (diacBtn && diacIn) {
+        diacBtn.addEventListener("click", executeDiacritize);
+        document.querySelectorAll("#diacritizePresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#diacritizePresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            diacIn.value = b.getAttribute("data-diacritize");
+            executeDiacritize();
+          });
+        });
+        executeDiacritize();
+      }
+
+      // Summarize UI (Section 18)
+      const sumBtn = document.getElementById("runSummarizeBtn");
+      const sumIn = document.getElementById("summarizeInput");
+      if (sumBtn && sumIn) {
+        sumBtn.addEventListener("click", executeSummarize);
+        document.querySelectorAll("#summarizePresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#summarizePresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            sumIn.value = b.getAttribute("data-summarize");
+            executeSummarize();
+          });
+        });
+        executeSummarize();
+      }
+
+      // Readability UI (Section 19)
+      const readBtn = document.getElementById("runReadabilityBtn");
+      const readIn = document.getElementById("readabilityInput");
+      if (readBtn && readIn) {
+        readBtn.addEventListener("click", executeReadability);
+        document.querySelectorAll("#readabilityPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#readabilityPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            readIn.value = b.getAttribute("data-readability");
+            executeReadability();
+          });
+        });
+        executeReadability();
+      }
     });
 
     // --- Arabizi Decoupler UI ---
@@ -3063,6 +3186,132 @@
         `;
       } catch (err) {
         wrap.innerHTML = `<div class="guard-tag">خطأ في الترجمة: ${err}</div>`;
+      }
+    }
+
+    // --- Arabic Diacritizer UI ---
+    async function executeDiacritize() {
+      const input = document.getElementById("diacritizeInput").value.trim();
+      const wrap = document.getElementById("diacritizeResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ استعادة التشكيل والحركات...</div>";
+      try {
+        const res = await fetch("/api/diacritize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--msa-accent); font-weight: 700; font-size: 1.15rem; line-height: 1.8;">${data.diacritized_text}</span>
+              <span class="route-pill pill-FAST_MSA">تشكيل آلي مستعاد</span>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+              <span class="meta-pill" style="color: var(--text-main); background: #e2e8f0;">حركات مضافة: <strong>${data.vowels_added_count}</strong></span>
+              <span class="meta-pill" style="color: var(--text-main); background: #e2e8f0;">كثافة التشكيل: <strong>${Math.round(data.diacritic_density * 100)}%</strong></span>
+              <span class="meta-pill" style="color: var(--text-main); background: #e2e8f0;">درجة الثقة: <strong>${Math.round(data.confidence * 100)}%</strong></span>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في التشكيل: ${err}</div>`;
+      }
+    }
+
+    // --- Text Summarizer UI ---
+    async function executeSummarize() {
+      const input = document.getElementById("summarizeInput").value.trim();
+      const wrap = document.getElementById("summarizeResultWrap");
+      const numSentences = parseInt(document.getElementById("summarizeSentencesSelect").value) || 2;
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ تحليل وتلخيص النص واستخراج المفاهيم...</div>";
+      try {
+        const res = await fetch("/api/summarize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input, num_sentences: numSentences })
+        });
+        const data = await res.json();
+        const keyphrasesHtml = (data.keyphrases || []).map(k => `
+          <span class="marker-chip" style="font-weight: 600;">${k.phrase}</span>
+        `).join(" ");
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="route-pill pill-FAST_MSA">الملخص التنفيذي (${data.summary_sentence_count} من أصل ${data.original_sentence_count} جمل)</span>
+              <span class="meta-pill" style="color: var(--navy); background: #e0f2fe; font-size: 0.8rem;">نسبة الضغط: ${Math.round(data.compression_ratio * 100)}% · زمن الاستجابة: ${data.latency_ms.toFixed(1)} مللي ثانية</span>
+            </div>
+            <div style="font-size: 1.05rem; line-height: 1.7; margin-top: 10px; color: var(--navy); background: #f8fafc; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border-soft);">
+              ${data.summary_text}
+            </div>
+            <div style="margin-top: 12px;">
+              <strong style="font-size: 0.9rem; color: var(--text-muted);">أبرز الكلمات المفتاحية والمفاهيم:</strong>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                ${keyphrasesHtml || '<span style="color: var(--text-soft); font-size: 0.85rem;">لا توجد كلمات مفتاحية</span>'}
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في التلخيص: ${err}</div>`;
+      }
+    }
+
+    // --- Arabic Readability UI ---
+    async function executeReadability() {
+      const input = document.getElementById("readabilityInput").value.trim();
+      const wrap = document.getElementById("readabilityResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ فحص المقروئية وحساب مؤشر عثمان...</div>";
+      try {
+        const res = await fetch("/api/readability", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        
+        let badgeColor = "var(--msa-accent)";
+        let pillClass = "pill-FAST_MSA";
+        if (data.osman_index < 30) {
+          badgeColor = "var(--noisy-accent)";
+          pillClass = "pill-NOISY_SOCIAL";
+        } else if (data.osman_index < 60) {
+          badgeColor = "var(--dialect-accent)";
+          pillClass = "pill-DIALECT_PRESERVE";
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: ${badgeColor}; font-weight: 700;">مؤشر عثمان: ${data.osman_index} / 100 (${data.reading_ease_category})</span>
+              <span class="route-pill ${pillClass}">${data.educational_stage_ar}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 12px;">
+              <div class="meta-pill" style="color: var(--text-main); background: #f1f5f9; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-soft);">عدد الكلمات</div>
+                <div style="font-size: 1.1rem; font-weight: 700;">${data.word_count}</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f1f5f9; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-soft);">المقاطع / كلمة</div>
+                <div style="font-size: 1.1rem; font-weight: 700;">${data.estimated_syllables_per_word}</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f1f5f9; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-soft);">الغنى المعجمي (TTR)</div>
+                <div style="font-size: 1.1rem; font-weight: 700;">${data.type_token_ratio}</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f1f5f9; text-align: center;">
+                <div style="font-size: 0.75rem; color: var(--text-soft);">زمن القراءة المتوقع</div>
+                <div style="font-size: 1.1rem; font-weight: 700;">${data.reading_time_seconds} ثانية</div>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في فحص المقروئية: ${err}</div>`;
       }
     }
   </script>

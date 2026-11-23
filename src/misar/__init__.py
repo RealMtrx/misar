@@ -3,7 +3,7 @@
 Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router.
 """
 
-__version__ = "2.9.0"
+__version__ = "3.0.0"
 __author__ = "Muneer Jarab Matrak Al-Theeb"
 
 from .arabizi import (
@@ -37,6 +37,11 @@ from .correct import (
     CorrectionChange,
     CorrectionResult,
     correct_arabic_text,
+)
+from .diacritize import (
+    DiacritizationResult,
+    diacritize_text,
+    diacritize_word,
 )
 from .evaluation import evaluate_system, run_evaluation
 from .guard import (
@@ -91,18 +96,26 @@ from .rag import (
     SemanticChunk,
     chunk_document,
 )
+from .readability import (
+    ReadabilityResult,
+    analyze_readability,
+)
 from .router import (
     DocumentRoutingResult,
     MisarRouter,
     RoutingResult,
     UnifiedProcessResult,
+    analyze_readability as router_analyze_readability,
     classify,
     clear_cache,
+    diacritize_text as router_diacritize_text,
+    extract_keyphrases as router_extract_keyphrases,
     get_cache_stats,
     preprocess,
     preprocess_batch,
     process,
     route,
+    summarize_text as router_summarize_text,
 )
 from .search import (
     BM25SearchEngine,
@@ -112,6 +125,12 @@ from .search import (
 from .sentiment import (
     SentimentResult,
     analyze_sentiment,
+)
+from .summarize import (
+    KeyphraseSpan,
+    SummarizationResult,
+    extract_keyphrases,
+    summarize_text,
 )
 from .translate import (
     TranslationResult,
@@ -217,4 +236,13 @@ __all__ = [
     "extract_entities",
     "TranslationResult",
     "translate_to_msa",
+    "diacritize_text",
+    "diacritize_word",
+    "DiacritizationResult",
+    "summarize_text",
+    "extract_keyphrases",
+    "SummarizationResult",
+    "KeyphraseSpan",
+    "analyze_readability",
+    "ReadabilityResult",
 ]
