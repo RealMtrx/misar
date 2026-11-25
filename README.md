@@ -35,9 +35,9 @@ Modern Arabic NLP deployments face a structural bottleneck: forcing heterogeneou
 
 **Misar (`مِسار`)** solves these bottlenecks **without retraining any model (`Zero Parameter Update`)** by acting as an ultra-lightweight, zero-dependency, linear-time $O(n)$ routing gateway directly in front of **AraBERTv2, MARBERTv2, CAMeLBERT-Mix, ARBERTv2, QARiB**, or generative LLMs.
 
-### How Misar v3.0 Compares to Existing Arabic Preprocessors
+### How Misar v3.1 Compares to Existing Arabic Preprocessors
 
-| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v3.0 (`مِسار`)** |
+| Capability | `ArabertPreprocessor` | `tnkeeh` | `CAMeL Tools` | **Misar v3.1 (`مِسار`)** |
 | :--- | :---: | :---: | :---: | :---: |
 | **Dynamic $O(n)$ + Clause-Aware Routing** | Static pipeline | Static pipeline | Manual utilities | **Per-text & Multi-Clause `route_document()`** |
 | **Zero Mandatory Dependencies** | Requires `pyarabic` / extras | Light deps | Heavy ML / data packs | **100% Pure Python Stdlib** |
@@ -383,7 +383,13 @@ misar/
 │   ├── test_parallel.py               # Multi-core dataset parallel processing tests
 │   ├── test_lexicon.py                # Multi-dialect dictionary & morphological root tests
 │   ├── test_audit.py                  # Enterprise ROI & security audit engine tests
-│   └── test_integrations.py           # FastAPI ASGI middleware, LlamaIndex & LiteLLM hook tests
+│   ├── test_integrations.py           # FastAPI ASGI middleware, LlamaIndex & LiteLLM hook tests
+│   ├── test_diacritize.py             # Arabic diacritization & short vowel recovery tests
+│   ├── test_summarize.py              # Extractive summarization & keyphrase tests
+│   ├── test_readability.py            # Osman readability metric & complexity tests
+│   ├── test_similarity.py             # Semantic similarity, plagiarism & paraphrase tests
+│   ├── test_intent.py                 # Multi-dialect customer intent & ABSA sentiment tests
+│   └── test_phonemize.py              # Arabic G2P IPA phonemization & speech audio tests
 ├── CITATION.cff                       # Native GitHub repository citation metadata
 ├── CONTRIBUTING.md                    # Developer setup & contribution standards
 ├── SECURITY.md                        # Built-in API & frontend hardening controls
@@ -400,7 +406,7 @@ misar/
 python -m unittest discover -s tests -v
 ```
 
-All **131 automated tests** verify profiler mathematics, context-aware grammar and spell correction (Hamza resolution, Wasla/Qat', Taa Marbuta pronoun protection), sovereign Named Entity Recognition (PER, ORG, LOC, DATE, MONEY) and privacy masking, Dialect-to-MSA parallel translation, BM25 in-memory semantic search and root matching, dialect-aware sentiment analysis and contextual negations, multi-dialect semantic lexicon lookups (Saudi/Gulf, Egyptian, Levantine, Maghrebi, Iraqi, Yemeni), morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Enterprise ROI & security audit, FastAPI ASGI middleware, LlamaIndex node parsing, LiteLLM pre-hooks, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
+All **176 automated tests** across 18 test suites verify profiler mathematics, context-aware grammar and spell correction (Hamza resolution, Wasla/Qat', Taa Marbuta pronoun protection), sovereign Named Entity Recognition (PER, ORG, LOC, DATE, MONEY) and privacy masking, Dialect-to-MSA parallel translation, BM25 in-memory semantic search and root matching, dialect-aware sentiment analysis and contextual negations, multi-dialect customer intent detection (COMPLAINT, INQUIRY, SUPPORT, PURCHASE, CANCELLATION, PRAISE), granular Aspect-Based Sentiment Analysis (ABSA across speed, price, support, quality, usability, delivery), multi-dimensional Arabic semantic similarity (Lexical Jaccard, morphological roots, LCS, character n-grams) and corpus plagiarism detection, high-precision Arabic Grapheme-to-Phoneme (G2P) IPA transcription with sun/moon letter assimilation, full Arabic diacritization and short vowel recovery, extractive graph-based text summarization, Osman Arabic readability and linguistic complexity metrics, multi-dialect semantic lexicon lookups, morphological root extraction, sentence-level vocabulary explanation, regional dialect classification, prompt cache canonicalization, multi-core dataset ETL, Enterprise ROI & security audit, FastAPI ASGI middleware, LlamaIndex node parsing, LiteLLM pre-hooks, Unicode Presentation Form & Farsi lookalike recovery (`ﺍﻟﺒﺮﻣﺠﺔ/کود → 0 [UNK]`), long-essay social artifact sanitization, Clause-Aware `route_document()` multi-clause dispatch, MSA homograph resistance, Saudi/Gulf/Levantine/Maghrebi negation preservation, gemination protection (`والللله → والله`), pronoun-safe Vocab Auto-Heal (`البرمجه → البرمجة` while protecting `بيته/ملفه/مديره`), clitic code-switching (`الـ Backend → الBackend`), `do_lower_case` parity for `MARBERTv2`/`ARBERTv2`, opt-in Arabizi tech safety, scientific minimal-pair evaluation (`100% vs 0%`), fast batch/HF dataset mapping, and hardened REST server HTTP security bounds.
 
 ---
 
@@ -413,7 +419,7 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
   author       = {Muneer Jarab Matrak Al-Theeb},
   title        = {Misar (مِسار): Adaptive Context-Aware Arabic NLP Preprocessing Router for Transformer Language Models},
   year         = {2026},
-  version      = {3.0.0},
+  version      = {3.1.0},
   url          = {https://github.com/RealMtrx/misar},
   license      = {MIT}
 }
@@ -423,8 +429,11 @@ If you use **Misar** in academic research, benchmarks, or commercial NLP pipelin
 
 ## 📖 نظرة عامة بالعربية
 
-**مِسار (`Misar v3.0.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
+**مِسار (`Misar v3.1.0`)** هي مكتبة وموجّه وبوابة ذكاء اصطناعي سيادية مفتوحة المصدر وخفيفة الوزن (بلا أي تبعيات خارجية إجبارية) صُمِّمت لتعمل كطبقة بوابة سيادية ذكية في زمن خطي $O(n)$ (**~0.30 مللي ثانية** للنص وبسرعة **3,778 نص/ثانية** في المعالجة الدفعية) قبل نماذج المحولات العربية الخمسة (`AraBERTv2`, `MARBERTv2`, `CAMeLBERT`, `ARBERTv2`, `QARiB`) والنماذج السيادية والتوليدية (`ALLaM-7B`, `Llama-3-Arabic`, `vLLM`, `Ollama`, `OpenAI SDK`) **دون الحاجة إلى إعادة تدريب النموذج (`Zero Parameter Update`)**.
 
+* **محرك قياس التشابه الدلالي وكشف الانتحال الأدبي والعلمي (`misar.similarity` & `misar similarity`):** قياس التشابه متعدّد الأبعاد (تشابه المفردات، تقاطع الجذور الثلاثية الصرفية، أطول تسلسل جزئي مشترك LCS، و3-grams المحارف)، مع استخراج المقاطع الحرفية المنسوخة بدقة واكتشاف إعادة الصياغة الاشتقاقية وفحص الانتحال في مجموعات النصوص.
+* **محرك تصنيف نوايا العملاء وتحليل المشاعر الموجه بالسمات ABSA (`misar.intent` & `misar intent`):** كشف وتصنيف النوايا التجارية والتواصلية (شكوى، استفسار، دعم فني، شراء واشتراك، إلغاء واسترجاع، ثناء ومدح) بلهجات متعددة، مع تحليل مشاعر دقيق ومفصل لكل ميزة في المنتج (السرعة، السعر، الدعم، الجودة، سهولة الاستخدام، التوصيل).
+* **محرك المعالجة الصوتية وتحويل النص إلى فونيمات G2P (`misar.phonemize` & `misar phonemize`):** تحويل النصوص العربية إلى أبجدية الصوتيات الدولية (IPA)، مع إدغام اللام الشمسية صوتاً وصون اللام القمرية، ونطق الحروف المفخمة (ص، ض، ط، ظ)، وتحديد المقاطع الصوتية وتقدير زمن النطق الصوتي لنماذج توليد الكلام (TTS).
 * **محرك التشكيل واستعادة الحركات العربي (`misar.diacritize` & `misar diacritize`):** استعادة تلقائية للحركات الإعرابية والصرفية والشّدّة والتنوين وفق الأوزان الصرفية العربية والأدوات النحوية، مع صون المصطلحات الإنجليزية والأرقام والرموز.
 * **محرك التلخيص العربي واستخراج المفاهيم والكلمات المفتاحية (`misar.summarize` & `misar summarize`):** تلخيص استخلاصي فائق السرعة عبر خوارزمية TextRank المصممة لخصائص الخطاب العربي ومطابقة الجذور المعجمية واستخراج المصطلحات والمفاهيم البارزة.
 * **محرك قياس المقروئية ومؤشر عثمان العربي (`misar.readability` & `misar readability`):** حساب مؤشر عثمان للمقروئية (OSMAN) وتصنيف الصعوبة اللغوية وملاءمة النصوص للمراحل التعليمية (ابتدائي، متوسط، ثانوي، جامعي، تخصصي) مع تقدير زمن القراءة والغنى المعجمي.

@@ -256,6 +256,9 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                             "arabic_diacritizer",
                             "arabic_summarizer",
                             "arabic_readability_engine",
+                            "semantic_similarity_engine",
+                            "customer_intent_absa",
+                            "arabic_g2p_phonemizer",
                         ],
                         "available_models": [
                             {"key": k, "display_name": cfg["display_name"]}
@@ -732,6 +735,47 @@ def make_handler(router: MisarRouter, allow_vocab_download: bool = True):
                     return
                 from ..readability import analyze_readability
                 res = analyze_readability(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/similarity":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text1 = payload.get("text1", "")
+                text2 = payload.get("text2", "")
+                if not isinstance(text1, str) or not isinstance(text2, str):
+                    self._send_json(400, {"error": "'text1' and 'text2' must be strings"})
+                    return
+                from ..similarity import compute_similarity
+                res = compute_similarity(text1, text2)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/intent":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..intent import classify_intent
+                res = classify_intent(text)
+                self._send_json(200, res.to_dict())
+                return
+
+            if route_path == "/api/phonemize":
+                payload = self._read_json_object()
+                if payload is None:
+                    return
+                text = payload.get("text", "")
+                auto_diac = bool(payload.get("auto_diacritize", True))
+                if not isinstance(text, str):
+                    self._send_json(400, {"error": "'text' field must be a string"})
+                    return
+                from ..phonemize import phonemize_arabic
+                res = phonemize_arabic(text, auto_diacritize=auto_diac)
                 self._send_json(200, res.to_dict())
                 return
 

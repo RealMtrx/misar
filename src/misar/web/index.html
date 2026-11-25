@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>مِسار (Misar v3.0.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
+  <title>مِسار (Misar v3.1.0) — موجه المعالجة العربية وبوابة الذكاء الاصطناعي</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -881,7 +881,7 @@
   <header class="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <h1>مِسار — Misar <span class="version-tag ltr">v3.0.0</span></h1>
+        <h1>مِسار — Misar <span class="version-tag ltr">v3.1.0</span></h1>
         <p>موجه المعالجة العربية التكيفية لتعزيز كفاءة نماذج المحولات اللغوية (<span class="ltr">Adaptive Arabic NLP Router</span>)</p>
       </div>
       <div class="status-group">
@@ -1462,8 +1462,95 @@
       <div id="readabilityResultWrap" style="margin-top: 14px;"></div>
     </section>
 
+    <!-- Section 20: Arabic Semantic Similarity & Plagiarism Detector -->
+    <section class="card" id="sectionSimilarity">
+      <div class="section-head">
+        <h2 class="section-title">20. فحص التشابه الدلالي والانتحال الأدبي (Semantic Similarity & Plagiarism Detector)</h2>
+        <span class="section-hint">مقارنة متقدمة بين نصين بالاعتماد على الجذور الصرفية والتشابه اللفظي ومتواليات LCS لكشف النسخ الحرفي وإعادة الصياغة (Paraphrasing)</span>
+      </div>
+
+      <div class="presets-row" id="similarityPresetsRow">
+        <button type="button" class="preset-btn active" 
+          data-text1="أطلقت سدايا استراتيجية وطنية لتمكين تقنيات الذكاء الاصطناعي في المملكة العربية السعودية" 
+          data-text2="تم تدشين استراتيجية الذكاء الاصطناعي الوطنية من قبل الهيئة السعودية سدايا لدعم قطاع التقنية بالمملكة">إعادة صياغة ذكية (Paraphrase)</button>
+        <button type="button" class="preset-btn" 
+          data-text1="تعتمد الحوسبة السحابية على مراكز البيانات الضخمة لتشغيل نماذج الذكاء الاصطناعي" 
+          data-text2="تعتمد الحوسبة السحابية على مراكز البيانات الضخمة لتشغيل نماذج الذكاء الاصطناعي وتحسين سرعتها">تطابق شبه تام (Plagiarism / High Overlap)</button>
+        <button type="button" class="preset-btn" 
+          data-text1="الزراعة المائية في البيوت المحمية توفر كميات كبيرة من المياه" 
+          data-text2="تطوير واجهات برمجة التطبيقات الحديثة باستخدام لغة بايثون">نصان مختلفان تماماً (Unrelated)</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+        <div class="input-wrap">
+          <label style="font-size: 0.85rem; font-weight: 600; color: var(--navy);">النص الأول (المستند المرجعي):</label>
+          <textarea id="similarityText1" rows="3" placeholder="أدخل النص الأول...">أطلقت سدايا استراتيجية وطنية لتمكين تقنيات الذكاء الاصطناعي في المملكة العربية السعودية</textarea>
+        </div>
+        <div class="input-wrap">
+          <label style="font-size: 0.85rem; font-weight: 600; color: var(--navy);">النص الثاني (النص المراد مقارنته):</label>
+          <textarea id="similarityText2" rows="3" placeholder="أدخل النص الثاني...">تم تدشين استراتيجية الذكاء الاصطناعي الوطنية من قبل الهيئة السعودية سدايا لدعم قطاع التقنية بالمملكة</textarea>
+        </div>
+      </div>
+
+      <div class="actions-row" style="margin-top: 10px;">
+        <button type="button" class="btn-primary" id="runSimilarityBtn">حساب التشابه وفحص الانتحال</button>
+      </div>
+
+      <div id="similarityResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 21: Customer Intent & Aspect-Based Sentiment -->
+    <section class="card" id="sectionIntent">
+      <div class="section-head">
+        <h2 class="section-title">21. تصنيف النوايا والمشاعر الموجهة (Customer Intent & Aspect Sentiment - ABSA)</h2>
+        <span class="section-hint">تحليل ذكي لنية العميل (شكوى، استفسار، دعم فني، شراء، إلغاء، مدح) مع تحديد مشاعر الجوانب التفصيلية (السرعة، السعر، الجودة، الدعم، التوصيل)</span>
+      </div>
+
+      <div class="presets-row" id="intentPresetsRow">
+        <button type="button" class="preset-btn active" data-intent="التطبيق سريع وسلس صراحة، لكن خدمة العملاء ما يردون والأسعار غالية جداً">شكوى مركبة الجوانب (سرعة إيجابية + دعم وسعر سلبي)</button>
+        <button type="button" class="preset-btn" data-intent="كيف اشترك في الباقة السنوية وهل عندكم كود خصم للطلاب والجامعات؟">طلب شراء واستفسار عن باقات وخصومات</button>
+        <button type="button" class="preset-btn" data-intent="ابي الغي اشتراكي وترجعون لي المبلغ حق الشهر الحالي تكفون">طلب إلغاء واسترجاع أموال</button>
+        <button type="button" class="preset-btn" data-intent="ما قصرتوا والله، التوصيل وصل بنفس اليوم والمنتج أصلي وفخم">مدح وثناء على التوصيل والجودة</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="intentInput" rows="2" placeholder="اكتب رسالة أو تعليق عميل لتحليل النية والجوانب...">التطبيق سريع وسلس صراحة، لكن خدمة العملاء ما يردون والأسعار غالية جداً</textarea>
+        <div class="actions-row">
+          <button type="button" class="btn-primary" id="runIntentBtn">تحليل النية والجوانب الدلالية (ABSA)</button>
+        </div>
+      </div>
+
+      <div id="intentResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
+    <!-- Section 22: Arabic G2P & Phonetic Transcription -->
+    <section class="card" id="sectionPhonemize">
+      <div class="section-head">
+        <h2 class="section-title">22. الترميز الصوتي لنماذج النطق والكلام (Arabic G2P & Speech Transcription)</h2>
+        <span class="section-hint">تحويل النص العربي إلى رموز الأبجدية الصوتية الدولية (IPA) مع تطبيق أحكام الإدغام الشمسي والقمري وإسقاط همزة الوصل لنماذج TTS</span>
+      </div>
+
+      <div class="presets-row" id="phonemizePresetsRow">
+        <button type="button" class="preset-btn active" data-phonemize="الشَّمْسُ وَالْقَمَرُ آيَتَانِ مِنْ آيَاتِ اللهِ">إدغام شمسي وقمري (الشَّمْسُ وَالْقَمَرُ)</button>
+        <button type="button" class="preset-btn" data-phonemize="تطوير الذكاء الاصطناعي في المملكة العربية السعودية">فصحى تقنية مشكولة آلياً</button>
+        <button type="button" class="preset-btn" data-phonemize="وَضَعَ الْخَوَارِزْمِيُّ أُسُسَ الْجَبْرِ وَالْحِسَابِ">نص تراثي مشكول بالكامل</button>
+      </div>
+
+      <div class="input-wrap">
+        <textarea id="phonemizeInput" rows="2" placeholder="اكتب نصاً عربياً لتحويله إلى رموز صوتية IPA...">الشَّمْسُ وَالْقَمَرُ آيَتَانِ مِنْ آيَاتِ اللهِ</textarea>
+        <div class="actions-row" style="display: flex; gap: 10px; align-items: center;">
+          <label style="font-size: 0.85rem; font-weight: 600;">
+            <input type="checkbox" id="phonemizeAutoDiac" checked> تشكيل آلي ذكي إذا كان النص غير مشكول
+          </label>
+          <button type="button" class="btn-primary" id="runPhonemizeBtn">الترميز الصوتي (Phonemize to IPA)</button>
+        </div>
+      </div>
+
+      <div id="phonemizeResultWrap" style="margin-top: 14px;"></div>
+    </section>
+
     <footer class="page-footer ltr">
-      Misar (مِسار) v3.0.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
+      Misar (مِسار) v3.1.0 · Open-Source MIT License · Copyright © 2026 Muneer Jarab Matrak Al-Theeb
     </footer>
   </main>
 
@@ -2910,6 +2997,56 @@
         });
         executeReadability();
       }
+
+      // Similarity UI (Section 20)
+      const simBtn = document.getElementById("runSimilarityBtn");
+      const simT1 = document.getElementById("similarityText1");
+      const simT2 = document.getElementById("similarityText2");
+      if (simBtn && simT1 && simT2) {
+        simBtn.addEventListener("click", executeSimilarity);
+        document.querySelectorAll("#similarityPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#similarityPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            simT1.value = b.getAttribute("data-text1");
+            simT2.value = b.getAttribute("data-text2");
+            executeSimilarity();
+          });
+        });
+        executeSimilarity();
+      }
+
+      // Intent UI (Section 21)
+      const intentBtn = document.getElementById("runIntentBtn");
+      const intentIn = document.getElementById("intentInput");
+      if (intentBtn && intentIn) {
+        intentBtn.addEventListener("click", executeIntent);
+        document.querySelectorAll("#intentPresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#intentPresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            intentIn.value = b.getAttribute("data-intent");
+            executeIntent();
+          });
+        });
+        executeIntent();
+      }
+
+      // Phonemize UI (Section 22)
+      const phonBtn = document.getElementById("runPhonemizeBtn");
+      const phonIn = document.getElementById("phonemizeInput");
+      if (phonBtn && phonIn) {
+        phonBtn.addEventListener("click", executePhonemize);
+        document.querySelectorAll("#phonemizePresetsRow .preset-btn").forEach(b => {
+          b.addEventListener("click", () => {
+            document.querySelectorAll("#phonemizePresetsRow .preset-btn").forEach(x => x.classList.remove("active"));
+            b.classList.add("active");
+            phonIn.value = b.getAttribute("data-phonemize");
+            executePhonemize();
+          });
+        });
+        executePhonemize();
+      }
     });
 
     // --- Arabizi Decoupler UI ---
@@ -3312,6 +3449,163 @@
         `;
       } catch (err) {
         wrap.innerHTML = `<div class="guard-tag">خطأ في فحص المقروئية: ${err}</div>`;
+      }
+    }
+
+    // --- Semantic Similarity & Plagiarism UI ---
+    async function executeSimilarity() {
+      const t1 = document.getElementById("similarityText1").value.trim();
+      const t2 = document.getElementById("similarityText2").value.trim();
+      const wrap = document.getElementById("similarityResultWrap");
+      if (!t1 || !t2) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ فحص التطابق اللفظي والصرفي ومتواليات النصوص...</div>";
+      try {
+        const res = await fetch("/api/similarity", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text1: t1, text2: t2 })
+        });
+        const data = await res.json();
+        const simPct = Math.round(data.overall_similarity * 100);
+        let statusTag = "نصان مستقلان ومختلفان";
+        let pillClass = "pill-FAST_MSA";
+        if (data.is_plagiarism) {
+          statusTag = "⚠️ تطابق شديد / انتحال محتمل";
+          pillClass = "pill-NOISY_SOCIAL";
+        } else if (data.is_paraphrase) {
+          statusTag = "🔄 إعادة صياغة لنفس المعنى (Paraphrase)";
+          pillClass = "pill-DIALECT_PRESERVE";
+        }
+
+        let spansHtml = "";
+        if (data.matched_spans && data.matched_spans.length > 0) {
+          spansHtml = `
+            <div style="margin-top: 10px;">
+              <strong style="font-size: 0.85rem; color: var(--navy);">المتواليات النصية المتطابقة حرفياً (${data.verbatim_match_count}):</strong>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;">
+                ${data.matched_spans.map(s => `<span class="marker-chip" style="background:#fee2e2; color:#991b1b; font-weight:600;">"${s.text}" (${s.word_count} كلمات)</span>`).join(" ")}
+              </div>
+            </div>
+          `;
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--navy); font-weight: 700;">نسبة التشابه الكلي: ${simPct}%</span>
+              <span class="route-pill ${pillClass}">${statusTag}</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 10px;">
+              <div class="meta-pill" style="color: var(--text-main); background: #f8fafc; text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-soft);">تطابق الجذور</div>
+                <div style="font-size: 1.05rem; font-weight: 700;">${Math.round(data.root_similarity * 100)}%</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f8fafc; text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-soft);">التطابق اللفظي</div>
+                <div style="font-size: 1.05rem; font-weight: 700;">${Math.round(data.lexical_similarity * 100)}%</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f8fafc; text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-soft);">تتابع الجمل (LCS)</div>
+                <div style="font-size: 1.05rem; font-weight: 700;">${Math.round(data.lcs_ratio * 100)}%</div>
+              </div>
+              <div class="meta-pill" style="color: var(--text-main); background: #f8fafc; text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-soft);">تطابق الحروف N-Gram</div>
+                <div style="font-size: 1.05rem; font-weight: 700;">${Math.round(data.ngram_similarity * 100)}%</div>
+              </div>
+            </div>
+            ${spansHtml}
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في فحص التشابه: ${err}</div>`;
+      }
+    }
+
+    // --- Customer Intent & ABSA UI ---
+    async function executeIntent() {
+      const input = document.getElementById("intentInput").value.trim();
+      const wrap = document.getElementById("intentResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ تصنيف نية العميل وفحص المشاعر الموجهة...</div>";
+      try {
+        const res = await fetch("/api/intent", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input })
+        });
+        const data = await res.json();
+        let pillClass = "pill-FAST_MSA";
+        if (data.primary_intent === "COMPLAINT" || data.primary_intent === "CANCELLATION") pillClass = "pill-NOISY_SOCIAL";
+        if (data.primary_intent === "INQUIRY" || data.primary_intent === "SUPPORT_REQUEST") pillClass = "pill-DIALECT_PRESERVE";
+
+        let aspectsHtml = "";
+        if (data.aspects && data.aspects.length > 0) {
+          aspectsHtml = `
+            <div style="margin-top: 12px;">
+              <strong style="font-size: 0.85rem; color: var(--navy);">المشاعر الموجهة لكل جانب تفصيلي (ABSA):</strong>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px;">
+                ${data.aspects.map(a => {
+                  const polColor = a.polarity === "positive" ? "#15803d" : (a.polarity === "negative" ? "#b91c1c" : "#475569");
+                  const polBg = a.polarity === "positive" ? "#f0fdf4" : (a.polarity === "negative" ? "#fef2f2" : "#f1f5f9");
+                  const sym = a.polarity === "positive" ? "🟢 إيجابي" : (a.polarity === "negative" ? "🔴 سلبي" : "⚪ محايد");
+                  return `
+                    <div style="background: ${polBg}; border: 1px solid ${polColor}; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem;">
+                      <strong>${a.aspect_display_ar}:</strong> <span style="color: ${polColor}; font-weight:600;">${sym}</span>
+                      <div style="font-size: 0.75rem; color: var(--text-soft); margin-top: 2px;">"${a.evidence_snippet}"</div>
+                    </div>
+                  `;
+                }).join(" ")}
+              </div>
+            </div>
+          `;
+        }
+
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title" style="color: var(--navy); font-weight: 700;">النية الأساسية: ${data.primary_intent_ar}</span>
+              <span class="route-pill ${pillClass}">ثقة: ${Math.round(data.confidence * 100)}%</span>
+            </div>
+            ${aspectsHtml}
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في تحليل النية: ${err}</div>`;
+      }
+    }
+
+    // --- Arabic G2P & Phonemize UI ---
+    async function executePhonemize() {
+      const input = document.getElementById("phonemizeInput").value.trim();
+      const autoDiac = document.getElementById("phonemizeAutoDiac").checked;
+      const wrap = document.getElementById("phonemizeResultWrap");
+      if (!input) return;
+      wrap.innerHTML = "<div class='section-hint'>جارٍ الترميز الصوتي وتطبيق أحكام الإدغام...</div>";
+      try {
+        const res = await fetch("/api/phonemize", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input, auto_diacritize: autoDiac })
+        });
+        const data = await res.json();
+        wrap.innerHTML = `
+          <div class="lexicon-card-result">
+            <div class="lexicon-header-badge">
+              <span class="lexicon-word-title ltr" style="color: var(--navy); font-weight: 700; font-size: 1.2rem; font-family: 'IBM Plex Mono', monospace;">/${data.ipa_transcription}/</span>
+              <span class="route-pill pill-FAST_MSA">ترميز IPA معياري</span>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.9rem; color: var(--text-muted);">
+              <strong>النص المشكول المستخدم:</strong> <span style="color: var(--msa-accent); font-weight:600;">${data.diacritized_text}</span>
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
+              <span class="meta-pill" style="color: var(--text-main); background: #f1f5f9;">المقاطع الصوتية: <strong>${data.syllable_count}</strong></span>
+              <span class="meta-pill" style="color: var(--text-main); background: #f1f5f9;">إدغام شمسي: <strong>${data.sun_letter_assimilations_count}</strong></span>
+              <span class="meta-pill" style="color: var(--text-main); background: #f1f5f9;">زمن النطق التقديري (TTS): <strong>${data.estimated_audio_duration_sec} ثانية</strong></span>
+            </div>
+          </div>
+        `;
+      } catch (err) {
+        wrap.innerHTML = `<div class="guard-tag">خطأ في الترميز الصوتي: ${err}</div>`;
       }
     }
   </script>

@@ -676,6 +676,26 @@ class MisarRouter:
         from .readability import analyze_readability
         return analyze_readability(text)
 
+    def similarity(self, text1: str, text2: str) -> Any:
+        """Compute fine-grained semantic, lexical, and root similarity between two Arabic texts."""
+        from .similarity import compute_similarity
+        return compute_similarity(text1, text2)
+
+    def check_plagiarism(self, candidate: str, reference_corpus: List[str], threshold: float = 0.5) -> Any:
+        """Scan Arabic text against a reference corpus for plagiarism and paraphrase detection."""
+        from .similarity import check_plagiarism
+        return check_plagiarism(candidate, reference_corpus, threshold=threshold)
+
+    def classify_intent(self, text: str) -> Any:
+        """Classify customer intent and extract Aspect-Based Sentiments (ABSA)."""
+        from .intent import classify_intent
+        return classify_intent(text)
+
+    def phonemize(self, text: str, auto_diacritize: bool = True) -> Any:
+        """Phonemize Arabic text into International Phonetic Alphabet (IPA) representation."""
+        from .phonemize import phonemize_arabic
+        return phonemize_arabic(text, auto_diacritize=auto_diacritize)
+
     def process(
         self,
         text: Any,
@@ -939,6 +959,26 @@ def extract_keyphrases(text: str, top_k: int = 5) -> Any:
 def analyze_readability(text: str) -> Any:
     """Arabic Readability & Linguistic Complexity Analysis (Osman Index)."""
     return _get_default_router().readability(text)
+
+
+def compute_similarity(text1: str, text2: str) -> Any:
+    """Compute fine-grained semantic, lexical, and root similarity between two Arabic texts."""
+    return _get_default_router().similarity(text1, text2)
+
+
+def check_plagiarism(candidate: str, reference_corpus: List[str], threshold: float = 0.5) -> Any:
+    """Scan Arabic text against a reference corpus for plagiarism and paraphrase detection."""
+    return _get_default_router().check_plagiarism(candidate, reference_corpus, threshold=threshold)
+
+
+def classify_intent(text: str) -> Any:
+    """Classify customer intent and extract Aspect-Based Sentiments (ABSA)."""
+    return _get_default_router().classify_intent(text)
+
+
+def phonemize_arabic(text: str, auto_diacritize: bool = True) -> Any:
+    """Phonemize Arabic text into International Phonetic Alphabet (IPA) representation."""
+    return _get_default_router().phonemize(text, auto_diacritize=auto_diacritize)
 
 
 def clear_cache() -> None:

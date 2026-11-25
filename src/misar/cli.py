@@ -538,6 +538,67 @@ def cmd_readability(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_similarity(args: argparse.Namespace) -> int:
+    from .similarity import compute_similarity
+    res = compute_similarity(args.text1, args.text2)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Semantic Similarity & Plagiarism Detector v{__version__}")
+    print("=" * 70)
+    print(f"Overall Similarity : {res.overall_similarity * 100:.1f}%")
+    print(f"Root Similarity    : {res.root_similarity * 100:.1f}%")
+    print(f"Lexical Jaccard    : {res.lexical_similarity * 100:.1f}%")
+    print(f"LCS Sequence Ratio : {res.lcs_ratio * 100:.1f}%")
+    print(f"Is Paraphrase      : {'نعم (إعادة صياغة)' if res.is_paraphrase else 'لا'}")
+    print(f"Is Plagiarism      : {'نعم (انتحال / تطابق كبير)' if res.is_plagiarism else 'لا'}")
+    if res.matched_spans:
+        print("-" * 70)
+        print(f"Verbatim Matches ({len(res.matched_spans)} spans):")
+        for s in res.matched_spans:
+            print(f"  • '{s.text}' ({s.word_count} words)")
+    print("=" * 70)
+    return 0
+
+
+def cmd_intent(args: argparse.Namespace) -> int:
+    from .intent import classify_intent
+    res = classify_intent(args.text)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Customer Intent & Aspect-Based Sentiment v{__version__}")
+    print("=" * 70)
+    print(f"Primary Intent     : {res.primary_intent} ({res.primary_intent_ar})")
+    print(f"Confidence         : {res.confidence * 100:.0f}%")
+    print(f"Overall Polarity   : {res.overall_sentiment_polarity.upper()}")
+    if res.aspects:
+        print("-" * 70)
+        print("Detected Aspects (ABSA):")
+        for a in res.aspects:
+            pol_symbol = "🟢" if a.polarity == "positive" else ("🔴" if a.polarity == "negative" else "⚪")
+            print(f"  {pol_symbol} [{a.aspect_display_ar}] {a.polarity} (score: {a.score:+.2f}) -> \"{a.evidence_snippet}\"")
+    print("=" * 70)
+    return 0
+
+
+def cmd_phonemize(args: argparse.Namespace) -> int:
+    from .phonemize import phonemize_arabic
+    res = phonemize_arabic(args.text, auto_diacritize=not args.no_diacritize)
+    if args.json:
+        print(json.dumps(res.to_dict(), ensure_ascii=False, indent=2))
+        return 0
+    print(f"Misar Arabic Grapheme-to-Phoneme (G2P) & Speech Engine v{__version__}")
+    print("=" * 70)
+    print(f"Input Text    : {res.original_text}")
+    print(f"Diacritized   : {res.diacritized_text}")
+    print(f"IPA Phonemes  : /{res.ipa_transcription}/")
+    print(f"Syllable Count: {res.syllable_count} | Est. TTS Audio: {res.estimated_audio_duration_sec:.2f}s")
+    print(f"Sun Letters   : {res.sun_letter_assimilations_count} assimilation(s)")
+    print("=" * 70)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="misar",
@@ -716,6 +777,23 @@ def build_parser() -> argparse.ArgumentParser:
     p_readability.add_argument("text", help="Arabic text to analyze for readability")
     p_readability.add_argument("--json", action="store_true", help="Output structured JSON")
     p_readability.set_defaults(func=cmd_readability)
+
+    p_similarity = sub.add_parser("similarity", help="Compare semantic similarity, plagiarism, and paraphrase between two Arabic texts")
+    p_similarity.add_argument("text1", help="First Arabic text")
+    p_similarity.add_argument("text2", help="Second Arabic text to compare")
+    p_similarity.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_similarity.set_defaults(func=cmd_similarity)
+
+    p_intent = sub.add_parser("intent", help="Classify customer intent and extract Aspect-Based Sentiments (ABSA)")
+    p_intent.add_argument("text", help="Arabic text or customer feedback to analyze")
+    p_intent.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_intent.set_defaults(func=cmd_intent)
+
+    p_phonemize = sub.add_parser("phonemize", help="Transcribe Arabic text into International Phonetic Alphabet (IPA) for TTS")
+    p_phonemize.add_argument("text", help="Arabic text to phonemize")
+    p_phonemize.add_argument("--no-diacritize", action="store_true", help="Disable automatic diacritics restoration")
+    p_phonemize.add_argument("--json", action="store_true", help="Output structured JSON")
+    p_phonemize.set_defaults(func=cmd_phonemize)
 
     return parser
 

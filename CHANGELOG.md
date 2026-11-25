@@ -2,6 +2,67 @@
 
 All notable releases and engineering updates to **Misar (مِسار)** are documented in this file.
 
+## [3.1.0] — 2026-11-26
+
+### The Enterprise & Speech Expansion Release — Semantic Similarity, Intent ABSA, and G2P Phonetics
+
+#### 1. Arabic Semantic Similarity & Plagiarism Detector (`misar.similarity` & CLI `misar similarity`)
+- Zero-dependency, multi-dimensional semantic similarity engine combining:
+  - Lexical Jaccard similarity across normalized Arabic tokens.
+  - Morphological tri-literal root overlap (`misar.lexicon.extract_root`) providing semantic invariance under paraphrasing.
+  - Character tri-gram (3-gram) overlap capturing sub-word and orthographic similarity.
+  - Longest Common Subsequence (LCS) ratio for word order and syntactic sequence preservation.
+- Verbatim copied span extraction with exact start/end character offsets for academic research and content moderation.
+- Arabic paraphrase detection identifying morphological root transformations with altered surface forms.
+- Corpus-level plagiarism scanning (`check_plagiarism`) ranking candidate texts against multi-document corpora.
+- Top-level export `compute_similarity`, `check_plagiarism`, `SimilarityResult`, `MatchedSpan`, and router integration `router.similarity()`.
+- CLI command: `misar similarity "<text1>" "<text2>" [--corpus] [--threshold 0.5] [--json]`.
+- REST API endpoint: POST `/api/similarity`.
+
+#### 2. Customer Intent & Aspect-Based Sentiment Analysis (ABSA) (`misar.intent` & CLI `misar intent`)
+- Multi-dialect intent classification covering 6 core commercial categories:
+  - `COMPLAINT` (شكوى وبلاغ استياء)
+  - `INQUIRY` (استفسار وسؤال عام)
+  - `SUPPORT_REQUEST` (طلب دعم فني ومساعدة)
+  - `PURCHASE_INTENT` (طلب شراء واشتراك جديد)
+  - `CANCELLATION` (طلب إلغاء واسترجاع أموال)
+  - `PRAISE` (مدح وشكر وثناء)
+- Multi-dialect colloquial markers across Saudi/Gulf, Egyptian, Levantine, Maghrebi, and MSA.
+- Fine-grained Aspect-Based Sentiment Analysis (ABSA) extracting polarity and evidence snippets across 6 product dimensions:
+  - `speed` (السرعة والأداء)
+  - `price` (السعر والتكلفة)
+  - `support` (الدعم الفني والخدمة)
+  - `quality` (الجودة والاعتمادية)
+  - `usability` (سهولة الاستخدام)
+  - `delivery` (التوصيل والشحن)
+- Top-level export `classify_intent`, `IntentResult`, `AspectSentiment`, and router integration `router.classify_intent()`.
+- CLI command: `misar intent "<text>" [--json]`.
+- REST API endpoint: POST `/api/intent`.
+
+#### 3. Arabic Grapheme-to-Phoneme (G2P) & Speech Synthesis Engine (`misar.phonemize` & CLI `misar phonemize`)
+- High-precision International Phonetic Alphabet (IPA) conversion calibrated for Arabic speech engines (TTS/STT).
+- Solar letter assimilation (اللام الشمسية) mapping nouns following `الـ` with the 14 sun letters (`ت، ث، د، ذ، ر، ز، س، ش، ص، ض، ط، ظ، ل، ن`) to assimilated geminated consonants.
+- Lunar letter preservation (اللام القمرية) retaining `ʔal` prefix articulation.
+- Pharyngealized emphatic consonant realizations (`ص` $\to$ `/sˤ/`, `ض` $\to$ `/dˤ/`, `ط` $\to$ `/tˤ/`, `ظ` $\to$ `/ðˤ/`, `ع` $\to$ `/ʕ/`, `خ` $\to$ `/x/`, `غ` $\to$ `/ɣ/`, `ح` $\to$ `/ħ/`, `ء` $\to$ `/ʔ/`).
+- Short and long vowel duration acoustic modeling (`a`, `u`, `i`, `aː`, `uː`, `iː`, `an`, `un`, `in`).
+- Syllabic meter estimator and acoustic speech duration estimator calibrated for natural Arabic cadence.
+- Optional automatic short-vowel restoration integration via `misar.diacritize`.
+- Top-level export `phonemize_arabic`, `PhonemizationResult`, and router integration `router.phonemize()`.
+- CLI command: `misar phonemize "<text>" [--no-diacritize] [--json]`.
+- REST API endpoint: POST `/api/phonemize`.
+
+#### 4. Web Workbench v3.1 & Sovereign AI Gateway Expansion
+- Section 20: Arabic Semantic Similarity, Plagiarism & Paraphrase Detector with visual similarity gauge and verbatim copied spans.
+- Section 21: Customer Intent & Aspect-Based Sentiment Analyzer (ABSA) with intent score progress bars and aspect polarity cards.
+- Section 22: Arabic G2P & Speech Phonemizer with IPA transcription, phoneme token tags, syllable counter, and speech duration estimator.
+- Live system status badge bumped to `v3.1.0`.
+
+#### 5. Engineering Reliability & Empirical Testing
+- Expanded test suite from 154 to **176 comprehensive automated unit tests** across 18 test files with 100% pass rate.
+- Added `tests/test_similarity.py`, `tests/test_intent.py`, `tests/test_phonemize.py`.
+- 100% pure Python standard library for core engines (Zero mandatory external dependencies).
+- Multi-dialect and MSA resilience verified under Python 3.9 through 3.14.
+
 ## [3.0.0] — 2026-11-23
 
 ### The Major Generational Release — Sovereign Arabic NLP Trinity
